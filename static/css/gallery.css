@@ -1,0 +1,27 @@
+nav a {
+    text-transform: capitalize !important;
+}
+
+nav {
+    margin-bottom: 3em !important;
+}
+
+.canvas-preview {
+    overflow: hidden;
+    max-width: 200px;
+    max-height: 200px;
+}
+
+ul.edit_fields {
+    list-style-type: none;
+    margin: 0;
+}
+
+.code-block {
+    font-family: monospace;
+    white-space: pre;
+}
+
+#artwork-delete-content .object-actions {
+    display: none;
+}

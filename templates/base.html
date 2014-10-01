@@ -1,0 +1,54 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ProcessingJS Artworks</title>
+    {% block css %}
+    <link rel="stylesheet" href="{% static "css/foundation.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/gallery.css" %}">
+    {% endblock css %}
+    {% block js %}
+    <script lang="text/javascript" src="{% static "js/vendor/modernizr.js" %}"></script>
+    <script lang="text/javascript" src="{% static "js/vendor/jquery.js" %}"></script>
+    <script lang="text/javascript" src="{% static "js/foundation.min.js" %}"></script>
+    <script lang="text/javascript" src="{% static "js/processing.min.js" %}"></script>
+    <script>
+        $(document).ready(function(){ 
+            $(document).foundation();
+        });
+    </script>
+    {% endblock js %}
+    {% block extras %}
+    <!-- for use by child templates -->
+    {% endblock extras %}
+</head>
+<body>
+    <nav class="top-bar" data-topbar role="navigation">
+        <ul class="title-area">
+            <li class="name">
+                <h1><a href="{% url 'home' %}" id="nav-gallery" title="view class gallery">gallery</a></h1>
+            </li>
+        </ul>
+
+        <section class="top-bar-section">
+        <ul class="right">
+        <li class="has-dropdown">
+            <a href="#">my work</a>
+            <ul id="my-gallery-nav" data-dropdown-content class="dropdown">
+                <!-- FIXME -->
+                <li><a href="{% url 'home' %}" id="nav-artwork-list" title="view my own works">my work</a></li>
+                <li><a href="{% url 'artwork-add' %}" id="nav-artwork-add" title="create a new work">new work</a></li>
+                {% if request.user %}
+                <li><a href="{# url 'admin:logout' #}" id="nav-logout" title="logout and return to edX">logout</a></li>
+                {% endif %}
+            </ul>
+        </li>
+        </ul>
+        </section>
+    </nav>
+
+    <div class="small-10 small-centered columns">
+    {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

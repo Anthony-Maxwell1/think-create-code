@@ -1,0 +1,23 @@
+<div id="artwork-view-include">
+{% if object %}
+<canvas id="canvas-{{ object.id }}"></canvas>
+<script id="script-{{ object.id }}" type="text/processing" 
+    data-processing-target="canvas-{{ object.id }}">
+{% autoescape off %}
+{{ object.code }}
+{% endautoescape %}
+</script>
+
+<h3 class="artwork-title">{{ object.title }}</h2>
+<p class="artwork-date"><time>{{ object.modified_at|date }}</time></p>
+<!-- TODO - check permissions -->
+<ul class="breadcrumbs object-actions">
+    <li><a href="{% url 'artwork-view' pk=object.id %} " title="View {{ object.title }}">view</a></li>
+    <li><a href="{% url 'artwork-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
+    <li><a href="{% url 'artwork-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
+</ul>
+{% else %}
+<!-- TODO - return 404 -->
+<p>Artwork not found.</p>
+{% endif %}
+</div>

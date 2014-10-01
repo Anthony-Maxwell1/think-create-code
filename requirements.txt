@@ -1,0 +1,4 @@
+Django==1.6.2
+WebTest==2.0.14
+selenium==2.43.0
+PyVirtualDisplay==0.1.5
