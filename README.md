@@ -4,23 +4,25 @@ processingjs gallery app
 
 Create Users
 ------------
+Use the django shell/console to create users.
 
-  (.virtualenv)$ cd processingjs
-  (.virtualenv)$ ./manage.py shell
-  >>> from django.contrib.auth.models import User
-  >>> jill = User.objects.create_user('jill', 'jill.vogel@adelaide.edu.au', 'l0c0gallery')
+    (.virtualenv)$ cd processingjs
+    (.virtualenv)$ ./manage.py shell
+    >>> from django.contrib.auth.models import User
+    >>> jill = User.objects.create_user('jill', 'jill.vogel@adelaide.edu.au', 'l0c0gallery')
 
 
 Create Artworks
 ---------------
+Use the django shell/console to create artwork, authored by a user.
 
-  (.virtualenv)$ cd processingjs
-  (.virtualenv)$ ./manage.py shell
-  >>> from django.contrib.auth.models import User
-  >>> from artwork.models import Artwork
-  >>> Artwork.objects.all()
-  []
-  >>> jill = User.objects.get(username='jill')
-  >>> empty =Artwork.objects.create(title="Empty", code="", author=jill, shared=False)
-  >>> Artwork.objects.all()
-  [<Artwork: Empty>]
+    (.virtualenv)$ cd processingjs
+    (.virtualenv)$ ./manage.py shell
+    >>> from django.contrib.auth.models import User
+    >>> from artwork.models import Artwork
+    >>> Artwork.objects.all()
+    []
+    >>> jill = User.objects.get(username='jill')
+    >>> empty =Artwork.objects.create(title="Empty", code="", author=jill, shared=False)
+    >>> Artwork.objects.all()
+    [<Artwork: Empty>]
