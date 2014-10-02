@@ -1,10 +1,11 @@
 from django.test import TestCase, LiveServerTestCase
 from django.test.client import Client
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from selenium.webdriver.firefox.webdriver import WebDriver
 from pyvirtualdisplay import Display
-import os, time
+import os, time, re
 
 from artwork.models import Artwork
 
@@ -104,15 +105,18 @@ class ArtworkListIntegrationTests(LiveServerTestCase):
 
         self.selenium.get('%s%s' % (self.live_server_url, '/'))
         self.assertEqual(
-            self.selenium.find_elements_by_css_selector('.artwork')[0].text,
-            'Title bar'
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('list-artwork-add')
         )
 
     def test_add_artwork_linked(self):
 
         self.selenium.get('%s%s' % (self.live_server_url, '/'))
-        self.assert_(
-            self.selenium.find_element_by_id('nav-artwork-add')
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('list-artwork-add')
         )
 
     def test_add_artwork(self):
@@ -130,9 +134,10 @@ class ArtworkListIntegrationTests(LiveServerTestCase):
         self.selenium.find_element_by_id('save_artwork').click()
 
         self.assertEqual(
-            self.selenium.find_elements_by_css_selector('.artwork')[-1].text,
-            'test submission'
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
         )
+
 
     def test_add_artwork_cancel(self):
 
@@ -147,7 +152,7 @@ class ArtworkListIntegrationTests(LiveServerTestCase):
                 option.click()
                 break
 
-        self.selenium.find_element_by_id('nav-artwork-list').click()
+        self.selenium.find_element_by_id('save_cancel').click()
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0

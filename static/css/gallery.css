@@ -8,8 +8,25 @@ nav {
 
 .canvas-preview {
     overflow: hidden;
-    max-width: 200px;
-    max-height: 200px;
+    width: 200px;
+    height: 200px;
+    position: relative;
+}
+
+/* center the canvas inside the preview div:
+ * http://stackoverflow.com/a/19414020 */
+.canvas-preview canvas {
+    position: absolute;
+    top: -9999px;
+    bottom: -9999px;
+    left: -9999px;
+    right: -9999px;
+    margin: auto;
+}
+
+.canvas-preview button {
+    width: 200px;
+    height: 200px;
 }
 
 ul.edit_fields {
@@ -24,4 +41,8 @@ ul.edit_fields {
 
 #artwork-delete-content .object-actions {
     display: none;
+}
+
+#artwork-list-content #list-artwork-add {
+    font-size: 500%;
 }

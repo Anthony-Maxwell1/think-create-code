@@ -26,6 +26,12 @@
         </div>
     </li>
     {% endfor %}
+    <li><div class="canvas-preview">
+        <form action="{% url 'artwork-add' %}">
+            <button class="postfix button" type="submit" id="list-artwork-add" title="add artwork">&#43;</button>
+        </form>
+        </div>
+    </li>
     </ul>
     <div class="small-grid-2">&nbsp;</div>
 </div>
