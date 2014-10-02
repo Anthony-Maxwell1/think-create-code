@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEMPLATE_DEBUG = True
 
@@ -82,16 +82,23 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-STATIC_URL = '/static/'
+if DEBUG:
+    STATIC_URL = '/static/'
+else:
+    STATIC_URL = '/processingjs/static/'
+
+    # Required if DEBUG=False
+    ALLOWED_HOSTS = [
+        'loco.services.adelaide.edu.au',
+    ]
+
 
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(
-        BASE_DIR, 'static',
-    ),
+    os.path.join( BASE_DIR, 'static' ),
 )
 
 
-TEMPLATE_DIRS = 'templates'
+TEMPLATE_DIRS = os.path.join( BASE_DIR, 'templates' )
