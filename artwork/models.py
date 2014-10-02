@@ -1,4 +1,5 @@
 from django.db import models
+from django import forms
 
 class Artwork(models.Model):
     class Meta:
@@ -17,3 +18,8 @@ class Artwork(models.Model):
 
     def __str__(self):
         return unicode(self).encode('utf-8')
+
+
+class ArtworkForm(forms.ModelForm):
+    class Meta:
+        model = Artwork

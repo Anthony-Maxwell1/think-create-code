@@ -7,7 +7,7 @@ from selenium.webdriver.firefox.webdriver import WebDriver
 from pyvirtualdisplay import Display
 import os, time, re
 
-from artwork.models import Artwork
+from artwork.models import Artwork, ArtworkForm
 
 
 class ArtworkTests(TestCase):
@@ -74,6 +74,43 @@ class ArtworkDeleteTests(TestCase):
         self.assertEquals(response.context['object'].title, artwork.title)
         self.assertEquals(response.context['object'].code, artwork.code)
 
+
+class ArtworkModelFormTests(TestCase):
+    """model.ArtworkForm tests."""
+
+    def setUp(self):
+        self.user = get_user_model().objects.create(username='some_user')
+
+    def test_validation(self):
+        form_data = {
+            'title': 'Title bar',
+            'code': '// code goes here',
+            'author': self.user.id,
+        }
+
+        form = ArtworkForm(data=form_data)
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.instance.title, form_data['title'])
+        self.assertEqual(form.instance.code, form_data['code'])
+
+        form.save()
+        self.assertEqual(
+            Artwork.objects.get(id=form.instance.id).title,
+            'Title bar'
+        )
+
+    def test_invalidation(self):
+        form_data = {
+            'title': 'Title bar',
+            'code': '// code goes here',
+        }
+
+        form = ArtworkForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.instance.title, form_data['title'])
+        self.assertEqual(form.instance.code, form_data['code'])
+
+        self.assertRaises(ValueError, form.save)
 
 
 class ArtworkListIntegrationTests(LiveServerTestCase):

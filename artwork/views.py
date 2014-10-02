@@ -1,28 +1,35 @@
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.core.urlresolvers import reverse
+import os
 
-from artwork.models import Artwork
+from artwork.models import Artwork, ArtworkForm
 
-
-class ShowArtworkView(DetailView):
-
+class ArtworkView:
     model = Artwork
-    template_name = 'artwork/view.html'
+    form_class = ArtworkForm
+    template_dir = 'artwork'
 
-
-class ListArtworkView(ListView):
-
-    model = Artwork
-    template_name = 'artwork/list.html'
-
-
-class CreateArtworkView(CreateView):
-
-    model = Artwork
-    template_name = 'artwork/edit.html'
+    @classmethod
+    def prepend_template_path(cls, *argv):
+        return os.path.join(cls.template_dir, *argv)
 
     def get_success_url(self):
         return reverse('artwork-list')
+
+
+class ShowArtworkView(ArtworkView, DetailView):
+
+    template_name = ArtworkView.prepend_template_path('view.html')
+
+
+class ListArtworkView(ArtworkView, ListView):
+
+    template_name = ArtworkView.prepend_template_path('list.html')
+
+
+class CreateArtworkView(ArtworkView, CreateView):
+
+    template_name = ArtworkView.prepend_template_path('edit.html')
 
     def get_context_data(self, **kwargs):
 
@@ -31,13 +38,9 @@ class CreateArtworkView(CreateView):
         return context
 
 
-class UpdateArtworkView(UpdateView):
+class UpdateArtworkView(ArtworkView, UpdateView):
 
-    model = Artwork
-    template_name = 'artwork/edit.html'
-
-    def get_success_url(self):
-        return reverse('artwork-list')
+    template_name = ArtworkView.prepend_template_path('edit.html')
 
     def get_context_data(self, **kwargs):
 
@@ -47,10 +50,6 @@ class UpdateArtworkView(UpdateView):
         return context
 
 
-class DeleteArtworkView(DeleteView):
+class DeleteArtworkView(ArtworkView, DeleteView):
 
-    model = Artwork
-    template_name = 'artwork/delete.html'
-
-    def get_success_url(self):
-        return reverse('artwork-list')
+    template_name = ArtworkView.prepend_template_path('delete.html')

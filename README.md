@@ -26,3 +26,23 @@ Use the django shell/console to create artwork, authored by a user.
     >>> empty =Artwork.objects.create(title="Empty", code="", author=jill, shared=False)
     >>> Artwork.objects.all()
     [<Artwork: Empty>]
+
+
+Test Coverage
+-------------
+Run the unit and integration tests, and get test coverage
+
+    (.virtualenv)$ coverage run --include=./*  manage.py test
+    (.virtualenv)$ coverage report
+    Name               Stmts   Miss  Cover
+    --------------------------------------
+    app/__init__           0      0   100%
+    app/settings          22      2    91%
+    app/urls               5      0   100%
+    artwork/__init__       0      0   100%
+    artwork/models        18      0   100%
+    artwork/tests        113      0   100%
+    artwork/views         30      3    90%
+    manage                 6      0   100%
+    --------------------------------------
+    TOTAL                194      5    97%
