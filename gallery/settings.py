@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'rulez',
     'artwork',
 )
 
@@ -102,3 +103,13 @@ STATICFILES_DIRS = (
 
 
 TEMPLATE_DIRS = os.path.join( BASE_DIR, 'templates' )
+
+
+# Authentication
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = 'django.contrib.auth.views.login'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend', # Django's default auth backend
+    'rulez.backends.ObjectPermissionBackend',
+]

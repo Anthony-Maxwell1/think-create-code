@@ -3,3 +3,4 @@ WebTest==2.0.14
 selenium==2.43.0
 PyVirtualDisplay==0.1.5
 coverage==3.7.1
+django-rulez==1.0.1

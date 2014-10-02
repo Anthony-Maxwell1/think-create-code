@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
-# FIXME - dev only
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.contrib.auth import views as auth_views
 
 import artwork.views
 
@@ -22,7 +22,13 @@ urlpatterns = patterns('',
         name='artwork-delete'),
     url(r'^(?P<pk>\d+)/$', artwork.views.ShowArtworkView.as_view(),
         name='artwork-view'),
+    url(r'^login/$', auth_views.login,
+        {'template_name': 'login.html'},
+        name='login'),
+    url(r'^logout/$', auth_views.logout,
+        {'next_page': '/'},
+        name='logout'),
 )
 
-# FIXME - dev only
+# n.b. Used in dev only
 urlpatterns += staticfiles_urlpatterns()

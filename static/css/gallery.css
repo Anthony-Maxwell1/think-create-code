@@ -1,18 +1,35 @@
+/* Capitalise the nav menu  */
 nav a {
     text-transform: capitalize !important;
 }
-
+/* Add a bit of padding between the nav and the content */
 nav {
     margin-bottom: 3em !important;
 }
+/* Magnify the font-awesome nav icons */
+nav .fa {
+    font-size: 150%;
+}
+/* Shift nav icon to the right */
+nav #nav-logged-in {
+    padding-right: 15px !important;
+}
+/* Hide the drop-down arrow */
+nav #nav-logged-in:after {
+    border-color: transparent transparent transparent !important;
+}
+/* Right-align the logged-in menu items */
+nav #nav-usermenu {
+    text-align: right;
+}
 
+/* Wrap the canvas art in a smaller div */
 .canvas-preview {
     overflow: hidden;
     width: 200px;
     height: 200px;
     position: relative;
 }
-
 /* center the canvas inside the preview div:
  * http://stackoverflow.com/a/19414020 */
 .canvas-preview canvas {
@@ -23,26 +40,23 @@ nav {
     right: -9999px;
     margin: auto;
 }
-
-.canvas-preview button {
+/* Fill the preview div with a big 'add artwork' button */
+.canvas-preview #list-artwork-add {
     width: 200px;
     height: 200px;
+    font-size: 500%;
 }
-
+/* Adjust margins for form fields */
 ul.edit_fields {
     list-style-type: none;
     margin: 0;
 }
-
+/* Format code blocks */
 .code-block {
     font-family: monospace;
     white-space: pre;
 }
-
+/* Don't display _view.html actions on delete page */
 #artwork-delete-content .object-actions {
     display: none;
-}
-
-#artwork-list-content #list-artwork-add {
-    font-size: 500%;
 }
