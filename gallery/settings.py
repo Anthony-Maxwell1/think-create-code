@@ -50,9 +50,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'app.urls'
+ROOT_URLCONF = 'gallery.urls'
 
-WSGI_APPLICATION = 'app.wsgi.application'
+WSGI_APPLICATION = 'gallery.wsgi.application'
 
 
 # Database
