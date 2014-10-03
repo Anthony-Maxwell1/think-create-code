@@ -35,7 +35,7 @@ if ENVIRONMENT == 'staging':
              'PASSWORD': 'gAll3rY-rw',
         }
     }
-    STATIC_URL = '/staging/static/'
+    STATIC_URL = '/staging/gallery/static/'
     ALLOWED_HOSTS = [
         'loco.services.adelaide.edu.au',
     ]
