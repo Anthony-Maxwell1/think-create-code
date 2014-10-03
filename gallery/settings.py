@@ -21,10 +21,60 @@ SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+TEMPLATE_DEBUG = False
 
-TEMPLATE_DEBUG = True
+ENVIRONMENT = "preview"
 
-ALLOWED_HOSTS = []
+if ENVIRONMENT == 'staging':
+
+    DATABASES = {
+        'default': {
+             'ENGINE': 'django.db.backends.mysql',
+             'NAME': 'processingjs_gallery_staging',
+             'USER': 'gallery_rw',
+             'PASSWORD': 'gAll3rY-rw',
+        }
+    }
+    STATIC_URL = '/staging/static/'
+    ALLOWED_HOSTS = [
+        'loco.services.adelaide.edu.au',
+    ]
+
+elif ENVIRONMENT == 'preview':
+
+    TEMPLATE_DEBUG = True
+    DATABASES = {
+        'default': {
+             'ENGINE': 'django.db.backends.mysql',
+             'NAME': 'processingjs_gallery_preview',
+             'USER': 'gallery_rw',
+             'PASSWORD': 'gAll3rY-rw',
+        }
+    }
+    STATIC_URL = '/processingjs/static/'
+    ALLOWED_HOSTS = [
+        'loco.services.adelaide.edu.au',
+    ]
+
+elif ENVIRONMENT == 'development':
+
+    # Runs via ./manage.py runserver
+    DEBUG = True
+    TEMPLATE_DEBUG = True
+    DATABASES = {
+        'default': {
+             'ENGINE': 'django.db.backends.mysql',
+             'NAME': 'processingjs_gallery_dev',
+             'USER': 'gallery_rw',
+             'PASSWORD': 'gAll3rY-rw',
+        }
+    }
+    STATIC_URL = '/static/'
+    ALLOWED_HOSTS = []
+
+
+# else - no database defined
+
 
 
 # Application definition
@@ -56,18 +106,6 @@ ROOT_URLCONF = 'gallery.urls'
 WSGI_APPLICATION = 'gallery.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-         'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'processingjs_gallery',
-         'USER': 'gallery_rw',
-         'PASSWORD': 'gAll3rY-rw',
-    }
-}
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
@@ -84,16 +122,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
-
-if DEBUG:
-    STATIC_URL = '/static/'
-else:
-    STATIC_URL = '/processingjs/static/'
-
-    # Required if DEBUG=False
-    ALLOWED_HOSTS = [
-        'loco.services.adelaide.edu.au',
-    ]
 
 
 STATICFILES_DIRS = (
