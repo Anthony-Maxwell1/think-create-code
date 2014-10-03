@@ -35,7 +35,7 @@
         <section class="top-bar-section">
         <ul id="nav-usermenu" class="right">
         {% if user.is_anonymous %}
-        <li><a href="{% url "login" %}" id="nav-login" title="sign in"><i class="fa fa-sign-in"></i></a></li>
+        <li><a href="{% url "login" %}?next={% url "home" %}" id="nav-login" title="sign in"><i class="fa fa-sign-in"></i></a></li>
         {% else %}
         <li class="has-dropdown">
             <a href="#" id="nav-logged-in" title="{{ user.username }} actions"><i class="fa fa-navicon"></i></a>
@@ -44,7 +44,7 @@
                 <li><a href="{% url "home" %}" id="nav-artwork-list" title="view my own works">my work</a></li>
                 -->
                 <li><a href="{% url "artwork-add" %}" id="nav-artwork-add" title="create a new work">new work</a></li>
-                <li><a href="{% url "logout" %}" id="nav-signout" title="sign out"><i class="fa fa-sign-out"></i></a></li>
+                <li><a href="{% url "logout" %}?next={% url "home" %}" id="nav-signout" title="sign out"><i class="fa fa-sign-out"></i></a></li>
             </ul>
         </li>
         {% endif %}

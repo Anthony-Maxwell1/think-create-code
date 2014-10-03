@@ -106,7 +106,6 @@ TEMPLATE_DIRS = os.path.join( BASE_DIR, 'templates' )
 
 
 # Authentication
-LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'django.contrib.auth.views.login'
 
 AUTHENTICATION_BACKENDS = [
