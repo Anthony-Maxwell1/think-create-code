@@ -2,11 +2,24 @@ processingjs gallery app
 ========================
 
 
+Initial Setup
+-------------
+
+Use virtualenv to setup the initial runtime environment:
+
+    cd Think.Create.Code
+    virtualenv .virtualenv
+    source .virtualenv/bin/activate
+
+    (.virtualenv)$ cd processingjs/
+    (.virtualenv)$ pip install -U -r requirements.txt
+    (.virtualenv)$ ./manage.py migrate
+
+
 Create Users
 ------------
 Use the django shell/console to create users.
 
-    (.virtualenv)$ cd processingjs
     (.virtualenv)$ ./manage.py shell
     >>> from django.contrib.auth.models import User
     >>> jill = User.objects.create_user('jill', 'jill.vogel@adelaide.edu.au', 'l0c0gallery')
@@ -16,7 +29,6 @@ Create Artworks
 ---------------
 Use the django shell/console to create artwork, authored by a user.
 
-    (.virtualenv)$ cd processingjs
     (.virtualenv)$ ./manage.py shell
     >>> from django.contrib.auth.models import User
     >>> from artwork.models import Artwork
