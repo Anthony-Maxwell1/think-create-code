@@ -6,7 +6,7 @@
     <ul class="small-block-grid-2">
     {% for artwork in object_list %}
     <li><div class="artwork canvas-preview">
-        <a href="#" data-reveal-id="modal-{{ artwork.id }}" title="Click to enlarge {{ artwork.title }}">
+        <a href="{% url "artwork-view" artwork.id %}" title="Click to view {{ artwork.title }}">
             <canvas id="canvas-preview-{{ artwork.id }}"></canvas>
             <script id="script-preview-{{ artwork.id }}" type="text/processing" 
                 data-processing-target="canvas-preview-{{ artwork.id }}">
@@ -19,11 +19,6 @@
 
         <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h2>
         <p class="artwork-date"><time>{{ artwork.modified_at|date }}</time></p>
-
-        <div id="modal-{{ artwork.id }}" class="reveal-modal" data-reveal>
-        {% include 'artwork/_view.html' with object=artwork %}
-        <a class="close-reveal-modal">&#215;</a>
-        </div>
     </li>
     {% endfor %}
     <li><div class="canvas-preview">
