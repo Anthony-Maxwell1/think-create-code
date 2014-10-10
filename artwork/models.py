@@ -41,21 +41,3 @@ class ArtworkForm(forms.ModelForm):
     class Meta:
         model = Artwork
         fields = ['title', 'code']
-
-    # Grab the request object, so we can assign the author
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-        return super(ArtworkForm, self).__init__(*args, **kwargs)
-
-    # Override author with the request user
-    def save(self, *args, **kwargs):
-        kwargs['commit']=False
-        obj = super(ArtworkForm, self).save(*args, **kwargs)
-
-        # FIXME : don't override an existing user.  Tried
-        #   and obj.author is None  DoesNotExist exception : Artwork has no author.
-        if self.request:
-            obj.author = self.request.user
-
-        obj.save()
-        return obj

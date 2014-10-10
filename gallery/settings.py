@@ -8,6 +8,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
+import sys
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -23,7 +25,15 @@ SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
 DEBUG = False
 TEMPLATE_DEBUG = False
 
-ENVIRONMENT = "preview"
+TESTING = 'runserver' in sys.argv
+
+if 'test' in sys.argv:
+    ENVIRONMENT = "testing"
+elif 'runserver' in sys.argv:
+    ENVIRONMENT = "development"
+else:
+    ENVIRONMENT = "preview"
+
 
 if ENVIRONMENT == 'staging':
 
@@ -71,6 +81,21 @@ elif ENVIRONMENT == 'development':
     }
     STATIC_URL = '/static/'
     ALLOWED_HOSTS = []
+
+elif ENVIRONMENT == 'testing':
+
+    # Runs via ./manage.py test
+    DEBUG = False
+    TEMPLATE_DEBUG = False
+    DATABASES = {
+        'default': {
+             'ENGINE': 'django.db.backends.sqlite3',
+             'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3'),
+        }
+    }
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    ALLOWED_HOSTS = ['localhost']
 
 
 # else - no database defined
@@ -139,6 +164,7 @@ TEMPLATE_DIRS = (
 
 # Authentication
 LOGIN_URL = 'django.contrib.auth.views.login'
+LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Django's default auth backend

@@ -34,17 +34,10 @@ class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')
 
-    def get_form_kwargs(self):
-        """
-        Returns the keyword arguments for instanciating the form.
-        """
-        kwargs = {'initial': self.get_initial()}
-        if self.request.method in ('POST', 'PUT'):
-            kwargs.update({
-                'data': self.request.POST,
-                'files': self.request.FILES,
-                'request': self.request})
-        return kwargs
+    def form_valid(self, form):
+        # Set author to current user
+        form.instance.author = self.request.user
+        return super(CreateArtworkView, self).form_valid(form)
 
     def get_context_data(self, **kwargs):
 
