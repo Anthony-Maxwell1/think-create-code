@@ -1,0 +1,15 @@
+# https://gitlab-uat.adelaide.edu.au/adelaidex/course-units/blob/master/Think.Create.Code/processingjs/etc/httpd/conf.d/10_processingjs._conf
+
+# ref: http://thecodeship.com/deployment/deploy-django-apache-virtualenv-and-mod_wsgi/
+Alias /processingjs/robots.txt  /var/www/django/course-units/Think.Create.Code/processingjs/static/robots.txt
+Alias /processingjs/favicon.ico /var/www/django/course-units/Think.Create.Code/processingjs/static/favicon.ico
+Alias /processingjs/static      /var/www/django/course-units/Think.Create.Code/processingjs/static
+Alias /processingjs/js      	   /var/www/django/course-units/Think.Create.Code/processingjs/static/js
+AliasMatch ^/processingjs/?$    /var/www/django/course-units/Think.Create.Code/processingjs/static/index.html
+WSGIScriptAlias /processingjs/gallery /var/www/django/course-units/Think.Create.Code/processingjs/gallery/wsgi.py
+<Directory /var/www/django/course-units/Think.Create.Code/processingjs>
+<Files wsgi.py>
+    Order deny,allow
+    Allow from all
+</Files>
+</Directory>
