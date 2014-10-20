@@ -25,46 +25,27 @@ SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
 DEBUG = False
 TEMPLATE_DEBUG = False
 
-TESTING = 'runserver' in sys.argv
-
+# Determine enviroment to run in
 if 'test' in sys.argv:
     ENVIRONMENT = "testing"
 elif 'runserver' in sys.argv:
     ENVIRONMENT = "development"
 else:
-    ENVIRONMENT = "preview"
+    ENVIRONMENT = "production"
 
 
-if ENVIRONMENT == 'staging':
+if ENVIRONMENT == 'production':
 
     DATABASES = {
         'default': {
              'ENGINE': 'django.db.backends.mysql',
-             'NAME': 'processingjs_gallery_staging',
-             'USER': 'gallery_rw',
-             'PASSWORD': 'gAll3rY-rw',
-        }
-    }
-    STATIC_URL = '/staging/gallery/static/'
-    ALLOWED_HOSTS = [
-        'loco.services.adelaide.edu.au',
-    ]
-
-elif ENVIRONMENT == 'preview':
-
-    TEMPLATE_DEBUG = True
-    DATABASES = {
-        'default': {
-             'ENGINE': 'django.db.backends.mysql',
-             'NAME': 'processingjs_gallery_preview',
+             'NAME': 'processingjs_gallery',
              'USER': 'gallery_rw',
              'PASSWORD': 'gAll3rY-rw',
         }
     }
     STATIC_URL = '/processingjs/static/'
-    ALLOWED_HOSTS = [
-        'loco.services.adelaide.edu.au',
-    ]
+    ALLOWED_HOSTS = ['*']
 
 elif ENVIRONMENT == 'development':
 
@@ -98,7 +79,7 @@ elif ENVIRONMENT == 'testing':
     ALLOWED_HOSTS = ['localhost']
 
 
-# else - no database defined
+# else - error: no database defined
 
 
 
