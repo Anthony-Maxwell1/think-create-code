@@ -31,7 +31,7 @@ if 'test' in sys.argv:
 elif 'runserver' in sys.argv:
     ENVIRONMENT = "development"
 else:
-    ENVIRONMENT = "production"
+    ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production")
 
 
 if ENVIRONMENT == 'production':
