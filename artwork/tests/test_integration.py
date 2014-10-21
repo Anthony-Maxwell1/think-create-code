@@ -17,14 +17,14 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             1
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('list-artwork-add')
+            self.selenium.find_element_by_id('list-add-button')
         )
 
     def test_add_artwork_linked(self):
 
         self.selenium.get('%s%s' % (self.live_server_url, '/'))
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('list-artwork-add')
+            self.selenium.find_element_by_id('list-add-button')
         )
 
 

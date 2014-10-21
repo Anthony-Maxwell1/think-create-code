@@ -40,8 +40,8 @@ nav #nav-usermenu {
     right: -9999px;
     margin: auto;
 }
-/* Fill the preview div with a big 'add artwork' button */
-.canvas-preview #list-artwork-add {
+/* Fill the div with a big 'add' button */
+#list-add-button {
     width: 200px;
     height: 200px;
     font-size: 500%;
