@@ -3,6 +3,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.auth import views as auth_views
 
 import artwork.views
+import exhibitions.views
 
 #from django.contrib import admin
 #admin.autodiscover()
@@ -22,6 +23,16 @@ urlpatterns = patterns('',
         name='artwork-delete'),
     url(r'^(?P<pk>\d+)/$', artwork.views.ShowArtworkView.as_view(),
         name='artwork-view'),
+    url(r'^exhibitions/?$', exhibitions.views.ListExhibitionView.as_view(),
+        name='exhibition-list'),
+    url(r'^exhibitions/(?P<pk>\d+)/$', exhibitions.views.ShowExhibitionView.as_view(),
+        name='exhibition-view'),
+    url(r'^exhibitions/new/$', exhibitions.views.CreateExhibitionView.as_view(),
+        name='exhibition-add'),
+    url(r'^exhibitions/edit/(?P<pk>\d+)/$', exhibitions.views.UpdateExhibitionView.as_view(),
+        name='exhibition-edit'),
+    url(r'^exhibitions/delete/(?P<pk>\d+)/$', exhibitions.views.DeleteExhibitionView.as_view(),
+        name='exhibition-delete'),
     url(r'^login/$', auth_views.login,
         {'template_name': 'login.html'},
         name='login'),

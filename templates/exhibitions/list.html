@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="exhibition-list-content">
+<div class="row">
+    <div class="small-grid-2">&nbsp;</div>
+    <ul class="small-block-grid-2">
+    {% for exhibition in object_list %}
+    <li><div class="exhibition">
+        <h3 class="exhibition-title"><a href="{% url 'exhibition-view' exhibition.id %}">{{ exhibition.title }}</a></h2>
+        <a href="{% url 'exhibition-view' exhibition.id %}" title="Click to view {{ exhibition.title }}">
+            <p class="exhibition-description">{{ exhibition.description|truncatechars:100 }}</p>
+        </a>
+        </div>
+    </li>
+    {% endfor %}
+    <li><div class="exhibition-add">
+        <form action="{% url 'exhibition-add' %}">
+            <button class="postfix button" type="submit" id="list-add-button" title="add exhibition">&#43;</button>
+        </form>
+        </div>
+    </li>
+    </ul>
+    <div class="small-grid-2">&nbsp;</div>
+</div>
+</div>
+{% endblock content %}
+

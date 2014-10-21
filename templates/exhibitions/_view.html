@@ -1,0 +1,15 @@
+<div id="exhibition-view-include">
+{% if object %}
+<div class="exhibition">
+<h3 class="exhibition-title">{{ object.title }}</h2>
+<p class="exhibition-description">{{ object.description }}</p>
+<div class="exhibition-detail">
+    <div>Created by {{ object.author }}</div>
+    <div>Updated <time>{{ object.modified_at|date }}</time></div>
+    <div>Release date <time>{{ object.released_at|date }} {{ object.released_at|time }}</time></div>
+</div>
+</div>
+{% else %}
+<p>Exhibition not found.</p>
+{% endif %}
+</div>
