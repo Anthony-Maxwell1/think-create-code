@@ -40,9 +40,7 @@
         <li class="has-dropdown">
             <a href="#" id="nav-logged-in" title="{{ user.username }} actions"><i class="fa fa-navicon"></i></a>
             <ul data-dropdown-content class="dropdown">
-                <!-- TODO
-                <li><a href="{% url "home" %}" id="nav-artwork-list" title="view my own works">my work</a></li>
-                -->
+                <li><a href="{% url "artwork-list" %}" id="nav-artwork-list" title="view artworks">show works</a></li>
                 <li><a href="{% url "artwork-add" %}" id="nav-artwork-add" title="create a new work">new work</a></li>
                 <li><a href="{% url "logout" %}?next={% url "home" %}" id="nav-signout" title="sign out"><i class="fa fa-sign-out"></i></a></li>
             </ul>

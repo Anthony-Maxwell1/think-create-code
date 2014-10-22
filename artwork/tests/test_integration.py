@@ -11,7 +11,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
 
         Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
 
-        self.selenium.get('%s%s' % (self.live_server_url, '/'))
+        list_path = reverse('artwork-list')
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -22,7 +23,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
 
     def test_add_artwork_linked(self):
 
-        self.selenium.get('%s%s' % (self.live_server_url, '/'))
+        list_path = reverse('artwork-list')
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertIsNotNone(
             self.selenium.find_element_by_id('list-add-button')
         )
@@ -44,8 +46,9 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
 
         self.selenium.find_element_by_id('save_artwork').click()
 
-        # add action redirects to root url
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, '/'))
+        # add action redirects to list url
+        list_path = reverse('artwork-list')
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -65,8 +68,9 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
 
         self.selenium.find_element_by_id('save_cancel').click()
 
-        # cancel action redirects to root url
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, '/'))
+        # cancel action redirects to list url
+        list_path = reverse('artwork-list')
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
@@ -92,8 +96,9 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         # Click Save
         self.selenium.find_element_by_id('save_artwork').click()
 
-        # save returns us to the home page
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, '/'))
+        # save returns us to the list page
+        list_path = reverse('artwork-list')
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
 
         # view the work to ensure edit was saved
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
@@ -120,8 +125,9 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         # Click cancel
         self.selenium.find_element_by_id('save_cancel').click()
 
-        # Cancel returns us to the home page
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, '/'))
+        # Cancel returns us to the list page
+        list_path = reverse('artwork-list')
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
 
         # view the work to ensure edit was canceled
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
@@ -164,8 +170,9 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         # login form redirects to delete form
         self.selenium.find_element_by_id('artwork_delete').click()
 
-        # delete action redirects to root url
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, '/'))
+        # delete action redirects to list url
+        list_path = reverse('artwork-list')
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
@@ -183,8 +190,9 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         # login form redirects to delete form
         self.selenium.find_element_by_id('artwork_do_not_delete').click()
 
-        # delete action redirects to root url
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, '/'))
+        # delete action redirects to list url
+        list_path = reverse('artwork-list')
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1

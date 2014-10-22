@@ -107,3 +107,18 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
         # 4. re-visit "add artwork", and ensure we got sent back to login
         self.selenium.get(add_url)
         self.assertEqual(self.selenium.current_url, '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('artwork-add')))
+
+
+class GalleryHomePageIntegrationTests(SeleniumTestCase):
+
+    def test_home(self):
+        base_url = self.live_server_url
+        home_url = '%s%s' % (self.live_server_url, reverse('home'))
+        self.selenium.get(base_url)
+        self.assertEqual(self.selenium.current_url, home_url)
+
+        # home page is the exhibition list
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#exhibition-list-content')),
+            1
+        )

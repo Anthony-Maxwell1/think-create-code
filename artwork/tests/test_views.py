@@ -13,12 +13,13 @@ class ArtworkListTests(UserSetUp, TestCase):
     def test_artwork_in_the_context(self):
         
         client = Client()
-        response = client.get('/')
+        list_path = reverse('artwork-list')
+        response = client.get(list_path)
 
         self.assertEquals(list(response.context['object_list']), [])
 
         Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
-        response = client.get('/')
+        response = client.get(list_path)
         self.assertEquals(response.context['object_list'].count(), 1)
 
 
