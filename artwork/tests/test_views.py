@@ -50,7 +50,7 @@ class ArtworkDeleteTests(UserSetUp, TestCase):
         # delete requires login
         login_url = '%s?next=%s' % (reverse('login'), delete_url)
         self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
-        logged_in = client.login(username=self.username, password=self.password)
+        logged_in = client.login(username=self.get_username(), password=self.get_password())
         self.assertTrue(logged_in)
 
         response = client.get(delete_url)
@@ -71,7 +71,7 @@ class ArtworkDeleteTests(UserSetUp, TestCase):
         # delete requires login
         login_url = '%s?next=%s' % (reverse('login'), delete_url)
         self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
-        logged_in = client.login(username=self.username, password=self.password)
+        logged_in = client.login(username=self.get_username(), password=self.get_password())
         self.assertTrue(logged_in)
 
         # however, we can't delete the artwork
@@ -103,7 +103,7 @@ class ArtworkEditTests(UserSetUp, TestCase):
         # edit requires login
         login_url = '%s?next=%s' % (reverse('login'), edit_url)
         self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
-        logged_in = client.login(username=self.username, password=self.password)
+        logged_in = client.login(username=self.get_username(), password=self.get_password())
         self.assertTrue(logged_in)
 
         response = client.get(edit_url)
@@ -133,7 +133,7 @@ class ArtworkEditTests(UserSetUp, TestCase):
         # edit requires login
         login_url = '%s?next=%s' % (reverse('login'), edit_url)
         self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
-        logged_in = client.login(username=self.username, password=self.password)
+        logged_in = client.login(username=self.get_username(), password=self.get_password())
         self.assertTrue(logged_in)
 
         # however, we can't edit the artwork

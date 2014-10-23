@@ -23,18 +23,11 @@ class Artwork(models.Model):
 
     # Allow authenticated superusers or authors to save artwork
     def can_save(self, user):
-        if user.is_authenticated and (user.is_superuser or (self.author.id == user.id)):
+        if user and user.is_authenticated and (user.is_superuser or (self.author.id == user.id)):
             return True
         return False
 
 registry.register('can_save', Artwork)
-
-
-# n.b. can also do the reverse:
-# def user_can_save(user, obj):
-#     ...
-# User.add_to_class('can_save', user_can_save)
-# registry.register('can_save', User)
 
 
 class ArtworkForm(forms.ModelForm):

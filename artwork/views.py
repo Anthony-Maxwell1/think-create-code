@@ -1,9 +1,8 @@
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 import os
 
-from gallery.views import LoggedInMixin
+from gallery.views import LoggedInMixin, ObjectHasPermMixin
 from artwork.models import Artwork, ArtworkForm
 
 class ArtworkView(object):
@@ -46,56 +45,26 @@ class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):
         return context
 
 
-# TODO - consolidate these classes!
-class UpdateArtworkBaseView(LoggedInMixin, ArtworkView, UpdateView):
+class UpdateArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, UpdateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')
+    user_perm = 'can_save'
+
+    def get_error_url(self):
+        return reverse('artwork-view', kwargs={'pk': self.get_object().id})
 
     def get_context_data(self, **kwargs):
 
-        context = super(UpdateArtworkBaseView, self).get_context_data(**kwargs)
+        context = super(UpdateArtworkView, self).get_context_data(**kwargs)
         context['action'] = reverse('artwork-edit',
                                     kwargs={'pk': self.get_object().id})
         return context
 
-class UpdateArtworkView(UpdateArtworkBaseView):
 
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.can_save(request.user):
-            return super(UpdateArtworkView, self).get(request, *args, **kwargs)
-        else:
-            # TODO : show error message
-            return HttpResponseRedirect(reverse('artwork-view', kwargs={'pk': self.object.id}))
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.can_save(request.user):
-            return super(UpdateArtworkView, self).post(request, *args, **kwargs)
-        else:
-            # TODO : show error message
-            return HttpResponseRedirect(reverse('artwork-view', kwargs={'pk': self.object.id}))
-
-
-class DeleteArtworkBaseView(LoggedInMixin, ArtworkView, DeleteView):
+class DeleteArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, DeleteView):
 
     template_name = ArtworkView.prepend_template_path('delete.html')
+    user_perm = 'can_save'
 
-class DeleteArtworkView(DeleteArtworkBaseView):
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.can_save(request.user):
-            return super(DeleteArtworkView, self).get(request, *args, **kwargs)
-        else:
-            # TODO : show error message
-            return HttpResponseRedirect(reverse('artwork-view', kwargs={'pk': self.object.id}))
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.can_save(request.user):
-            return super(DeleteArtworkView, self).post(request, *args, **kwargs)
-        else:
-            # TODO : show error message
-            return HttpResponseRedirect(reverse('artwork-view', kwargs={'pk': self.object.id}))
-
+    def get_error_url(self):
+        return reverse('artwork-view', kwargs={'pk': self.get_object().id})

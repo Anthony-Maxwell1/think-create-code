@@ -47,7 +47,7 @@ $(document).ready(function() {
 {% else %}
 <h1>Add Artwork</h1>
 {% endif %}
-<form method="post" action="{{ action }}">
+<form method="post" action="{{ action }}" enctype="multipart/form-data">
     {% csrf_token %}
     <ul class="edit_fields">
     {{ form.as_ul }}

@@ -60,3 +60,7 @@ ul.edit_fields {
 #artwork-delete-content .object-actions {
     display: none;
 }
+/* Highlight exhibitions that haven't been released yet */
+.not-available {
+    font-weight: bold;
+}

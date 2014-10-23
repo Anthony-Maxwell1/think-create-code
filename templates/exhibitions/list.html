@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
+{% load rulez_perms %}
+{% rulez_perms can_save model as USER_CAN_SAVE %}
 <div id="exhibition-list-content">
 <div class="row">
     <div class="small-grid-2">&nbsp;</div>
@@ -10,15 +12,20 @@
         <a href="{% url 'exhibition-view' exhibition.id %}" title="Click to view {{ exhibition.title }}">
             <p class="exhibition-description">{{ exhibition.description|truncatechars:100 }}</p>
         </a>
+        {% if not exhibition.released_yet %}
+        <div class="not-available">Release date <time>{{ exhibition.released_at|date }} {{ exhibition.released_at|time }}</time></div>
+        {% endif %}
         </div>
     </li>
     {% endfor %}
+    {% if USER_CAN_SAVE %}
     <li><div class="exhibition-add">
         <form action="{% url 'exhibition-add' %}">
             <button class="postfix button" type="submit" id="list-add-button" title="add exhibition">&#43;</button>
         </form>
         </div>
     </li>
+    {% endif %}
     </ul>
     <div class="small-grid-2">&nbsp;</div>
 </div>

@@ -2,7 +2,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 
 from artwork.models import Artwork
-from gallery.tests import SeleniumTestCase
+from gallery.tests import SeleniumTestCase, wait_for_page_load
 
 
 class ArtworkListIntegrationTests(SeleniumTestCase):
@@ -44,7 +44,8 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_id('id_title').send_keys('test submission')
         self.selenium.find_element_by_id('id_code').send_keys('// code goes here')
 
-        self.selenium.find_element_by_id('save_artwork').click()
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_artwork').click()
 
         # add action redirects to list url
         list_path = reverse('artwork-list')
@@ -66,7 +67,8 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_id('id_title').send_keys('do not submit')
         self.selenium.find_element_by_id('id_code').send_keys('// code goes here')
 
-        self.selenium.find_element_by_id('save_cancel').click()
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_cancel').click()
 
         # cancel action redirects to list url
         list_path = reverse('artwork-list')
@@ -94,7 +96,8 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_id('id_title').send_keys('updated title')
 
         # Click Save
-        self.selenium.find_element_by_id('save_artwork').click()
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_artwork').click()
 
         # save returns us to the list page
         list_path = reverse('artwork-list')
@@ -123,7 +126,8 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_id('id_title').send_keys('updated title')
 
         # Click cancel
-        self.selenium.find_element_by_id('save_cancel').click()
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_cancel').click()
 
         # Cancel returns us to the list page
         list_path = reverse('artwork-list')
@@ -168,7 +172,8 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         self.assertLogin(delete_path)
 
         # login form redirects to delete form
-        self.selenium.find_element_by_id('artwork_delete').click()
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('artwork_delete').click()
 
         # delete action redirects to list url
         list_path = reverse('artwork-list')
@@ -188,7 +193,8 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         self.assertLogin(delete_path)
 
         # login form redirects to delete form
-        self.selenium.find_element_by_id('artwork_do_not_delete').click()
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('artwork_do_not_delete').click()
 
         # delete action redirects to list url
         list_path = reverse('artwork-list')

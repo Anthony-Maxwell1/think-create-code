@@ -1,14 +1,25 @@
 <div id="exhibition-view-include">
 {% if object %}
-<div class="exhibition">
+{% load rulez_perms %}
+{% rulez_perms can_save object as USER_CAN_SAVE %}
+<div class="exhibition row">
 <h3 class="exhibition-title">{{ object.title }}</h2>
 <p class="exhibition-description">{{ object.description }}</p>
-<div class="exhibition-detail">
+</div>
+<div class="row exhibition-detail">
     <div>Created by {{ object.author }}</div>
     <div>Updated <time>{{ object.modified_at|date }}</time></div>
-    <div>Release date <time>{{ object.released_at|date }} {{ object.released_at|time }}</time></div>
+    <div {% if not object.released_yet %}class="not-available"{% endif %}>Release date <time>{{ object.released_at|date }} {{ object.released_at|time }}</time></div>
 </div>
+{% if USER_CAN_SAVE %}
+<div class="row">
+<ul class="breadcrumbs object-actions">
+    <li><a href="{% url 'exhibition-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
+    <li><a href="{% url 'exhibition-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
+</ul>
 </div>
+{% endif %}
+<!-- TODO - return 404 -->
 {% else %}
 <p>Exhibition not found.</p>
 {% endif %}
