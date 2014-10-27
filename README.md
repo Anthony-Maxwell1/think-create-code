@@ -14,6 +14,7 @@ Use virtualenv to setup the initial runtime environment:
     (.virtualenv)$ cd processingjs/
     (.virtualenv)$ pip install -U -r requirements.txt
     (.virtualenv)$ ./manage.py migrate
+    (.virtualenv)$ touch gallery/wsgi.py # restart wsgi daemon
 
 
 Create Users
