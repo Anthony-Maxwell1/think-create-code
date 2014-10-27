@@ -8,8 +8,10 @@ Alias /processingjs/js      	   /var/www/django/course-units/Think.Create.Code/p
 AliasMatch ^/processingjs/?$    /var/www/django/course-units/Think.Create.Code/processingjs/static/index.html
 WSGIScriptAlias /processingjs/gallery /var/www/django/course-units/Think.Create.Code/processingjs/gallery/wsgi.py
 <Directory /var/www/django/course-units/Think.Create.Code/processingjs>
-<Files wsgi.py>
+  WSGIProcessGroup django-processingjs
+  WSGIApplicationGroup %{GLOBAL}
+  <Files wsgi.py>
     Order deny,allow
     Allow from all
-</Files>
+  </Files>
 </Directory>
