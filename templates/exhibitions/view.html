@@ -2,5 +2,6 @@
 {% block content %}
 <div id="exhibition-view-content">
 {% include 'exhibitions/_view.html' %}
+{% include 'submissions/_list.html' with object_list=object.submission_set.all %}
 </div>
 {% endblock content %}

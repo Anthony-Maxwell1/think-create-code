@@ -1,0 +1,27 @@
+<form method="post" action="{% url 'artwork-submit' artwork=artwork.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="artwork" value="{{ artwork.id }}" />
+    {% for exhibition in submit_to_exhibitions %}
+    <div>
+    {% if exhibition.submitted %}
+    <label>Submitted to <a href="{% url 'exhibition-view' exhibition.id %}">{{ exhibition }}</a>
+        {% if exhibition.submitted.submitted_by.id != user.id %}
+        by {{ exhibition.submitted.submitted_by }}
+        {% endif %}
+        on {{ exhibition.submitted.created_at }}
+        <ul class="breadcrumbs object-actions"> <li><a href="{% url 'submission-delete' pk=exhibition.submitted.id %}" 
+            title="Delete {{ object }} submission">unsubmit</a></li>
+        </ul>
+    </label>
+    {% else %}
+    <input type="radio" name="exhibition" value="{{ exhibition.id }}" id="exhibition_{{ exhibition.id }}" />
+    <label for="exhibition_{{ exhibition.id }}">{{ exhibition }}</label>
+    {% endif %}
+    </div>
+    {% endfor %}
+    <div class="row">
+        <div class="small-6 columns">
+            <button id="save_submission" type="submit" class="postfix button">Submit</button>
+        </div>
+    </div>
+</form>

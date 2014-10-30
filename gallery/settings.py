@@ -97,6 +97,7 @@ INSTALLED_APPS = (
     'rulez',
     'artwork',
     'exhibitions',
+    'submissions',
 )
 
 MIDDLEWARE_CLASSES = (

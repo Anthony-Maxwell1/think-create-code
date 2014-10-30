@@ -1,9 +1,7 @@
 from django.db import models
-from django import forms
 from django.utils import timezone
+from django import forms
 from rulez import registry
-
-from artwork.models import Artwork
 
 
 class Exhibition(models.Model):
@@ -28,20 +26,20 @@ class Exhibition(models.Model):
 
     released_yet = property(_released_yet)
 
-    def can_see(self, user):
+    def can_see(self, user=None):
         if self.can_save(user) or self.released_yet:
             return True
         return False
 
     @classmethod
-    def can_save(cls, user):
+    def can_save(cls, user=None):
         if user and user.is_authenticated and (user.is_superuser or user.is_staff):
             return True
         return False
 
     # Have to be have can_save permission to see exhibitions prior to release date
     @classmethod
-    def restrict_queryset(cls, qs, user):
+    def can_see_queryset(cls, qs, user=None):
         if cls.can_save(user):
             return qs
         return qs.filter(released_at__lte=timezone.now())

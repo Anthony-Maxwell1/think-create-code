@@ -21,7 +21,7 @@ class ExhibitionListTests(UserSetUp, TestCase):
         self.assertEquals(list(response.context['object_list']), [])
 
         now = timezone.now()
-        yesterday = Exhibition.objects.create(
+        today = Exhibition.objects.create(
             title='New Exhibition',
             description='description goes here',
             released_at = now,

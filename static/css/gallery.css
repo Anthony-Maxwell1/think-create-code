@@ -56,10 +56,6 @@ ul.edit_fields {
     font-family: monospace;
     white-space: pre;
 }
-/* Don't display _view.html actions on delete page */
-#artwork-delete-content .object-actions {
-    display: none;
-}
 /* Highlight exhibitions that haven't been released yet */
 .not-available {
     font-weight: bold;

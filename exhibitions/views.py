@@ -1,16 +1,15 @@
 import os
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 
 from gallery.views import LoggedInMixin, ObjectHasPermMixin, ModelHasPermMixin
 from exhibitions.models import Exhibition, ExhibitionForm
+
 
 class ExhibitionView(object):
     model = Exhibition
     form_class = ExhibitionForm
     template_dir = 'exhibitions'
-    save_perm = 'can_save'
 
     @classmethod
     def prepend_template_path(cls, *argv):
@@ -38,7 +37,7 @@ class ListExhibitionView(ExhibitionView, ListView):
     def get_queryset(self):
         '''Enforce model queryset restrictions, and sort by released_at desc'''
         qs = super(ExhibitionView, self).get_queryset()
-        qs = self.get_model().restrict_queryset(qs, self.request.user)
+        qs = self.get_model().can_see_queryset(qs, self.request.user)
         return qs.order_by('-released_at')
 
 
@@ -83,9 +82,6 @@ class DeleteExhibitionView(LoggedInMixin, ModelHasPermMixin, ExhibitionView, Del
 
     template_name = ExhibitionView.prepend_template_path('delete.html')
     user_perm = 'can_save'
-
-    def __init__(self):
-        self.view_class = DeleteExhibitionView
 
     def get_success_url(self):
         return self.get_error_url()

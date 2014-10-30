@@ -22,10 +22,24 @@ class Artwork(models.Model):
         return unicode(self).encode('utf-8')
 
     # Allow authenticated superusers or authors to save artwork
-    def can_save(self, user):
+    def can_save(self, user=None):
         if user and user.is_authenticated and (user.is_superuser or (self.author.id == user.id)):
             return True
         return False
+
+    # Return queryset filtered to own artwork
+    @classmethod
+    def can_submit_queryset(cls, qs, user=None):
+        if (user and user.is_authenticated):
+            # Staff and superusers can submit any artwork
+            if (user.is_superuser or user.is_staff):
+                return qs
+
+            # Everyone else can submit the artwork they own
+            return qs.filter(author__exact=user.id)
+        else:
+            return qs.none()
+
 
 registry.register('can_save', Artwork)
 

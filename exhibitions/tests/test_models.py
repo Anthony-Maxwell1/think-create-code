@@ -74,14 +74,34 @@ class ExhibitionTests(UserSetUp, TestCase):
         self.assertTrue(tomorrow.can_see(self.super_user))
 
     def test_can_save(self):
-        exhibition = Exhibition(
+
+        # Students cannot save exhibitions
+        student = Exhibition(
+            author=self.user,
+            title='New Exhibition',
+            description='description goes here',
+            released_at=timezone.now())
+        self.assertFalse(student.can_save(self.user))
+        self.assertTrue(student.can_save(self.staff_user))
+        self.assertTrue(student.can_save(self.super_user))
+
+        staff = Exhibition(
+            author=self.staff_user,
+            title='New Exhibition',
+            description='description goes here',
+            released_at=timezone.now())
+        self.assertFalse(staff.can_save(self.user))
+        self.assertTrue(staff.can_save(self.staff_user))
+        self.assertTrue(staff.can_save(self.super_user))
+
+        superuser = Exhibition(
             author=self.super_user,
             title='New Exhibition',
             description='description goes here',
             released_at=timezone.now())
-        self.assertFalse(exhibition.can_save(self.user))
-        self.assertTrue(exhibition.can_save(self.staff_user))
-        self.assertTrue(exhibition.can_save(self.super_user))
+        self.assertFalse(superuser.can_save(self.user))
+        self.assertTrue(superuser.can_save(self.staff_user))
+        self.assertTrue(superuser.can_save(self.super_user))
 
     def test_can_see_queryset(self):
         now = timezone.now()
@@ -109,6 +129,11 @@ class ExhibitionTests(UserSetUp, TestCase):
             description='description goes here',
             released_at=now + timedelta(hours=24))
         tomorrow.save()
+
+        public_qs = Exhibition.can_see_queryset(Exhibition.objects)
+        self.assertEqual(len(public_qs.all()), 2)
+        self.assertEqual(public_qs.all()[0].id, yesterday.id)
+        self.assertEqual(public_qs.all()[1].id, today.id)
 
         student_qs = Exhibition.can_see_queryset(Exhibition.objects, self.user)
         self.assertEqual(len(student_qs.all()), 2)

@@ -5,6 +5,9 @@ import os
 from gallery.views import LoggedInMixin, ObjectHasPermMixin
 from artwork.models import Artwork, ArtworkForm
 
+from exhibitions.models import Exhibition
+from submissions.models import Submission
+
 class ArtworkView(object):
     model = Artwork
     form_class = ArtworkForm
@@ -22,6 +25,30 @@ class ArtworkView(object):
 class ShowArtworkView(ArtworkView, DetailView):
 
     template_name = ArtworkView.prepend_template_path('view.html')
+
+    def get_context_data(self, **kwargs):
+        context = super(ShowArtworkView, self).get_context_data(**kwargs)
+
+        artwork = context['object']
+        if artwork:
+            # TODO : make this an AJAX query, so we can fetch on demand
+            
+            submissions_qs = Submission.objects.filter(
+                artwork__exact=artwork.id).order_by('-created_at').all()
+            submissions = { int(x.exhibition_id) : x for x in submissions_qs }
+
+            exhibitions_qs = Exhibition.can_see_queryset(
+                Exhibition.objects,
+                self.request.user).order_by('-released_at')
+            exhibitions = exhibitions_qs.all()
+
+            # Mark the exhibitions we've already submitted this artwork to
+            for exh in exhibitions:
+                exh.submitted = submissions.get(exh.id)
+        
+            context['submit_to_exhibitions'] = exhibitions
+
+        return context
 
 
 class ListArtworkView(ArtworkView, ListView):

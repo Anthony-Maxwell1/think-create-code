@@ -1,7 +1,5 @@
 <div id="artwork-view-include">
 {% if object %}
-{% load rulez_perms %}
-{% rulez_perms can_save object as USER_CAN_SAVE %}
 <canvas id="canvas-{{ object.id }}"></canvas>
 <script id="script-{{ object.id }}" type="text/processing" 
     data-processing-target="canvas-{{ object.id }}">
@@ -9,17 +7,8 @@
 {{ object.code }}
 {% endautoescape %}
 </script>
-
 <h3 class="artwork-title">{{ object.title }}</h2>
 <p class="artwork-detail">Created by {{ object.author }}, updated <time>{{ object.modified_at|date }}</time></p>
-<!-- TODO - check permissions -->
-<ul class="breadcrumbs object-actions">
-    <li><a href="{% url 'artwork-view' pk=object.id %} " title="View {{ object.title }}">view</a></li>
-    {% if USER_CAN_SAVE %}
-    <li><a href="{% url 'artwork-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
-    <li><a href="{% url 'artwork-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
-    {% endif %}
-</ul>
 {% else %}
 <!-- TODO - return 404 -->
 <p>Artwork not found.</p>

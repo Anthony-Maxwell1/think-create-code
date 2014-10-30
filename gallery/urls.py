@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 
 import artwork.views
 import exhibitions.views
+import submissions.views
 
 #from django.contrib import admin
 #admin.autodiscover()
@@ -23,6 +24,8 @@ urlpatterns = patterns('',
         name='artwork-delete'),
     url(r'^artwork/(?P<pk>\d+)/$', artwork.views.ShowArtworkView.as_view(),
         name='artwork-view'),
+    url(r'^artwork/submit/(?P<artwork>\d+)/$', submissions.views.CreateSubmissionView.as_view(),
+        name='artwork-submit'),
     url(r'^exhibitions/?$', exhibitions.views.ListExhibitionView.as_view(),
         name='exhibition-list'),
     url(r'^exhibitions/(?P<pk>\d+)/$', exhibitions.views.ShowExhibitionView.as_view(),
@@ -33,6 +36,8 @@ urlpatterns = patterns('',
         name='exhibition-edit'),
     url(r'^exhibitions/delete/(?P<pk>\d+)/$', exhibitions.views.DeleteExhibitionView.as_view(),
         name='exhibition-delete'),
+    url(r'^submission/delete/(?P<pk>\d+)/$', submissions.views.DeleteSubmissionView.as_view(),
+        name='submission-delete'),
     url(r'^login/$', auth_views.login,
         {'template_name': 'login.html'},
         name='login'),
