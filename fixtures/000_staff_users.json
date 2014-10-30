@@ -1,0 +1,134 @@
+[
+  {
+    "fields": {
+      "username": "jill",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": true,
+      "is_staff": false,
+      "last_login": "2014-10-27T03:45:14Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ],
+      "password": "pbkdf2_sha256$12000$A8z7B3VbR8Ac$+8FeD+FaP3YW2o+ujkxpmmepTdzEt56sjoUukqGZUOU=",
+      "email": "jill.vogel@adelaide.edu.au",
+      "date_joined": "2014-10-03T06:35:04Z"
+    },
+    "model": "auth.user",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "username": "katrina",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": false,
+      "last_login": "2014-10-03T07:15:52Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ],
+      "password": "pbkdf2_sha256$12000$HBvklQ8O5dXe$Cxezmi0kO8pB4zOHYLb3NUzG1nKwmNqCVVSBttjzRag=",
+      "email": "katrina.falkner@adelaide.edu.au",
+      "date_joined": "2014-10-03T06:38:51Z"
+    },
+    "model": "auth.user",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "username": "claudia",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": false,
+      "last_login": "2014-10-03T06:38:57Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ],
+      "password": "pbkdf2_sha256$12000$R7r1QmR8QIon$2tlWfFq4hg0NJ\/kZqFyBd5m\/45KBlin4wkHWbUkIs70=",
+      "email": "claudia.szabo@adelaide.edu.au",
+      "date_joined": "2014-10-03T06:38:57Z"
+    },
+    "model": "auth.user",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "username": "nick",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": false,
+      "last_login": "2014-10-03T06:39:02Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ],
+      "password": "pbkdf2_sha256$12000$gT1HiUnIznjM$B1r8o\/oGbGvslQjrZHnNzrUXA+7Q68D1MCavHrIsb2o=",
+      "email": "nickolas.falkner@adelaide.edu.au",
+      "date_joined": "2014-10-03T06:39:02Z"
+    },
+    "model": "auth.user",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "username": "rebecca",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": false,
+      "last_login": "2014-10-03T06:39:07Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ],
+      "password": "pbkdf2_sha256$12000$q5Vthi6wJikn$EDuhJ\/VjGMESosY1QMnewVrHQHb3K9Vu0\/\/DYoLG60Q=",
+      "email": "rebecca.vivian@adelaide.edu.au",
+      "date_joined": "2014-10-03T06:39:07Z"
+    },
+    "model": "auth.user",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "username": "jill_student",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": false,
+      "last_login": "2014-10-27T03:45:14Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ],
+      "password": "pbkdf2_sha256$12000$A8z7B3VbR8Ac$+8FeD+FaP3YW2o+ujkxpmmepTdzEt56sjoUukqGZUOU=",
+      "email": "jill.vogel@adelaide.edu.au",
+      "date_joined": "2014-10-03T06:35:04Z"
+    },
+    "model": "auth.user",
+    "pk": 6
+  }
+]

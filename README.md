@@ -19,7 +19,13 @@ Use virtualenv to setup the initial runtime environment:
 
 Create Users
 ------------
-Use the django shell/console to create users.
+Use the given fixture to load the users:
+
+    (.virtualenv)$ ./manage.py loaddata fixtures/000_staff_users.json
+    Installed 6 object(s) from 1 fixture(s)
+
+
+Or use the django shell/console to create users.
 
     (.virtualenv)$ ./manage.py shell
     >>> from django.contrib.auth.models import User
