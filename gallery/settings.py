@@ -44,7 +44,7 @@ if ENVIRONMENT == 'production':
              'PASSWORD': 'gAll3rY-rw',
         }
     }
-    STATIC_URL = '/processingjs/static/'
+    STATIC_URL = '/Think.Create.Code/static/'
     ALLOWED_HOSTS = ['*']
 
 elif ENVIRONMENT == 'development':
