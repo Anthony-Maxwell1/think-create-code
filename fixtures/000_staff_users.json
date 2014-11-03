@@ -130,5 +130,49 @@
     },
     "model": "auth.user",
     "pk": 6
+  },
+  {
+    "fields": {
+      "username": "travis",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": true,
+      "last_login": "2014-11-03T04:34:27Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ],
+      "password": "pbkdf2_sha256$12000$7FO8cZt9hVMx$kxTScwRWZJTU3BBqnche3qCC1Rl1mflQmAj4Iz8rtZQ=",
+      "email": "travis.clapp@adelaide.edu.au",
+      "date_joined": "2014-11-03T04:34:27Z"
+    },
+    "model": "auth.user",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "username": "travis-student",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": false,
+      "is_staff": false,
+      "last_login": "2014-11-03T04:34:46Z",
+      "groups": [
+        
+      ],
+      "user_permissions": [
+        
+      ],
+      "password": "pbkdf2_sha256$12000$l16uVyO4rdAM$tA5YvyHb7C6ZofoeaDGMJ211HQby2hueoafe1WsTRTo=",
+      "email": "travis.clapp@adelaide.edu.au",
+      "date_joined": "2014-11-03T04:34:46Z"
+    },
+    "model": "auth.user",
+    "pk": 7
   }
 ]
