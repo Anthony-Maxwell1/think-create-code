@@ -1,4 +1,5 @@
 from functools import wraps
+import os
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator, available_attrs
 from django.core.exceptions import PermissionDenied
@@ -24,6 +25,24 @@ class CachedSingleObjectMixin(object):
         if not self.object:
             self.object = super(CachedSingleObjectMixin, self).get_object(*args, **kwargs)
         return self.object
+
+
+class TemplatePathMixin(object):
+
+    template_path = ''
+
+    @classmethod
+    def prepend_template_path(cls, *argv):
+        return os.path.join(cls.template_dir, *argv)
+
+
+class PostOnlyMixin(object):
+
+    def dispatch(self, request, *args, **kwargs):
+        method = request.method.lower()
+        if (method == 'post') or (method == 'put'):
+            return super(PostOnlyMixin, self).dispatch(request, *args, **kwargs)
+        raise PermissionDenied
 
 
 class UserHasPermMixin(object):

@@ -3,34 +3,24 @@ from django.views.generic import CreateView, DeleteView
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
-from gallery.views import LoggedInMixin, ObjectHasPermMixin
+from gallery.views import TemplatePathMixin, PostOnlyMixin, LoggedInMixin, ObjectHasPermMixin
 from submissions.models import Submission, SubmissionForm
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
 
 
-class SubmissionView(object):
+class SubmissionView(TemplatePathMixin):
     model = Submission
     form_class = SubmissionForm
     template_dir = 'submissions'
-
-    @classmethod
-    def prepend_template_path(cls, *argv):
-        return os.path.join(cls.template_dir, *argv)
 
     def get_success_url(self):
         return reverse('exhibition-view', kwargs={'pk': self.object.exhibition.id})
 
 
-class CreateSubmissionView(LoggedInMixin, SubmissionView, CreateView):
+class CreateSubmissionView(PostOnlyMixin, LoggedInMixin, SubmissionView, CreateView):
 
     template_name = SubmissionView.prepend_template_path('add.html')
-
-    def dispatch(self, request, *args, **kwargs):
-        method = request.method.lower()
-        if (method == 'post') or (method == 'put'):
-            return super(CreateSubmissionView, self).dispatch(request, *args, **kwargs)
-        raise PermissionDenied
 
     def form_valid(self, form):
 

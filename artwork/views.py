@@ -2,21 +2,17 @@ from django.views.generic import ListView, CreateView, UpdateView, DetailView, D
 from django.core.urlresolvers import reverse
 import os
 
-from gallery.views import LoggedInMixin, ObjectHasPermMixin
+from gallery.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin
 from artwork.models import Artwork, ArtworkForm
 
 from exhibitions.models import Exhibition
 from submissions.models import Submission
 
-class ArtworkView(object):
+class ArtworkView(TemplatePathMixin):
     model = Artwork
     form_class = ArtworkForm
     template_dir = 'artwork'
     save_perm = 'can_save'
-
-    @classmethod
-    def prepend_template_path(cls, *argv):
-        return os.path.join(cls.template_dir, *argv)
 
     def get_success_url(self):
         return reverse('artwork-list')

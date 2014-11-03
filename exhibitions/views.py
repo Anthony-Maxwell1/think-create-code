@@ -2,18 +2,14 @@ import os
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse
 
-from gallery.views import LoggedInMixin, ObjectHasPermMixin, ModelHasPermMixin
+from gallery.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, ModelHasPermMixin
 from exhibitions.models import Exhibition, ExhibitionForm
 
 
-class ExhibitionView(object):
+class ExhibitionView(TemplatePathMixin):
     model = Exhibition
     form_class = ExhibitionForm
     template_dir = 'exhibitions'
-
-    @classmethod
-    def prepend_template_path(cls, *argv):
-        return os.path.join(cls.template_dir, *argv)
 
     def get_success_url(self):
         return reverse('exhibition-view', kwargs={'pk': self.object.id})
