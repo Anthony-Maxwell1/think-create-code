@@ -21,9 +21,11 @@ class Artwork(models.Model):
     def __str__(self):
         return unicode(self).encode('utf-8')
 
-    # Allow authenticated superusers or authors to save artwork
+    # Allow authenticated staff, superusers or authors to save artwork
     def can_save(self, user=None):
-        if user and user.is_authenticated and (user.is_superuser or (self.author.id == user.id)):
+        if (user and user.is_authenticated and 
+            (user.is_superuser or user.is_staff or 
+             (self.author.id == user.id))):
             return True
         return False
 

@@ -1,23 +1,20 @@
 {% if object %}
 {% load rulez_perms %}
 {% rulez_perms can_save object as USER_CAN_SAVE %}
-{% rulez_perms can_submit object as USER_CAN_SUBMIT %}
+{% if USER_CAN_SAVE %}
 <ul class="breadcrumbs object-actions">
-    <li><a href="{% url 'artwork-view' pk=object.id %} " title="View {{ object.title }}">view</a></li>
-    {% if USER_CAN_SAVE %}
     <li><a href="{% url 'artwork-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
     <li><a href="{% url 'artwork-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
-    {% endif %}
-    {% if USER_CAN_SUBMIT %}
     {% if submit_to_exhibitions|length %}
     <li><a href="{% url 'artwork-submit' artwork=object.id %}" 
           title="Submit {{ object.title }} to an exhibition" 
-          data-reveal-id="modal-submit" >submit</a></li>
-    {% endif %}
+          data-reveal-id="modal-submit" >submit</a>
+        <div id="modal-submit" class="reveal-modal" data-reveal>
+        {% include 'artwork/_submit.html' %}
+        <a class="close-reveal-modal" id="submit-cancel">&#215;</a>
+        </div>
+    </li>
     {% endif %}
 </ul>
-<div id="modal-submit" class="reveal-modal" data-reveal>
-{% include 'artwork/_submit.html' %}
-<a class="close-reveal-modal">&#215;</a>
-</div>
+{% endif %}
 {% endif %}

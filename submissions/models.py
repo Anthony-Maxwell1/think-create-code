@@ -63,7 +63,7 @@ class SelectOneOrNoneWidget(Select):
             for option_value, option_label in chain(self.choices, choices):
                 # skip field.empty_label
                 if option_value:
-                    output.append(format_html('<input type="{0}" name="{1}" value="{2}" />{3}',
+                    output.append(format_html('<input type="{0}" name="{1}" value="{2}" id="{1}-{2}" />{3}',
                         'hidden',
                         name,
                         option_value,

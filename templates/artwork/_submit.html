@@ -1,3 +1,4 @@
+{% if artwork and submit_to_exhibitions|length %}
 <form method="post" action="{% url 'artwork-submit' artwork=artwork.id %}" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" name="artwork" value="{{ artwork.id }}" />
@@ -10,11 +11,11 @@
         {% endif %}
         on {{ exhibition.submitted.created_at }}
         <ul class="breadcrumbs object-actions"> <li><a href="{% url 'submission-delete' pk=exhibition.submitted.id %}" 
-            title="Delete {{ object }} submission">unsubmit</a></li>
+            title="Delete {{ artwork }} submission">unsubmit</a></li>
         </ul>
     </label>
     {% else %}
-    <input type="radio" name="exhibition" value="{{ exhibition.id }}" id="exhibition_{{ exhibition.id }}" />
+    <input type="radio" name="exhibition" value="{{ exhibition.id }}" id="exhibition-{{ exhibition.id }}" />
     <label for="exhibition_{{ exhibition.id }}">{{ exhibition }}</label>
     {% endif %}
     </div>
@@ -25,3 +26,4 @@
         </div>
     </div>
 </form>
+{% endif %}

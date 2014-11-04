@@ -22,7 +22,7 @@ class ArtworkTests(UserSetUp, TestCase):
             title='Empty code',
             code='// code goes here')
         self.assertTrue(student.can_save(self.user))
-        self.assertFalse(student.can_save(self.staff_user))
+        self.assertTrue(student.can_save(self.staff_user))
         self.assertTrue(student.can_save(self.super_user))
 
         staff = Artwork(
@@ -38,7 +38,7 @@ class ArtworkTests(UserSetUp, TestCase):
             title='Empty code',
             code='// code goes here')
         self.assertFalse(superuser.can_save(self.user))
-        self.assertFalse(superuser.can_save(self.staff_user))
+        self.assertTrue(superuser.can_save(self.staff_user))
         self.assertTrue(superuser.can_save(self.super_user))
 
     def test_can_submit_queryset(self):

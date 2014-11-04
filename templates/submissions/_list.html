@@ -4,7 +4,7 @@
     <ul class="small-block-grid-2">
     {% for submission in object_list %}
     {% with submission.artwork as artwork %}
-    <li><div class="artwork canvas-preview">
+    <li><div class="artwork canvas-preview" id="artwork-{{ artwork.id }}">
         <a href="{% url "artwork-view" artwork.id %}" title="Click to view {{ artwork.title }}">
             <canvas id="canvas-preview-{{ artwork.id }}"></canvas>
             <script id="script-preview-{{ artwork.id }}" type="text/processing" 

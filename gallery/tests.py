@@ -16,7 +16,7 @@ class UserSetUp:
     def setUp(self):
         # Create a basic (student) user
         self.password = 'some_password'
-        self.user = get_user_model().objects.create(username='some_user')
+        self.user = get_user_model().objects.create(username='student_user')
         self.user.set_password(self.password)
         self.user.save()
 

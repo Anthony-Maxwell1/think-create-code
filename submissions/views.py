@@ -42,15 +42,21 @@ class CreateSubmissionView(PostOnlyMixin, LoggedInMixin, SubmissionView, CreateV
 
         # Restrict to specific artwork if given
         artwork_id = self.kwargs.get('artwork')
+        exclude_exhibitions = []
         if artwork_id:
             context['form'].fields['artwork'].queryset =\
                 context['form'].fields['artwork'].queryset.filter(id=artwork_id)
 
-        # Restrict list of exhibitions the current user can see
+            # Fetch the exhibitions this artwork has already been submitted to
+            exclude_exhibitions = Submission.objects.filter(
+                artwork__exact=artwork_id).order_by('-created_at').values_list('exhibition', flat=True)
+
+        # Restrict list of exhibitions the current user can see,
+        # and exclude exhibitions this artwork has already been submitted to
         context['form'].fields['exhibition'].queryset = Exhibition.can_see_queryset( 
             context['form'].fields['exhibition'].queryset,
-            self.request.user)
-
+            self.request.user).exclude(id__in=exclude_exhibitions)
+        
         return context
 
 
