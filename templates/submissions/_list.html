@@ -24,7 +24,8 @@
                 <div class="artwork-votes small-1 columns">
                     {% if user.is_anonymous %}
                         {% if submission.score > 0 %} {{ submission.score }} votes {% endif %}
-                        [<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" title="Sign in to vote">vote</a>]
+                        <div>[<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" 
+                                title="Sign in to vote">vote</a>]</div>
                     {% else %}
                     {% with submission_votes|get:submission.id as voted %}
                     <a unlike-url="{% url 'submission-unlike' submission=submission.id %}"
