@@ -6,7 +6,7 @@
 <ul class="breadcrumbs">
     <li><a href="{% url 'artwork-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
     <li><a href="{% url 'artwork-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
-    {% if submit_to_exhibitions|length %}
+    {% if exhibitions_submitted|length or exhibitions_to_submit|length %}
     <li><a href="{% url 'artwork-submit' artwork=object.id %}" 
           title="Submit {{ object.title }} to an exhibition" 
           data-reveal-id="modal-submit" >submit</a>

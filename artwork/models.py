@@ -23,7 +23,7 @@ class Artwork(models.Model):
 
     # Allow authenticated staff, superusers or authors to save artwork
     def can_save(self, user=None):
-        if (user and user.is_authenticated and 
+        if (user and user.is_authenticated() and 
             (user.is_superuser or user.is_staff or 
              (self.author.id == user.id))):
             return True
@@ -32,7 +32,7 @@ class Artwork(models.Model):
     # Return queryset filtered to own artwork
     @classmethod
     def can_submit_queryset(cls, qs, user=None):
-        if (user and user.is_authenticated):
+        if (user and user.is_authenticated()):
             # Staff and superusers can submit any artwork
             if (user.is_superuser or user.is_staff):
                 return qs

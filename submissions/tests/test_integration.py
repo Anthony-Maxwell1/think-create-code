@@ -577,7 +577,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
         # with an unsubmit link
         self.assertIsNotNone(
-            self.selenium.find_element_by_link_text('UNSUBMIT')
+            self.selenium.find_element_by_link_text('unsubmit')
         )
 
 class SubmissionDeleteIntegrationTests(SeleniumTestCase):
@@ -619,15 +619,9 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_link_text('SUBMIT').click()
         time.sleep(3)
 
-        # Should be crsf hidden, no radio inputs, and one hidden artwork input
+        # Should be no input elements, form not shown if no exhibitions to submit ti
         inputs = self.selenium.find_elements_by_tag_name('input')
-        self.assertEqual(2, len(inputs))
-        self.assertEqual('hidden', inputs[0].get_attribute('type'))
-        self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
-
-        self.assertEqual('hidden', inputs[1].get_attribute('type'))
-        self.assertEqual('artwork', inputs[1].get_attribute('name'))
-        self.assertEqual(self.student_artwork.id, long(inputs[1].get_attribute('value')))
+        self.assertEqual(0, len(inputs))
 
         # First exhibition is shown as submitted
         self.assertRegexpMatches(self.selenium.page_source, r'Submitted to ')
@@ -637,7 +631,7 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         )
 
         # with an unsubmit link
-        unsubmit = self.selenium.find_element_by_link_text('UNSUBMIT')
+        unsubmit = self.selenium.find_element_by_link_text('unsubmit')
         self.assertEqual(delete_url, unsubmit.get_attribute('href'))
 
         # Click unsubmit

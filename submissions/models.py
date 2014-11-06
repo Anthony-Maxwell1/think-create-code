@@ -32,7 +32,7 @@ class Submission(models.Model):
     # Allow authenticated staff, superusers, or authors to submit artwork to exhibitions
     # they can see
     def can_save(self, user=None):
-        if (user and user.is_authenticated and 
+        if (user and user.is_authenticated() and
            (user.is_superuser or user.is_staff or
             (self.artwork.author.id == user.id)) and
             self.exhibition.can_see(user)):

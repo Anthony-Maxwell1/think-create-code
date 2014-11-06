@@ -38,11 +38,17 @@ class ShowArtworkView(ArtworkView, DetailView):
                 self.request.user).order_by('-released_at')
             exhibitions = exhibitions_qs.all()
 
-            # Mark the exhibitions we've already submitted this artwork to
+            # Collect the exhibitions we've already submitted this artwork to,
+            # and the ones that can still be submitted to
+            context['exhibitions_submitted'] = []
+            context['exhibitions_to_submit'] = []
             for exh in exhibitions:
-                exh.submitted = submissions.get(exh.id)
-        
-            context['submit_to_exhibitions'] = exhibitions
+                submission = submissions.get(exh.id)
+                if submission:
+                    exh.submitted = submission
+                    context['exhibitions_submitted'].append(exh)
+                else:
+                    context['exhibitions_to_submit'].append(exh)
 
         return context
 

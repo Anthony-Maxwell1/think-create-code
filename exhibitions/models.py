@@ -33,7 +33,7 @@ class Exhibition(models.Model):
 
     @classmethod
     def can_save(cls, user=None):
-        if user and user.is_authenticated and (user.is_superuser or user.is_staff):
+        if user and user.is_authenticated() and (user.is_superuser or user.is_staff):
             return True
         return False
 
