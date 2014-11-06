@@ -3,7 +3,7 @@ from django.views.generic import CreateView, DeleteView
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
-from gallery.views import TemplatePathMixin, PostOnlyMixin, LoggedInMixin, ObjectHasPermMixin
+from uofa.views import TemplatePathMixin, PostOnlyMixin, LoggedInMixin, ObjectHasPermMixin
 from submissions.models import Submission, SubmissionForm
 from artwork.models import Artwork
 from exhibitions.models import Exhibition

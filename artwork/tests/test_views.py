@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 
 from artwork.models import Artwork
-from gallery.tests import UserSetUp
+from uofa.test import UserSetUp
 
 
 class ArtworkListTests(UserSetUp, TestCase):

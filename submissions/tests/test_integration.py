@@ -6,7 +6,7 @@ from artwork.models import Artwork
 from exhibitions.models import Exhibition
 
 from submissions.models import Submission
-from gallery.tests import SeleniumTestCase, wait_for_page_load
+from uofa.test import SeleniumTestCase, wait_for_page_load
 
 
 class SubmissionListIntegrationTests(SeleniumTestCase):

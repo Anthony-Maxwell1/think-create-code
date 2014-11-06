@@ -2,7 +2,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DetailView, D
 from django.core.urlresolvers import reverse
 import os
 
-from gallery.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin
+from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin
 from artwork.models import Artwork, ArtworkForm
 
 from exhibitions.models import Exhibition

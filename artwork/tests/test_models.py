@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.db import IntegrityError
 
 from artwork.models import Artwork, ArtworkForm
-from gallery.tests import UserSetUp
+from uofa.test import UserSetUp
 
 class ArtworkTests(UserSetUp, TestCase):
     """Artwork model tests."""

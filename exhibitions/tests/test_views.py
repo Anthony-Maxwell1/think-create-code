@@ -6,7 +6,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from exhibitions.models import Exhibition
-from gallery.tests import UserSetUp
+from uofa.test import UserSetUp
 
 
 class ExhibitionListTests(UserSetUp, TestCase):

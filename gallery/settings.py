@@ -95,6 +95,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'rulez',
+    'uofa',
     'artwork',
     'exhibitions',
     'submissions',

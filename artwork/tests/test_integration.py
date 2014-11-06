@@ -2,7 +2,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 
 from artwork.models import Artwork
-from gallery.tests import SeleniumTestCase, wait_for_page_load
+from uofa.test import SeleniumTestCase, wait_for_page_load
 
 
 class ArtworkListIntegrationTests(SeleniumTestCase):

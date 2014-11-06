@@ -5,7 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from exhibitions.models import Exhibition
-from gallery.tests import SeleniumTestCase, wait_for_page_load
+from uofa.test import SeleniumTestCase, wait_for_page_load
 
 
 class ExhibitionListIntegrationTests(SeleniumTestCase):

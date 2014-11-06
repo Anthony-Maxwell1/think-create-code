@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from datetime import timedelta
 
-from gallery.tests import UserSetUp
+from uofa.test import UserSetUp
 from submissions.models import Submission
 from exhibitions.models import Exhibition
 from artwork.models import Artwork

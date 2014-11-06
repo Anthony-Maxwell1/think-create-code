@@ -1,11 +1,11 @@
-from functools import wraps
 import os
+from functools import wraps
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator, available_attrs
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
-# TODO : move these classes to a shared library
 
 class LoggedInMixin(object):
     """Require login when dispatching the mixed-in view."""
@@ -23,8 +23,12 @@ class CachedSingleObjectMixin(object):
     def get_object(self, *args, **kwargs):
         '''Caches the object fetched by get_object'''
         if not self.object:
-            self.object = super(CachedSingleObjectMixin, self).get_object(*args, **kwargs)
+            self.object = self._get_object(*args, **kwargs)
         return self.object
+
+    def _get_object(self, *args, **kwargs):
+        '''Allows subclasses to override the get_object method'''
+        return super(CachedSingleObjectMixin, self).get_object(*args, **kwargs)
 
 
 class TemplatePathMixin(object):

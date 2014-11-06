@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 from datetime import datetime, timedelta
 
-from gallery.tests import UserSetUp
+from uofa.test import UserSetUp
 from exhibitions.models import Exhibition, ExhibitionForm
 
 
