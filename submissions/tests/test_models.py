@@ -7,6 +7,7 @@ from uofa.test import UserSetUp
 from submissions.models import Submission, SubmissionForm
 from exhibitions.models import Exhibition
 from artwork.models import Artwork
+from votes.models import Vote
 
 
 class SubmissionTests(UserSetUp, TestCase):
@@ -86,6 +87,35 @@ class SubmissionTests(UserSetUp, TestCase):
             IntegrityError,
             'columns exhibition_id, artwork_id are not unique',
             submission2.save)
+
+    def test_can_vote(self):
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            author=self.user)
+        artwork = Artwork.objects.create(title='New Artwork', code='// code goes here', author=self.user)
+        submission = Submission.objects.create(exhibition=exhibition, artwork=artwork, submitted_by=self.user)
+
+        # public cannot vote
+        self.assertFalse(submission.can_vote())
+
+        # students can vote
+        self.assertTrue(submission.can_vote(user=self.user))
+        # unless they've already voted
+        student_vote = Vote.objects.create(submission=submission, voted_by=self.user, status=Vote.THUMBS_UP)
+        self.assertFalse(submission.can_vote(user=self.user))
+
+        # staff can vote
+        self.assertTrue(submission.can_vote(user=self.staff_user))
+        # unless they've already voted
+        staff_vote = Vote.objects.create(submission=submission, voted_by=self.staff_user, status=Vote.THUMBS_UP)
+        self.assertFalse(submission.can_vote(user=self.staff_user))
+
+        # super can vote
+        self.assertTrue(submission.can_vote(user=self.super_user))
+        # unless they've already voted
+        super_vote = Vote.objects.create(submission=submission, voted_by=self.super_user, status=Vote.THUMBS_UP)
+        self.assertFalse(submission.can_vote(user=self.super_user))
 
 
 class SubmissionModelFormTests(UserSetUp, TestCase):

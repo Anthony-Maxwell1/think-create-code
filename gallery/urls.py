@@ -5,6 +5,8 @@ from django.contrib.auth import views as auth_views
 import artwork.views
 import exhibitions.views
 import submissions.views
+import votes.views
+from votes.models import Vote
 
 #from django.contrib import admin
 #admin.autodiscover()
@@ -38,6 +40,14 @@ urlpatterns = patterns('',
         name='exhibition-delete'),
     url(r'^submission/delete/(?P<pk>\d+)/$', submissions.views.DeleteSubmissionView.as_view(),
         name='submission-delete'),
+    url(r'^submission/like/(?P<submission>\d+)/$', votes.views.CreateVoteView.as_view(), {'status': Vote.THUMBS_UP},
+        name='submission-like'),
+    url(r'^submission/unlike/(?P<submission>\d+)/$', votes.views.DeleteVoteView.as_view(),
+        name='submission-unlike'),
+    url(r'^vote/ok/$', votes.views.NoOpView.as_view(),
+        name='vote-ok'),
+    url(r'^vote/(?P<pk>\d+)$', votes.views.ShowVoteView.as_view(),
+        name='vote-view'),
     url(r'^login/$', auth_views.login,
         {'template_name': 'login.html'},
         name='login'),

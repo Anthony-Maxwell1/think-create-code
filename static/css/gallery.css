@@ -64,3 +64,23 @@ ul.edit_fields {
 .not-available {
     font-weight: bold;
 }
+/* Voting icons */
+.artwork-votes {
+    white-space: nowrap;
+}
+.artwork-votes .fa {
+    font-size: 150%;
+}
+.artwork-votes .unlike,
+.artwork-votes .like:hover,
+.artwork-votes .like:active {
+    color: #008cba;
+}
+.artwork-votes .like,
+.artwork-votes .unlike:hover,
+.artwork-votes .unlike:active {
+    color: #ababab;
+}
+.artwork-score {
+    display: inline-block;
+}

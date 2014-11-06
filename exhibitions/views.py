@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, ModelHasPermMixin
 from exhibitions.models import Exhibition, ExhibitionForm
+from votes.models import Vote
 
 
 class ExhibitionView(TemplatePathMixin):
@@ -42,6 +43,16 @@ class ShowExhibitionView(ObjectHasPermMixin, ExhibitionView, DetailView):
     template_name = ExhibitionView.prepend_template_path('view.html')
     user_perm = 'can_see'
     raise_exception = True
+
+    def get_context_data(self, **kwargs):
+
+        context = super(ShowExhibitionView, self).get_context_data(**kwargs)
+
+        # Include in the current user's votes for this exhibition
+        # as a dict of submission.id:vote
+        votes = Vote.can_delete_queryset(user=self.request.user, exhibition=self.object).all()
+        context['submission_votes'] = { v.submission_id:v for v in votes }
+        return context
 
 
 class CreateExhibitionView(LoggedInMixin, ModelHasPermMixin, ExhibitionView, CreateView):

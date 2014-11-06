@@ -49,6 +49,14 @@ class PostOnlyMixin(object):
         raise PermissionDenied
 
 
+# https://gist.github.com/cyberdelia/1231560
+class CSRFExemptMixin(object):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(CSRFExemptMixin, self).dispatch(*args, **kwargs)
+
+
 class UserHasPermMixin(object):
 
     '''Require user permissions on the object when dispatching the single object mixed-in view.'''
@@ -94,3 +102,23 @@ class ModelHasPermMixin(UserHasPermMixin):
         if perm_method(user):
             return True
         return False
+
+
+class JsonResponseMixin(object):
+    """
+    A mixin that can be used to render a JSON response.
+    """
+    def render_to_json_response(self, context, **response_kwargs):
+        """
+        Returns a JSON response, transforming 'context' to make the payload.
+        """
+        return JsonResponse(
+            self.get_data(context),
+            **response_kwargs
+        )
+
+    def get_data(self, context):
+        """
+        Returns an object that will be serialized as JSON by json.dumps().
+        """
+        return {}

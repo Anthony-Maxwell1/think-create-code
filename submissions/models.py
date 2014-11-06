@@ -19,6 +19,7 @@ class Submission(models.Model):
 
     exhibition = models.ForeignKey(Exhibition)
     artwork = models.ForeignKey(Artwork)
+    score = models.IntegerField(default=0)
     submitted_by = models.ForeignKey('auth.User')
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     modified_at = models.DateTimeField(auto_now=True, editable=False)
@@ -34,12 +35,23 @@ class Submission(models.Model):
     def can_save(self, user=None):
         if (user and user.is_authenticated() and
            (user.is_superuser or user.is_staff or
-            (self.artwork.author.id == user.id)) and
-            self.exhibition.can_see(user)):
+            (self.artwork.author.id == user.id) and
+            self.exhibition.can_see(user))):
+            return True
+        return False
+
+    # Allow authenticated users to vote on any submission in an
+    # exhibition they can see, and haven't voted on before
+    def can_vote(self, user=None):
+        from votes.models import Vote
+        if (user and user.is_authenticated() and
+            self.exhibition.can_see(user) and
+            not Vote.can_delete_queryset(user=user, submission=self)):
             return True
         return False
 
 registry.register('can_save', Submission)
+registry.register('can_vote', Submission)
 
 
 class SelectOneOrNoneWidget(Select):
