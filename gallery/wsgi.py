@@ -13,7 +13,7 @@ import sys
 # Append the app base path and virtualenv dirs in the python path
 BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 sys.path.append(BASE_DIR)
-sys.path.append(os.path.join(BASE_DIR, '../', '.virtualenv', 'lib', 'python2.7', 'site-packages'))
+sys.path.insert(1, os.path.join(BASE_DIR, '../', '.virtualenv', 'lib', 'python2.7', 'site-packages'))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gallery.settings")
 
