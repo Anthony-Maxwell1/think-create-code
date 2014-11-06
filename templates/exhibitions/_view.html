@@ -12,8 +12,8 @@
     <div {% if not object.released_yet %}class="not-available"{% endif %}>Release date <time>{{ object.released_at|date }} {{ object.released_at|time }}</time></div>
 </div>
 {% if USER_CAN_SAVE %}
-<div class="row">
-<ul class="breadcrumbs object-actions">
+<div class="row object-actions">
+<ul class="breadcrumbs">
     <li><a href="{% url 'exhibition-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
     <li><a href="{% url 'exhibition-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
 </ul>

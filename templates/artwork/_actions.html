@@ -2,7 +2,8 @@
 {% load rulez_perms %}
 {% rulez_perms can_save object as USER_CAN_SAVE %}
 {% if USER_CAN_SAVE %}
-<ul class="breadcrumbs object-actions">
+<div class="row">
+<ul class="breadcrumbs">
     <li><a href="{% url 'artwork-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
     <li><a href="{% url 'artwork-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
     {% if submit_to_exhibitions|length %}
@@ -16,5 +17,6 @@
     </li>
     {% endif %}
 </ul>
+</div>
 {% endif %}
 {% endif %}

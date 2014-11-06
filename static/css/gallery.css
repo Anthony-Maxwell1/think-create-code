@@ -22,6 +22,10 @@ nav #nav-logged-in:after {
 nav #nav-usermenu {
     text-align: right;
 }
+/* pad the object-actions */
+.object-actions {
+    padding-top: 1.5ex;
+}
 
 /* Wrap the canvas art in a smaller div */
 .canvas-preview {
