@@ -7,9 +7,7 @@
 <p class="exhibition-description">{{ object.description }}</p>
 </div>
 <div class="row exhibition-detail">
-    <div>Created by {{ object.author }}</div>
-    <div>Updated <time>{{ object.modified_at|date }}</time></div>
-    <div {% if not object.released_yet %}class="not-available"{% endif %}>Release date <time>{{ object.released_at|date }} {{ object.released_at|time }}</time></div>
+    {% if not object.released_yet %}<div class="not-available">Release date <time>{{ object.released_at|date }} {{ object.released_at|time }}</time></div>{% endif %}
 </div>
 {% if USER_CAN_SAVE %}
 <div class="row object-actions">
