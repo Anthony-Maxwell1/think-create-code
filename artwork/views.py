@@ -14,9 +14,6 @@ class ArtworkView(TemplatePathMixin):
     template_dir = 'artwork'
     save_perm = 'can_save'
 
-    def get_success_url(self):
-        return reverse('artwork-list')
-
 
 class ShowArtworkView(ArtworkView, DetailView):
 
@@ -97,3 +94,7 @@ class DeleteArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, DeleteVi
 
     def get_error_url(self):
         return reverse('artwork-view', kwargs={'pk': self.get_object().id})
+
+    def get_success_url(self):
+        return reverse('artwork-list')
+

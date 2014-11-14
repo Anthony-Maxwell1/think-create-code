@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from django.core.urlresolvers import reverse
 from rulez import registry
 
 
@@ -20,6 +21,9 @@ class Artwork(models.Model):
 
     def __str__(self):
         return unicode(self).encode('utf-8')
+
+    def get_absolute_url(self):
+        return reverse('artwork-view', kwargs={'pk': self.id})
 
     # Allow authenticated staff, superusers or authors to save artwork
     def can_save(self, user=None):

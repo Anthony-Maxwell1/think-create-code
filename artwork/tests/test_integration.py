@@ -48,8 +48,8 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('save_artwork').click()
 
         # add action redirects to list url
-        list_path = reverse('artwork-list')
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
+        view_path = reverse('artwork-view', kwargs={'pk': 1})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -99,13 +99,11 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
 
-        # save returns us to the list page
-        list_path = reverse('artwork-list')
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
-
-        # view the work to ensure edit was saved
+        # save returns us to the view page
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
-        self.selenium.get('%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+
+        # ensure edit was saved
         self.assertEqual(
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             'updated title'
