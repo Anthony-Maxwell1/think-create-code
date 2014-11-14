@@ -1,0 +1,6 @@
+<script id="script-{{ object.id }}" type="text/processing" 
+    data-processing-target="canvas-{{ object.id }}" 
+    src="{% url 'artwork-code' pk=object.id %}"></script>
+<a href="{% url "artwork-view" object.id %}" title="Click to view {{ object.title }}">
+<canvas id="canvas-{{ object.id }}"></canvas>
+</a>

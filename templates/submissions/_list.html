@@ -7,17 +7,8 @@
     {% for submission in object_list %}
     {% with submission.artwork as artwork %}
     <li><div class="artwork canvas-preview" id="artwork-{{ artwork.id }}">
-        <a href="{% url "artwork-view" artwork.id %}" title="Click to view {{ artwork.title }}">
-            <canvas id="canvas-preview-{{ artwork.id }}"></canvas>
-            <script id="script-preview-{{ artwork.id }}" type="text/processing" 
-                data-processing-target="canvas-preview-{{ artwork.id }}">
-            {% autoescape off %}
-            {{ artwork.code }}
-            {% endautoescape %}
-            </script>
-        </a>
+        {% include 'artwork/_render.html' with object=artwork %}
         </div>
-
         <div class="artwork-detail">
             <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h2>
             <div class="artwork-detail">Created by {{ artwork.author }}</div>
