@@ -49,6 +49,10 @@ class ShowArtworkView(ArtworkView, DetailView):
 
         return context
 
+class ShowArtworkCodeView(ArtworkView, DetailView):
+    template_name = ArtworkView.prepend_template_path('code.pde')
+    content_type = 'application/javascript; charset=utf-8'
+
 
 class ListArtworkView(ArtworkView, ListView):
 

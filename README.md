@@ -65,3 +65,12 @@ Run the unit and integration tests, and get test coverage
     manage                 6      0   100%
     --------------------------------------
     TOTAL                194      5    97%
+
+
+Integration Tests
+-----------------
+Integration tests are run using the selenium library, which requires a browser
+to be installed.  We access this browser via an Xvfb session, configured to run
+on display port :0, on address 0.0.0.0:8080.
+
+    [root@loco ~]# sudo -u xvfb nohup /usr/bin/Xvfb :0 -screen 0 1024x768x24 &

@@ -29,6 +29,61 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('list-add-button')
         )
 
+    def test_artwork_compile_error(self):
+
+        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
+        Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
+
+        list_path = reverse('artwork-list')
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+
+        # We should get 2 errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 2)
+        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
+        self.assertEqual(errors[1]['message'], 'SyntaxError: missing ; before statement')
+
+        # TODO: we're inferring that the 2nd "good" artwork did get rendered,
+        # by assuring that the error from the  1st "bad" artwork did not halt
+        # processing, since the 3rd bad artwork threw an error too.
+        # Not sure how else to test this?
+
+
+class ArtworkViewIntegrationTests(SeleniumTestCase):
+
+    def test_artwork_view(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+
+
+class ArtworkCodeViewIntegrationTests(SeleniumTestCase):
+
+    def test_artwork_code(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+
+        code_path = reverse('artwork-code', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, code_path))
+
+        # Selenium wraps the text/plain result in an HTML page for some reason 
+        pre_code = self.selenium.find_element_by_tag_name('pre')
+
+        self.assertEqual(
+            pre_code.text, artwork.code
+        )
+
 
 class ArtworkAddIntegrationTests(SeleniumTestCase):
 
@@ -77,6 +132,35 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
         )
+
+    def test_add_artwork_compile_error(self):
+
+        add_path = reverse('artwork-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path)
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('bad submission')
+        self.selenium.find_element_by_id('id_code').send_keys('bad code!')
+
+        # Draw button catches error, which shows on screen, not in the console
+        self.selenium.find_element_by_id('draw').click()
+        self.assertEqual(
+            self.selenium.find_element_by_id('error').text,
+            'missing ; before statement'
+        )
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+        # Save button takes you to the view page, where the error shows in the console
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_artwork').click()
+
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
 
 
 class ArtworkEditIntegrationTests(SeleniumTestCase):

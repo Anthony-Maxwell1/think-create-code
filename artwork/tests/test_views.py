@@ -35,6 +35,29 @@ class ArtworkViewTests(UserSetUp, TestCase):
         self.assertEquals(response.context['object'].title, artwork.title)
         self.assertEquals(response.context['object'].code, artwork.code)
 
+    def test_artwork_404(self):
+        
+        client = Client()
+        response = client.get(reverse('artwork-view', kwargs={'pk':1}))
+        self.assertEquals(response.status_code, 404)
+
+class ArtworkViewCodeTests(UserSetUp, TestCase):
+    """Artwork view code tests."""
+
+    def test_artwork_code(self):
+        
+        client = Client()
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        response = client.get(reverse('artwork-code', kwargs={'pk':artwork.id}))
+        self.assertEquals(response.content, "%s\n" % artwork.code)
+
+    def test_artwork_code_404(self):
+        
+        client = Client()
+        response = client.get(reverse('artwork-code', kwargs={'pk':1}))
+        self.assertEquals(response.status_code, 404)
+
+
 
 class ArtworkDeleteTests(UserSetUp, TestCase):
     """Artwork delete view tests."""

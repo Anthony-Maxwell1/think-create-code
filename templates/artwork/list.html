@@ -6,17 +6,13 @@
     <ul class="small-block-grid-2">
     {% for artwork in object_list %}
     <li><div class="artwork canvas-preview">
+        <script id="script-{{ artwork.id }}" type="text/processing" 
+            data-processing-target="canvas-{{ artwork.id }}" 
+            src="{% url 'artwork-code' pk=artwork.id %}"></script>
         <a href="{% url "artwork-view" artwork.id %}" title="Click to view {{ artwork.title }}">
-            <canvas id="canvas-preview-{{ artwork.id }}"></canvas>
-            <script id="script-preview-{{ artwork.id }}" type="text/processing" 
-                data-processing-target="canvas-preview-{{ artwork.id }}">
-            {% autoescape off %}
-            {{ artwork.code }}
-            {% endautoescape %}
-            </script>
+        <canvas id="canvas-{{ artwork.id }}"></canvas>
         </a>
         </div>
-
         <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h2>
         <p class="artwork-date"><time>{{ artwork.modified_at|date }}</time></p>
     </li>
