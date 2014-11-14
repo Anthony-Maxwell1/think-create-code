@@ -59,6 +59,6 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
 
         # home page is the exhibition list
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('#exhibition-list-content')),
+            len(self.selenium.find_elements_by_css_selector('#artwork-list-content')),
             1
         )

@@ -14,7 +14,7 @@ from votes.models import Vote
 urlpatterns = patterns('',
     #url(r'^admin/', include(admin.site.urls)),
 
-    url(r'^$', exhibitions.views.ListExhibitionView.as_view(),
+    url(r'^$', artwork.views.ListArtworkView.as_view(),
         name='home'),
     url(r'^artwork/list/$', artwork.views.ListArtworkView.as_view(),
         name='artwork-list'),
