@@ -2,17 +2,29 @@ processingjs gallery app
 ========================
 
 
+Configuration
+-------------
+
+Create mysql database:
+
+    mysql -u root -p < etc/00_init.sql
+
+Install apache app configuration:
+
+    sudo cp etc/httpd/conf.d/10_processingjs._conf
+    sudo systemctl reload httpd
+
+
+
 Initial Setup
 -------------
 
 Use virtualenv to setup the initial runtime environment:
 
-    cd Think.Create.Code
-    virtualenv .virtualenv
-    source .virtualenv/bin/activate
-
-    (.virtualenv)$ cd processingjs/
+    cd processingjs/
+    source ../.virtualenv/bin/activate
     (.virtualenv)$ pip install -U -r requirements.txt
+    (.virtualenv)$ sudo find ../.virtualenv/lib/python2.7/site-packages -name \*.so -exec chcon -t shlib_t {} \;
     (.virtualenv)$ ./manage.py migrate
     (.virtualenv)$ touch gallery/wsgi.py # restart wsgi daemon
 
