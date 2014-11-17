@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block extras %}
+<script type="application/javascript">
+$(document).ready(function() {
+
+    var $script = $('#script-preview');
+    var $code = $('#id_code');
+    var $error = $('#error');
+
+    $('#draw').on('click', function() {
+
+        // 1. Clear any previous errors
+        $error.html('');
+
+        var code = $code.val();
+        if (code) {
+
+            // 2. Recreate the exisiting canvases
+            $('canvas').each(function(idx, item) {
+                var $canvas = $(item);
+                $canvas.replaceWith($('<canvas>', {'id': $canvas.attr('id')}));
+            });
+
+            // 3. Transfer code into script block
+            $script.html(code);
+
+            // 4. Try running the script
+            try {
+                Processing.reload();
+            } catch(e) {
+                // 5. Show any errors
+                $error.html(e.message);
+            }
+        }
+
+        return false;
+    });
+});
+</script>
+{% endblock extras %}
+
+{% block content %}
+<div id="artwork-edit-content">
+{% if artwork.id %}
+<h1>Edit Artwork</h1>
+{% else %}
+<h1>Add Artwork</h1>
+{% endif %}
+<form method="post" action="{{ action }}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <ul class="edit_fields">
+    {{ form.as_ul }}
+    </ul>
+    <div class="row">
+        <div class="small-6 columns">
+            <button id="save_artwork" type="submit" class="postfix button">Save</button>
+        </div>
+        <div class="small-6 columns">
+            <button id="draw" class="postfix button">Draw</button>
+        </div>
+    </div>
+</form>
+<a id="save_cancel" href="{% url "artwork-list" %}">back to list</a>
+<div id="error"></div>
+<canvas id="canvas-preview"></canvas>
+<script id="script-preview" type="text/processing" data-processing-target="canvas-preview">
+    {% autoescape off %}
+    {{ artwork.code }}
+    {% endautoescape %}
+</script>
+</div>
+{% endblock content %}

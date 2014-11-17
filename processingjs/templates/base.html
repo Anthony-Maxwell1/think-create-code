@@ -1,0 +1,62 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ProcessingJS Artworks</title>
+    {% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static "css/foundation.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/gallery.css" %}">
+    {% endblock css %}
+    {% block js %}
+    <script lang="text/javascript" src="{% static "js/vendor/modernizr.js" %}"></script>
+    <script lang="text/javascript" src="{% static "js/vendor/jquery.js" %}"></script>
+    <script lang="text/javascript" src="{% static "js/foundation.min.js" %}"></script>
+    <script lang="text/javascript" src="{% static "js/processing.min.js" %}"></script>
+    <script>
+        $(document).ready(function(){ 
+            $(document).foundation();
+        });
+    </script>
+    {% endblock js %}
+    {% block extras %}
+    <!-- for use by child templates -->
+    {% endblock extras %}
+</head>
+<body>
+    <nav class="top-bar" data-topbar role="navigation">
+        <section>
+        <ul class="title-area">
+            <li class="name">
+                <h1><a href="{% url "home" %}" id="nav-title" title="view class gallery">gallery</a></h1>
+            </li>
+        </ul>
+        </section>
+        <section class="top-bar-section">
+        <ul id="nav-usermenu" class="right">
+        {% if user.is_anonymous %}
+        <li>
+            <a href="{% url "login" %}?next={{ request.get_full_path|urlencode }}" id="nav-login" title="sign in">Sign in
+                <i class="fa fa-sign-in"></i></a>
+        </li>
+        {% else %}
+        <li class="has-dropdown">
+            <a href="#" id="nav-logged-in" title="{{ user.username }} actions"><i class="fa fa-navicon"></i></a>
+            <ul data-dropdown-content class="dropdown">
+                <li><a href="{% url "artwork-list" %}" id="nav-artwork-list" title="view artworks">show works</a></li>
+                <li><a href="{% url "artwork-add" %}" id="nav-artwork-add" title="create a new work">new work</a></li>
+                <li><a href="{% url "logout" %}?next={% url "home" %}" id="nav-signout" title="sign out">Sign out 
+                    <i class="fa fa-sign-out"></i></a>
+                </li>
+            </ul>
+        </li>
+        {% endif %}
+        </ul>
+        </section>
+    </nav>
+
+    <div class="small-10 small-centered columns">
+    {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

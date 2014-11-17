@@ -1,0 +1,90 @@
+<div id="artwork-list-content">
+{% if object_list %}
+{% load dict_filters %}
+<div class="row">
+    <div class="small-grid-2">&nbsp;</div>
+    <ul class="small-block-grid-2">
+    {% for submission in object_list %}
+    {% with submission.artwork as artwork %}
+    <li><div class="artwork canvas-preview" id="artwork-{{ artwork.id }}">
+        {% include 'artwork/_render.html' with object=artwork %}
+        </div>
+        <div class="artwork-detail">
+            <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h2>
+            <div class="artwork-detail">Created by {{ artwork.author }}</div>
+            <div class="artwork-votes">
+                {% if user.is_anonymous %}
+                    {% if submission.score > 0 %} {{ submission.score }} vote{{ submission.score|pluralize }} {% endif %}
+                    <div>[<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" 
+                            title="Sign in to vote">vote</a>]</div>
+                {% else %}
+                {% with submission_votes|get:submission.id as voted %}
+                <a unlike-url="{% url 'submission-unlike' submission=submission.id %}"
+                     like-url="{% url 'submission-like'   submission=submission.id %}"
+                        class="post-vote {% if voted %}unlike{% else %}like{% endif %}"
+                        title="{% if voted %}unlike{% else %}like{% endif %}"
+                   href="#"><i class="fa fa-thumbs-up"></i> <div class="artwork-score">{{ submission.score }}</div></a>
+                {% endwith %}
+                {% endif %}
+            </div>
+        </div>
+    </li>
+    {% endwith %}
+    {% endfor %}
+    </ul>
+    <div class="small-grid-2">&nbsp;</div>
+
+    <a id="reveal-modal-error" href="#" data-reveal-id="modal-error" ></a>
+    <div id="modal-error" class="reveal-modal" data-reveal>
+    <div><h3>We're sorry, an error has occurred.</h3></div>
+    <p>Please reload the current page, and try again.</p>
+    <div><button id="page-reload">Reload</button></div>
+    </div>
+</div>
+{% endif %}
+</div>
+<script>
+$(document).ready(function() {
+
+    // Hook up reload button
+    $('#page-reload').on('click', function() {
+        window.location.reload();
+    });
+
+    // Hook up the like/unlike buttons
+    $('a.post-vote').on('click', function(evt) {
+        var $target = $(evt.currentTarget);
+        var post_url;
+
+        var diff = 0;
+        if ($target.hasClass('like')) {
+            post_url = $target.attr('like-url');
+            $target.removeClass('like')
+                   .addClass('unlike')
+                   .attr('title', 'unlike');
+            diff = 1;
+        } else if ($target.hasClass('unlike')) {
+            post_url = $target.attr('unlike-url');
+            $target.removeClass('unlike')
+                   .addClass('like')
+                   .attr('title', 'like');
+            diff = -1;
+        }
+
+        if (post_url) {
+            $.ajax({
+                url: post_url,
+                method: 'POST',
+                success: function() {
+                    var $score = $target.find('.artwork-score');
+                    $score.text(Number($score.text()) + diff);
+                },
+                error: function() {
+                    console.error(arguments);
+                    $('#reveal-modal-error').click();
+                }
+            });
+        }
+    });
+});
+</script>

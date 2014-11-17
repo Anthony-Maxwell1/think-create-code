@@ -1,0 +1,86 @@
+/* Capitalise the nav menu  */
+nav a {
+    text-transform: capitalize !important;
+}
+/* Add a bit of padding between the nav and the content */
+nav {
+    margin-bottom: 3em !important;
+}
+/* Magnify the font-awesome nav icons */
+nav .fa {
+    font-size: 150%;
+}
+/* Shift nav icon to the right */
+nav #nav-logged-in {
+    padding-right: 15px !important;
+}
+/* Hide the drop-down arrow */
+nav #nav-logged-in:after {
+    border-color: transparent transparent transparent !important;
+}
+/* Right-align the logged-in menu items */
+nav #nav-usermenu {
+    text-align: right;
+}
+/* pad the object-actions */
+.object-actions {
+    padding-top: 1.5ex;
+}
+
+/* Wrap the canvas art in a smaller div */
+.canvas-preview {
+    overflow: hidden;
+    width: 200px;
+    height: 200px;
+    position: relative;
+}
+/* center the canvas inside the preview div:
+ * http://stackoverflow.com/a/19414020 */
+.canvas-preview canvas {
+    position: absolute;
+    top: -9999px;
+    bottom: -9999px;
+    left: -9999px;
+    right: -9999px;
+    margin: auto;
+}
+/* Fill the div with a big 'add' button */
+#list-add-button {
+    width: 200px;
+    height: 200px;
+    font-size: 500%;
+}
+/* Adjust margins for form fields */
+ul.edit_fields {
+    list-style-type: none;
+    margin: 0;
+}
+/* Format code blocks */
+.code-block {
+    font-family: monospace;
+    white-space: pre;
+}
+/* Highlight exhibitions that haven't been released yet */
+.not-available {
+    font-weight: bold;
+}
+/* Voting icons */
+.artwork-votes {
+    white-space: nowrap;
+}
+.artwork-votes .fa {
+    font-size: 150%;
+}
+.artwork-votes .unlike,
+.artwork-votes .like:hover,
+.artwork-votes .like:active {
+    color: #008cba;
+}
+.artwork-votes .like,
+.artwork-votes .unlike:hover,
+.artwork-votes .unlike:active {
+    color: #ababab;
+}
+.artwork-score {
+    display: inline-block;
+}

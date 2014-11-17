@@ -1,0 +1,18 @@
+# https://gitlab-uat.adelaide.edu.au/adelaidex/course-units/blob/master/Think.Create.Code/processingjs/etc/httpd/conf.d/10_processingjs._conf
+
+# ref: http://thecodeship.com/deployment/deploy-django-apache-virtualenv-and-mod_wsgi/
+AliasMatch (?i)^/Think.Create.Code/robots.txt$  /var/www/django/course-units/Think.Create.Code/processingjs/static/robots.txt
+AliasMatch (?i)^/Think.Create.Code/favicon.ico$ /var/www/django/course-units/Think.Create.Code/processingjs/static/favicon.ico
+AliasMatch (?i)^/Think.Create.Code/static(.*)   /var/www/django/course-units/Think.Create.Code/processingjs/static/$1
+AliasMatch (?i)^/Think.Create.Code/js(.*)       /var/www/django/course-units/Think.Create.Code/processingjs/static/js/$1
+AliasMatch (?i)^/Think.Create.Code/?$           /var/www/django/course-units/Think.Create.Code/processingjs/static/index.html
+WSGIScriptAlias /think.create.code/gallery      /var/www/django/course-units/Think.Create.Code/processingjs/gallery/wsgi.py
+WSGIScriptAlias /Think.Create.Code/gallery      /var/www/django/course-units/Think.Create.Code/processingjs/gallery/wsgi.py
+<Directory /var/www/django/course-units/Think.Create.Code/processingjs>
+  WSGIProcessGroup django-processingjs
+  WSGIApplicationGroup %{GLOBAL}
+  <Files wsgi.py>
+    Order deny,allow
+    Allow from all
+  </Files>
+</Directory>

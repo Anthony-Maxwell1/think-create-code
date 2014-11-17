@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block extras %}
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery.datetimepicker.min.css" %}">
+<script lang="text/javascript" src="{% static "js/jquery.datetimepicker.min.js" %}"></script>
+<script>
+$(document).ready(function() {
+    $('#id_released_at').datetimepicker({
+        format:'Y-m-d H:i'
+    });
+});
+</script>
+{% endblock extras %}
+
+{% block content %}
+<div id="exhibition-edit-content">
+{% if exhibition.id %}
+<h1>Edit Exhibition</h1>
+{% else %}
+<h1>Add Exhibition</h1>
+{% endif %}
+<form method="post" action="{{ action }}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <ul class="edit_fields">
+    {{ form.as_ul }}
+    </ul>
+    <div class="row">
+        <div class="small-6 columns">
+            <button id="save_exhibition" type="submit" class="postfix button">Save</button>
+        </div>
+    </div>
+</form>
+<a id="save_cancel" href="{% url "exhibition-list" %}">back to list</a>
+<div id="error"></div>
+</div>
+{% endblock content %}
