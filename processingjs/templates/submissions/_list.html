@@ -52,7 +52,7 @@ $(document).ready(function() {
     });
 
     // Hook up the like/unlike buttons
-    $('a.post-vote').on('click', function(evt) {
+    $('#artwork-list-content').delegate('a.post-vote', 'click', function(evt) {
         var $target = $(evt.currentTarget);
         var post_url;
 
@@ -85,6 +85,8 @@ $(document).ready(function() {
                 }
             });
         }
+
+        return false;
     });
 });
 </script>
