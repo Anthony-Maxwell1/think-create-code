@@ -19,7 +19,7 @@
     {% for exhibition in exhibitions_to_submit %}
     <div>
     <input type="radio" name="exhibition" value="{{ exhibition.id }}" id="exhibition-{{ exhibition.id }}" />
-    <label for="exhibition_{{ exhibition.id }}">{{ exhibition }}</label>
+    <label for="exhibition-{{ exhibition.id }}">{{ exhibition }}</label>
     </div>
     {% endfor %}
     <div class="row">
