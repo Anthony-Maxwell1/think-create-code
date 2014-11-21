@@ -648,28 +648,27 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.exhibition = Exhibition.objects.create(title='New Exhibition', description='goes here', author=self.staff_user)
         self.student_artwork = Artwork.objects.create(title='Student Art', code='// code goes here', author=self.user)
         self.staff_artwork = Artwork.objects.create(title='Staff Art', code='// code goes here', author=self.staff_user)
-
-    def test_unsubmit_link_student_own(self):
-
-        submission = Submission.objects.create(
+        self.submission = Submission.objects.create(
             artwork=self.student_artwork,
             exhibition=self.exhibition,
             submitted_by = self.user,
         )
-        delete_url = '%s%s' % (self.live_server_url, reverse('submission-delete', kwargs={'pk': submission.id}))
-        exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
+        self.delete_url = '%s%s' % (self.live_server_url, reverse('submission-delete', kwargs={'pk': self.submission.id}))
+        self.exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
+        self.artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
+
+    def test_unsubmit_link_student_own(self):
 
         self.performLogin(user='student')
 
         # Confirm my submission is on the exhibition page
-        self.selenium.get(exhibition_url)
+        self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
 
         # View the artwork to get to the submit link
-        self.selenium.get(artwork_url)
+        self.selenium.get(self.artwork_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -687,18 +686,18 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.assertRegexpMatches(self.selenium.page_source, r'Submitted to ')
         self.assertEqual(
             self.selenium.find_element_by_link_text(self.exhibition.title).get_attribute('href'),
-            exhibition_url
+            self.exhibition_url
         )
 
         # with an unsubmit link
         unsubmit = self.selenium.find_element_by_link_text('unsubmit')
-        self.assertEqual(delete_url, unsubmit.get_attribute('href'))
+        self.assertEqual(self.delete_url, unsubmit.get_attribute('href'))
 
         # Click unsubmit
         with wait_for_page_load(self.selenium):
             unsubmit.click()
 
-        self.assertEqual(self.selenium.current_url, delete_url)
+        self.assertEqual(self.selenium.current_url, self.delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
 
         # Confirm delete
@@ -706,10 +705,10 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('submission_delete').click()
 
         # Back on Artwork view page
-        self.assertEqual(self.selenium.current_url, artwork_url)
+        self.assertEqual(self.selenium.current_url, self.artwork_url)
 
         # Confirm my submission was removed from the exhibition
-        self.selenium.get(exhibition_url)
+        self.selenium.get(self.exhibition_url)
         self.assertRaises(
             NoSuchElementException,
             self.selenium.find_element_by_id, ('artwork-%s' % self.student_artwork.id)
@@ -717,19 +716,10 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
 
     def test_unsubmit_own_cancel(self):
 
-        submission = Submission.objects.create(
-            artwork=self.student_artwork,
-            exhibition=self.exhibition,
-            submitted_by = self.user,
-        )
-        delete_url = '%s%s' % (self.live_server_url, reverse('submission-delete', kwargs={'pk': submission.id}))
-        exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
-
         self.performLogin(user='student')
 
         # Go to delete submission page
-        self.selenium.get(delete_url)
+        self.selenium.get(self.delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
 
         # Cancel delete
@@ -737,52 +727,41 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('submission_do_not_delete').click()
 
         # Back on Artwork view page
-        self.assertEqual(self.selenium.current_url, artwork_url)
+        self.assertEqual(self.selenium.current_url, self.artwork_url)
 
         # Confirm my submission is still on the exhibition page
-        self.selenium.get(exhibition_url)
+        self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
 
     def test_unsubmit_student_not_own(self):
 
-        submission = Submission.objects.create(
+        staff_submission = Submission.objects.create(
             artwork=self.staff_artwork,
             exhibition=self.exhibition,
             submitted_by = self.user,
         )
-        delete_url = '%s%s' % (self.live_server_url, reverse('submission-delete', kwargs={'pk': submission.id}))
-        exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.staff_artwork.id}))
 
         self.performLogin(user='student')
 
         # Delete submission page should throw permission denied
+        delete_url = '%s%s' % (self.live_server_url, reverse('submission-delete', kwargs={'pk': staff_submission.id}))
         self.selenium.get(delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'403 Forbidden')
 
 
     def test_unsubmit_staff_not_own(self):
-        submission = Submission.objects.create(
-            artwork=self.student_artwork,
-            exhibition=self.exhibition,
-            submitted_by = self.user,
-        )
-        delete_url = '%s%s' % (self.live_server_url, reverse('submission-delete', kwargs={'pk': submission.id}))
-        exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
-
         self.performLogin(user='staff')
 
         # Confirm my submission is on the exhibition page
-        self.selenium.get(exhibition_url)
+        self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
 
         # Go to delete submission page - should allow
-        self.selenium.get(delete_url)
+        self.selenium.get(self.delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
 
         # Confirm delete
@@ -790,35 +769,27 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('submission_delete').click()
 
         # Back on Artwork view page
-        self.assertEqual(self.selenium.current_url, artwork_url)
+        self.assertEqual(self.selenium.current_url, self.artwork_url)
 
         # Confirm submission was removed from the exhibition
-        self.selenium.get(exhibition_url)
+        self.selenium.get(self.exhibition_url)
         self.assertRaises(
             NoSuchElementException,
             self.selenium.find_element_by_id, ('artwork-%s' % self.student_artwork.id)
         )
 
     def test_unsubmit_super_not_own(self):
-        submission = Submission.objects.create(
-            artwork=self.student_artwork,
-            exhibition=self.exhibition,
-            submitted_by = self.user,
-        )
-        delete_url = '%s%s' % (self.live_server_url, reverse('submission-delete', kwargs={'pk': submission.id}))
-        exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
 
         self.performLogin(user='super')
 
         # Confirm my submission is on the exhibition page
-        self.selenium.get(exhibition_url)
+        self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
 
         # Go to delete submission page - should allow
-        self.selenium.get(delete_url)
+        self.selenium.get(self.delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
 
         # Confirm delete
@@ -826,13 +797,79 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('submission_delete').click()
 
         # Back on Artwork view page
-        self.assertEqual(self.selenium.current_url, artwork_url)
+        self.assertEqual(self.selenium.current_url, self.artwork_url)
 
         # Confirm submission was removed from the exhibition
-        self.selenium.get(exhibition_url)
+        self.selenium.get(self.exhibition_url)
         self.assertRaises(
             NoSuchElementException,
             self.selenium.find_element_by_id, ('artwork-%s' % self.student_artwork.id)
         )
 
+    def test_unsubmit_deletes_votes(self):
+        # Create two votes
+        Vote.objects.create(submission=self.submission, status=Vote.THUMBS_UP, voted_by=self.user)
+        Vote.objects.create(submission=self.submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
+
+        # Confirm that votes were created
+        submission_votes = Vote.objects.filter(submission=self.submission)
+        self.assertEqual(submission_votes.count(), 2)
+
+        self.performLogin(user='student')
+
+        # Visit submission delete page
+        self.selenium.get(self.delete_url)
+        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
+
+        # Confirm delete
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('submission_delete').click()
+
+        # Back on Artwork view page
+        self.assertEqual(self.selenium.current_url, self.artwork_url)
+
+        # Confirm my submission was removed from the exhibition
+        self.selenium.get(self.exhibition_url)
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('artwork-%s' % self.student_artwork.id)
+        )
+
+        # Confirm that votes were deleted
+        submission_votes = Vote.objects.filter(submission=self.submission)
+        self.assertEqual(submission_votes.count(), 0)
+
+
+    def test_unsubmit_cancel_keeps_votes(self):
+
+        # Create two votes
+        Vote.objects.create(submission=self.submission, status=Vote.THUMBS_UP, voted_by=self.user)
+        Vote.objects.create(submission=self.submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
+
+        # Confirm that votes were created
+        submission_votes = Vote.objects.filter(submission=self.submission)
+        self.assertEqual(submission_votes.count(), 2)
+
+        self.performLogin(user='student')
+
+        # Visit submission delete page
+        self.selenium.get(self.delete_url)
+        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
+
+        # Cancel delete
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('submission_do_not_delete').click()
+
+        # Back on Artwork view page
+        self.assertEqual(self.selenium.current_url, self.artwork_url)
+
+        # Confirm my submission is still on the exhibition page
+        self.selenium.get(self.exhibition_url)
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
+        )
+
+        # Confirm that votes were not deleted
+        submission_votes = Vote.objects.filter(submission=self.submission)
+        self.assertEqual(submission_votes.count(), 2)
 

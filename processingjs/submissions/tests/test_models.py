@@ -117,6 +117,20 @@ class SubmissionTests(UserSetUp, TestCase):
         super_vote = Vote.objects.create(submission=submission, voted_by=self.super_user, status=Vote.THUMBS_UP)
         self.assertFalse(submission.can_vote(user=self.super_user))
 
+    def test_delete_votes(self):
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            author=self.user)
+        artwork = Artwork.objects.create(title='New Artwork', code='// code goes here', author=self.user)
+        submission = Submission.objects.create(exhibition=exhibition, artwork=artwork, submitted_by=self.user)
+        student_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.user)
+        staff_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
+
+        self.assertEqual(Vote.objects.filter(submission=submission).count(), 2)
+        submission.delete()
+        self.assertEqual(Vote.objects.filter(submission=submission).count(), 0)
+
 
 class SubmissionModelFormTests(UserSetUp, TestCase):
     """model.SubmissionForm tests."""

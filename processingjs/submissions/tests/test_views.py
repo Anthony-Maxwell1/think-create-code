@@ -472,3 +472,71 @@ class SubmissionDeleteViewTest(UserSetUp, TestCase):
         response = client.post(delete_url)
         view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+
+    def test_post_delete_votes(self):
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+        submission = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition,
+            submitted_by=self.user)
+        student_vote = Vote.objects.create(
+            submission=submission,
+            status=Vote.THUMBS_UP,
+            voted_by=self.user)
+        staff_vote = Vote.objects.create(
+            submission=submission,
+            status=Vote.THUMBS_UP,
+            voted_by=self.staff_user)
+
+        client = Client()
+        self.assertLogin(client)
+
+        self.assertEqual(Vote.objects.filter(submission=submission).count(), 2)
+
+        delete_url = reverse('submission-delete', kwargs={'pk': submission.id})
+        response = client.post(delete_url)
+        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+
+        self.assertEqual(Vote.objects.filter(submission=submission).count(), 0)
+
+
+    def test_get_no_delete_votes(self):
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+        submission = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition,
+            submitted_by=self.user)
+        student_vote = Vote.objects.create(
+            submission=submission,
+            status=Vote.THUMBS_UP,
+            voted_by=self.user)
+        staff_vote = Vote.objects.create(
+            submission=submission,
+            status=Vote.THUMBS_UP,
+            voted_by=self.staff_user)
+
+        client = Client()
+        self.assertLogin(client)
+
+        self.assertEqual(Vote.objects.filter(submission=submission).count(), 2)
+
+        delete_url = reverse('submission-delete', kwargs={'pk': submission.id})
+        response = client.get(delete_url)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.context['object'].artwork, artwork)
+        self.assertEquals(response.context['object'].exhibition, exhibition)
+
+        self.assertEqual(Vote.objects.filter(submission=submission).count(), 2)
+
+

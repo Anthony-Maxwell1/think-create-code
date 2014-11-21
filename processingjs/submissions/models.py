@@ -1,6 +1,7 @@
 from django.db import models
 from django import forms
-from django.contrib.auth import get_user_model
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_text
@@ -52,6 +53,13 @@ class Submission(models.Model):
 
 registry.register('can_save', Submission)
 registry.register('can_vote', Submission)
+
+
+@receiver(pre_delete, sender=Submission)
+def pre_delete(sender, instance=None, **kwargs):
+    if instance:
+        from votes.models import Vote
+        Vote.can_delete_queryset(submission=instance).delete()
 
 
 class SelectOneOrNoneWidget(Select):
