@@ -219,6 +219,34 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         time.sleep(3)   # wait for vote to be removed
         self.assertEquals(artwork_score.text, '1')
 
+    def test_artwork_compile_error(self):
+
+        bad_artwork1 = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        good_artwork = Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
+        bad_artwork2 = Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
+
+        # Submit artwork to exhibition
+        submission1 = Submission.objects.create(artwork=bad_artwork1, exhibition=self.exhibition, submitted_by=self.user)
+        submission2 = Submission.objects.create(artwork=good_artwork, exhibition=self.exhibition, submitted_by=self.user)
+        submission2 = Submission.objects.create(artwork=bad_artwork2, exhibition=self.exhibition, submitted_by=self.user)
+
+        self.selenium.get(self.exhibition_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+
+        # We should get 2 errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 2)
+        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
+        self.assertEqual(errors[1]['message'], 'SyntaxError: missing ; before statement')
+
+        # TODO: we're inferring that the 2nd "good" artwork did get rendered,
+        # by assuring that the error from the  1st "bad" artwork did not halt
+        # processing, since the 3rd bad artwork threw an error too.
+        # Not sure how else to test this?
+
 
 class SubmissionCreateIntegrationTests(SeleniumTestCase):
     """Artwork view includes Submission create."""
