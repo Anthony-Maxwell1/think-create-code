@@ -16,3 +16,20 @@ WSGIScriptAlias /Think.Create.Code/gallery      /var/www/adx/think-create-code/p
     Allow from all
   </Files>
 </Directory>
+
+# lti-auth branch testing
+AliasMatch (?i)^/Think.Create.Code/lti/robots.txt$  /var/www/adx/lti/think-create-code/processingjs/static/robots.txt
+AliasMatch (?i)^/Think.Create.Code/lti/favicon.ico$ /var/www/adx/lti/think-create-code/processingjs/static/favicon.ico
+AliasMatch (?i)^/Think.Create.Code/lti/static(.*)   /var/www/adx/lti/think-create-code/processingjs/static/$1
+AliasMatch (?i)^/Think.Create.Code/lti/js(.*)       /var/www/adx/lti/think-create-code/processingjs/static/js/$1
+AliasMatch (?i)^/Think.Create.Code/lti/?$           /var/www/adx/lti/think-create-code/processingjs/static/index.html
+WSGIScriptAlias /think.create.code/lti/gallery      /var/www/adx/lti/think-create-code/processingjs/gallery/wsgi.py
+WSGIScriptAlias /Think.Create.Code/lti/gallery      /var/www/adx/lti/think-create-code/processingjs/gallery/wsgi.py
+<Directory /var/www/adx/lti/think-create-code/processingjs>
+  WSGIProcessGroup django-processingjs
+  WSGIApplicationGroup %{GLOBAL}
+  <Files wsgi.py>
+    Order deny,allow
+    Allow from all
+  </Files>
+</Directory>
