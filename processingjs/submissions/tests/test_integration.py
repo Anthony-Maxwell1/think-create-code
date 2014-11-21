@@ -4,8 +4,8 @@ import time
 
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
-
 from submissions.models import Submission
+from votes.models import Vote
 from uofa.test import SeleniumTestCase, wait_for_page_load
 
 
@@ -16,7 +16,8 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         super(SubmissionListIntegrationTests, self).setUp()
         self.exhibition = Exhibition.objects.create(title='New Exhibition', description='goes here', author=self.staff_user)
         self.artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
-        self.exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
+        self.exhibition_path = reverse('exhibition-view', kwargs={'pk': self.exhibition.id})
+        self.exhibition_url = '%s%s' % (self.live_server_url, self.exhibition_path)
 
     def test_empty_list_public(self):
 
@@ -159,6 +160,65 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
         )
+
+    def test_vote_like_unlike(self):
+
+        # Submit artwork to the exhibition
+        submission = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
+
+        # One vote section per submission
+        self.selenium.get(self.exhibition_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-votes')),
+            1
+        )
+
+        # No like/unlike links shown to public
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('a.post-vote')),
+            0
+        )
+
+        # No votes, so no vote text shown
+        self.assertNotRegexpMatches(self.selenium.page_source, r'0 votes')
+
+        # Create a staff vote
+        Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
+
+        # Ensure it's counted
+        self.selenium.get(self.exhibition_url)
+        self.assertRegexpMatches(self.selenium.page_source, r'1 vote')
+
+        # Can login via 'vote' link
+        vote_link = self.selenium.find_element_by_link_text('vote')
+        self.assertIsNotNone(vote_link)
+
+        # Login as student user
+        with wait_for_page_load(self.selenium):
+            vote_link.click()
+        self.assertLogin(user='student', next_path=self.exhibition_path)
+
+        # Ensure we're back on the view page
+        self.assertEqual(self.selenium.current_url, self.exhibition_url)
+
+        # Can see staff vote
+        artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
+        self.assertEquals(artwork_score.text, '1')
+
+        # Logged-in user can like this submission
+        like_button = self.selenium.find_element_by_css_selector('a.like')
+        self.assertIsNotNone(like_button)
+        like_button.click()
+        time.sleep(3)   # wait for vote to be counted
+        self.assertEquals(artwork_score.text, '2')
+
+        # And we can unlike it too
+        unlike_button = self.selenium.find_element_by_css_selector('a.unlike')
+        self.assertIsNotNone(unlike_button)
+        unlike_button.click()
+        time.sleep(3)   # wait for vote to be removed
+        self.assertEquals(artwork_score.text, '1')
+
 
 class SubmissionCreateIntegrationTests(SeleniumTestCase):
     """Artwork view includes Submission create."""

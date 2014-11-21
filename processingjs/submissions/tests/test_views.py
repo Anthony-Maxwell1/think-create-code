@@ -9,35 +9,97 @@ from uofa.test import UserSetUp
 from submissions.models import Submission
 from exhibitions.models import Exhibition
 from artwork.models import Artwork
+from votes.models import Vote
 
 class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
     """Exhibition view includes Submission list."""
+
+    def setUp(self):
+        super(SubmissionListExhibitionViewTests, self).setUp()
+
+        self.exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+        self.view_url = reverse('exhibition-view', kwargs={'pk': self.exhibition.id})
 
     def test_view(self):
 
         client = Client()
 
         # New exhibitions contain no submissions
-        exhibition = Exhibition.objects.create(
-            title='New Exhibition',
-            description='description goes here',
-            released_at = timezone.now(),
-            author=self.user)
-        view_url = reverse('exhibition-view', kwargs={'pk': exhibition.id})
 
-        response = client.get(view_url)
-        self.assertEquals(response.context['object'].id, exhibition.id)
+        response = client.get(self.view_url)
+        self.assertEquals(response.context['object'].id, self.exhibition.id)
         self.assertEquals(response.context['object'].submission_set.count(), 0)
 
         # Submit an artwork to the exhibition to see it in the list
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
-        submission = Submission.objects.create(artwork=artwork, exhibition=exhibition, submitted_by=self.user)
+        submission = Submission.objects.create(artwork=artwork, exhibition=self.exhibition, submitted_by=self.user)
 
-        response = client.get(view_url)
-        self.assertEquals(response.context['object'].id, exhibition.id)
+        response = client.get(self.view_url)
+        self.assertEquals(response.context['object'].id, self.exhibition.id)
         submissions = response.context['object'].submission_set.all()
         self.assertEquals(submissions.count(), 1)
         self.assertEquals(submissions[0].id, submission.id)
+
+    def test_votes_public(self):
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        submission = Submission.objects.create(artwork=artwork, exhibition=self.exhibition, submitted_by=self.user)
+
+        client = Client()
+
+        # No votes, no vote text shown
+        response = client.get(self.view_url)
+        self.assertEquals(response.context['object'].submission_set.count(), 1)
+        self.assertNotRegexpMatches(response.content, r'0 votes')
+        self.assertRegexpMatches(response.content, r'Sign in to vote')
+
+        # Add a vote, ensure it's shown correctly
+        student_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.user)
+        response = client.get(self.view_url)
+        self.assertEquals(response.context['object'].submission_set.count(), 1)
+        self.assertRegexpMatches(response.content, r'1 vote')
+        self.assertRegexpMatches(response.content, r'Sign in to vote')
+
+        # Add a second vote, ensure it's shown correctly
+        staff_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
+        response = client.get(self.view_url)
+        self.assertEquals(response.context['object'].submission_set.count(), 1)
+        self.assertRegexpMatches(response.content, r'2 votes')
+        self.assertRegexpMatches(response.content, r'Sign in to vote')
+
+
+    def test_vote_like(self):
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        submission = Submission.objects.create(artwork=artwork, exhibition=self.exhibition, submitted_by=self.user)
+
+        client = Client()
+
+        # Login as student
+        response = self.assertLogin(client, self.view_url)
+        self.assertEquals(response.context['object'].submission_set.count(), 1)
+        self.assertNotRegexpMatches(response.content, r'title="unlike"')
+        self.assertRegexpMatches(response.content, r'title="like"')
+
+        # Add a vote, ensure it's shown correctly
+        student_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.user)
+        response = client.get(self.view_url)
+        submissions = response.context['object'].submission_set.all()
+        self.assertEquals(len(submissions), 1)
+        self.assertEquals(submissions[0].score, 1)
+        self.assertNotRegexpMatches(response.content, r'title="like"')
+        self.assertRegexpMatches(response.content, r'title="unlike"')
+
+        # Add a staff vote, ensure it doesn't affect the like/unlike button
+        staff_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
+        response = client.get(self.view_url)
+        submissions = response.context['object'].submission_set.all()
+        self.assertEquals(len(submissions), 1)
+        self.assertEquals(submissions[0].score, 2)
+        self.assertNotRegexpMatches(response.content, r'title="like"')
+        self.assertRegexpMatches(response.content, r'title="unlike"')
 
 
 class SubmissionCreateTests(UserSetUp, TestCase):
