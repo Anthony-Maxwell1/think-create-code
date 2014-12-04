@@ -7,18 +7,115 @@ from uofa.test import SeleniumTestCase, wait_for_page_load
 
 class ArtworkListIntegrationTests(SeleniumTestCase):
 
-    def test_artwork_listed(self):
+    def test_public_artwork_listed(self):
 
-        Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
 
         list_path = reverse('artwork-list')
         self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
-            1
+            3
         )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            titles[0].text,
+            artwork1.title
+        )
+        self.assertEqual(
+            titles[1].text,
+            artwork2.title
+        )
+        self.assertEqual(
+            titles[2].text,
+            artwork3.title
+        )
+
         self.assertIsNotNone(
             self.selenium.find_element_by_id('list-add-button')
+        )
+
+    def test_user_artwork_listed(self):
+
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.user.id})
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork1.title
+        )
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.staff_user.id})
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork2.title
+        )
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.super_user.id})
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork3.title
+        )
+
+    def test_my_artwork_listed(self):
+
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+
+        list_url = '%s%s' % (self.live_server_url, reverse('artwork-list'))
+
+        self.performLogin(user="student")
+        self.selenium.get(list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork1.title
+        )
+
+        self.performLogin(user="staff")
+        self.selenium.get(list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork2.title
+        )
+
+        self.performLogout()
+        self.performLogin(user="super")
+        self.selenium.get(list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork3.title
         )
 
     def test_add_artwork_linked(self):

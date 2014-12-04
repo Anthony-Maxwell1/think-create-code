@@ -102,6 +102,13 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
         self.selenium.get(login_url)
         self.assertLogin(user=user)
 
+    def performLogout(self):
+        '''Go to the logout page'''
+
+        logout_url = '%s%s' % (self.live_server_url, reverse('logout'))
+        self.selenium.get(logout_url)
+
+
     def assertLogin(self, next_path = '', user='default'):
         '''Assert that we are at the login page, perform login, and assert success.'''
         self._doLogin(next_path, user)

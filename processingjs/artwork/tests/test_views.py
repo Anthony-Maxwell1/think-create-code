@@ -10,7 +10,7 @@ from uofa.test import UserSetUp
 class ArtworkListTests(UserSetUp, TestCase):
     """Artwork list view tests."""
 
-    def test_artwork_in_the_context(self):
+    def test_public_artwork(self):
         
         client = Client()
         list_path = reverse('artwork-list')
@@ -18,9 +18,59 @@ class ArtworkListTests(UserSetUp, TestCase):
 
         self.assertEquals(list(response.context['object_list']), [])
 
-        Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], artwork1)
+        self.assertEquals(response.context['object_list'][1], artwork2)
+        self.assertEquals(response.context['object_list'][2], artwork3)
+
+    def test_user_artwork(self):
+        
+        client = Client()
+
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.user.id})
         response = client.get(list_path)
         self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0], artwork1)
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.staff_user.id})
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0], artwork2)
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.super_user.id})
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0], artwork3)
+
+    def test_my_artwork(self):
+        
+        client = Client()
+
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+
+        list_path = reverse('artwork-list')
+
+        response = self.assertLogin(client, list_path, user='student')
+        self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0], artwork1)
+
+        response = self.assertLogin(client, list_path, user='staff')
+        self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0], artwork2)
+
+        response = self.assertLogin(client, list_path, user='super')
+        self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0], artwork3)
 
 
 class ArtworkViewTests(UserSetUp, TestCase):

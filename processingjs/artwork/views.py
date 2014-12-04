@@ -1,5 +1,6 @@
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.core.urlresolvers import reverse
+from django.contrib.auth import get_user_model
 import os
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin
@@ -57,6 +58,32 @@ class ShowArtworkCodeView(ArtworkView, DetailView):
 class ListArtworkView(ArtworkView, ListView):
 
     template_name = ArtworkView.prepend_template_path('list.html')
+
+    def _get_author_id(self):
+        author_id = self.kwargs.get('author')
+        if not author_id and self.request.user.is_authenticated():
+            author_id = self.request.user.id
+        return author_id
+
+    def get_queryset(self):
+        '''Show artwork authored by the given, or current, user'''
+        qs = super(ListArtworkView, self).get_queryset()
+        author_id = self._get_author_id()
+        if author_id:
+            qs = qs.filter(author__exact=author_id).order_by('-modified_at')
+        return qs
+
+    def get_context_data(self, **kwargs):
+
+        context = super(ListArtworkView, self).get_context_data(**kwargs)
+        user_model = get_user_model()
+        author_id = self._get_author_id()
+        try:
+            author = user_model.objects.get(id=author_id)
+        except user_model.DoesNotExist:
+            author = None
+        context['author'] = author
+        return context
 
 
 class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):
