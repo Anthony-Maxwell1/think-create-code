@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Hi {{ user.username }}</h1>
+<h2>Roles</h2>
+<pre>{{ lti_roles|pprint }}</pre>
+<h2>POST</h2>
+<pre>{{ post|pprint }}</pre>
+<h2>GET</h2>
+<pre>{{ get|pprint }}</pre>
+{% endblock content %}

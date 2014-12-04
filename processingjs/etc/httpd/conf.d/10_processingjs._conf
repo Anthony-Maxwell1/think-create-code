@@ -26,7 +26,7 @@ AliasMatch (?i)^/Think.Create.Code/lti/?$           /var/www/adx/lti/think-creat
 WSGIScriptAlias /think.create.code/lti/gallery      /var/www/adx/lti/think-create-code/processingjs/gallery/wsgi.py
 WSGIScriptAlias /Think.Create.Code/lti/gallery      /var/www/adx/lti/think-create-code/processingjs/gallery/wsgi.py
 <Directory /var/www/adx/lti/think-create-code/processingjs>
-  WSGIProcessGroup django-processingjs
+  WSGIProcessGroup django-processingjs-lti
   WSGIApplicationGroup %{GLOBAL}
   <Files wsgi.py>
     Order deny,allow

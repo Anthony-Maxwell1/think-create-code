@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from django import forms
 from rulez import registry
@@ -10,7 +11,7 @@ class Exhibition(models.Model):
 
     title = models.CharField(max_length=500)
     description = models.TextField()
-    author = models.ForeignKey('auth.User')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL)
     released_at = models.DateTimeField(verbose_name="release date", default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     modified_at = models.DateTimeField(auto_now=True, editable=False)

@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.auth import views as auth_views
 
+import gallery.views
 import artwork.views
 import exhibitions.views
 import submissions.views
@@ -16,6 +17,8 @@ urlpatterns = patterns('',
 
     url(r'^$', artwork.views.ListArtworkView.as_view(),
         name='home'),
+    url(r'^lti/$', gallery.views.LTILoginView.as_view(),
+        name='lti'),
     url(r'^artwork/list/$', artwork.views.ListArtworkView.as_view(),
         name='artwork-list'),
     url(r'^artwork/new/$', artwork.views.CreateArtworkView.as_view(),

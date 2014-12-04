@@ -31,7 +31,8 @@ if 'test' in sys.argv:
 elif 'runserver' in sys.argv:
     ENVIRONMENT = "development"
 else:
-    ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production")
+    # FIXME - do not merge to master!
+    ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "lti-test")
 
 
 if ENVIRONMENT == 'production':
@@ -46,6 +47,22 @@ if ENVIRONMENT == 'production':
     }
     STATIC_URL = '/Think.Create.Code/static/'
     ALLOWED_HOSTS = ['*']
+
+elif ENVIRONMENT == 'lti-test':
+
+    DATABASES = {
+        'default': {
+             'ENGINE': 'django.db.backends.mysql',
+             'NAME': 'processingjs_lti_gallery',
+             'USER': 'gallery_rw',
+             'PASSWORD': 'gAll3rY-rw',
+        }
+    }
+    STATIC_URL = '/Think.Create.Code/static/'
+    ALLOWED_HOSTS = ['*']
+
+    DEBUG = True
+    TEMPLATE_DEBUG = True
 
 elif ENVIRONMENT == 'development':
 
@@ -107,6 +124,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'harvard.django_auth_lti.middleware.LTIAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
@@ -164,5 +182,14 @@ LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Django's default auth backend
+    'harvard.django_auth_lti.backends.LTIAuthBackend',
     'rulez.backends.ObjectPermissionBackend',
 ]
+
+AUTH_USER_MODEL = 'auth.User'
+
+# FIXME - how to manage security?
+LTI_OAUTH_CREDENTIALS = {
+    'test': 'uoa_secret',
+    'test2': 'uoa_reallysecret',
+}
