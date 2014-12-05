@@ -31,7 +31,8 @@ if 'test' in sys.argv:
 elif 'runserver' in sys.argv:
     ENVIRONMENT = "development"
 else:
-    ENVIRONMENT = "production"
+    #FIXME ENVIRONMENT = "production"
+    ENVIRONMENT = "lti-test"
 
 
 if ENVIRONMENT == 'production':

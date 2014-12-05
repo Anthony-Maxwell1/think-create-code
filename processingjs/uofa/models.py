@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ModelForm
 from django.core import validators
 from django.utils import timezone
 from django.utils.http import urlquote
@@ -6,6 +7,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.models import UserManager
+
+from uofa.fields import NullableCharField
 
 
 class UserManager(UserManager):
@@ -21,13 +24,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     Username, password and email are required. Other fields are optional.
     """
-    username = models.CharField(_('username'), max_length=255, unique=True,
+    username = models.CharField(_('user_id'), max_length=255, unique=True,
         help_text=_('Required. 255 characters or fewer. Letters, digits and '
                     '@/./+/-/_ only.'),
         validators=[
             validators.RegexValidator(r'^[\w.@+-]+$', _('Enter a valid username.'), 'invalid')
         ])
-    first_name = models.CharField(_('first name'), max_length=255, blank=True)
+    first_name = NullableCharField(_('username'), max_length=255, blank=True, null=True, unique=True, default=None)
     last_name = models.CharField(_('last name'), max_length=255, blank=True)
     email = models.EmailField(_('email address'), blank=True)
     is_staff = models.BooleanField(_('staff status'), default=False,
@@ -64,3 +67,22 @@ class User(AbstractBaseUser, PermissionsMixin):
         Sends an email to this User.
         """
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+class UserForm(ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name']
+
+    def __init__(self, *args, **kwargs):
+        super(UserForm, self).__init__(*args, **kwargs)
+        # Require non-empty values with one or more non-whitespace character
+        self.fields['first_name'].required = True
+        self.fields['first_name'].validators=[
+            validators.RegexValidator(r'\S', _('Enter a valid username.'), 'invalid')
+        ]
+
+    def clean_first_name(self):
+        # Strip leading/trailing spaces
+        first_name = self.cleaned_data.get('first_name', '').strip()
+        return first_name
