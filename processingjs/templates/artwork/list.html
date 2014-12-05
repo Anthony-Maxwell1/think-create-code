@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <div id="artwork-list-content">
+{% if author %}
+<h1>Artwork by {{ author }}</h1>
+{% endif %}
+
 <div class="row">
     <div class="small-grid-2">&nbsp;</div>
     <ul class="small-block-grid-2">
@@ -9,7 +13,12 @@
         {% include 'artwork/_render.html' with object=artwork %}
         </div>
         <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h2>
-        <p class="artwork-date"><time>{{ artwork.modified_at|date }}</time></p>
+        {% if not author %}
+        <div class="artwork-detail">Created by 
+            <a href="{% url 'artwork-author-list' artwork.author.id %}" 
+              title="view artwork by {{ artwork.author }}">{{ artwork.author }}</a>
+        </div>
+        {% endif %}
     </li>
     {% endfor %}
     <li><div class="canvas-preview">

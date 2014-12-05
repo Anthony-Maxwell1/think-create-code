@@ -31,8 +31,7 @@ if 'test' in sys.argv:
 elif 'runserver' in sys.argv:
     ENVIRONMENT = "development"
 else:
-    # FIXME - do not merge to master!
-    ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "lti-test")
+    ENVIRONMENT = "production"
 
 
 if ENVIRONMENT == 'production':
@@ -186,7 +185,7 @@ AUTHENTICATION_BACKENDS = [
     'rulez.backends.ObjectPermissionBackend',
 ]
 
-AUTH_USER_MODEL = 'auth.User'
+AUTH_USER_MODEL = 'uofa.User'
 
 # FIXME - how to manage security?
 LTI_OAUTH_CREDENTIALS = {

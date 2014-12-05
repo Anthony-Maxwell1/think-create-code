@@ -2,6 +2,7 @@ import re
 from django.core.urlresolvers import reverse
 
 from uofa.test import SeleniumTestCase
+from selenium.common.exceptions import NoSuchElementException
 
 
 class GalleryAuthIntegrationTests(SeleniumTestCase):
@@ -9,7 +10,6 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
 
     def test_login(self):
         self.performLogin()
-
 
     def test_login_fail(self):
         login_url = '%s%s' % (self.live_server_url, reverse('login'))
@@ -26,7 +26,6 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
         # ..showing error
         login_error = re.compile(r'Your username and password didn\'t match. Please try again\.')
         self.assertRegexpMatches(self.selenium.page_source, login_error)
-
 
     def test_logout(self):
 
@@ -46,6 +45,73 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
         # 4. re-visit "add artwork", and ensure we got sent back to login
         self.selenium.get(add_url)
         self.assertEqual(self.selenium.current_url, '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('artwork-add')))
+
+    def test_public_nav_links(self):
+        base_url = self.live_server_url
+        self.selenium.get(base_url)
+
+        # My Studio
+        link = self.selenium.find_element_by_link_text('My Studio')
+        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('home'))
+        self.assertEqual(
+            link.get_attribute('href'),
+            login_url
+        )
+
+        # Exhibitions
+        link = self.selenium.find_element_by_link_text('Exhibitions')
+        exhibitions_url = '%s%s' % (self.live_server_url, reverse('exhibition-list'))
+        self.assertEqual(
+            link.get_attribute('href'),
+            exhibitions_url
+        )
+
+        # Sign in
+        link = self.selenium.find_element_by_id('nav-signin')
+        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('home'))
+        self.assertEqual(
+            link.get_attribute('href'),
+            login_url
+        )
+
+        # No sign out
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('nav-signout')
+        )
+
+    def test_user_nav_links(self):
+        self.performLogin()
+
+        # My Studio
+        link = self.selenium.find_element_by_link_text('My Studio')
+        home_url = '%s%s' % (self.live_server_url, reverse('home'))
+        self.assertEqual(
+            link.get_attribute('href'),
+            home_url
+        )
+
+        # Exhibitions
+        link = self.selenium.find_element_by_link_text('Exhibitions')
+        exhibitions_url = '%s%s' % (self.live_server_url, reverse('exhibition-list'))
+        self.assertEqual(
+            link.get_attribute('href'),
+            exhibitions_url
+        )
+
+        # Sign out
+        link = self.selenium.find_element_by_id('nav-signout')
+        logout_url = '%s%s?next=%s' % (self.live_server_url, reverse('logout'), reverse('home'))
+        self.assertEqual(
+            link.get_attribute('href'),
+            logout_url
+        )
+
+        # No Sign in
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('nav-signin')
+        )
 
 
 class GalleryHomePageIntegrationTests(SeleniumTestCase):
