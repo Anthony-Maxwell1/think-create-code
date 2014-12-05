@@ -1,49 +1,49 @@
 from django.test import TestCase
 from django.core import mail
 
-from uofa.models import LTIUser, LTIUserManager
+from uofa.models import User, UserManager
 
-class LTIUserManagerTests(TestCase):
+class UserManagerTests(TestCase):
 
     def test_create_staffuser(self):
-        staff_user = LTIUser.objects.create_staffuser('staff_member', password='bad password')
+        staff_user = User.objects.create_staffuser('staff_member', password='bad password')
         self.assertTrue(staff_user.is_staff)
 
 
-class LTIUserTests(TestCase):
+class UserTests(TestCase):
 
     def test_full_name(self):
-        noname = LTIUser.objects.create_user('noname')
+        noname = User.objects.create_user('noname')
         self.assertEquals(noname.get_full_name(), '')
 
-        firstname = LTIUser.objects.create_user('firstname', first_name = 'First')
+        firstname = User.objects.create_user('firstname', first_name = 'First')
         self.assertEquals(firstname.get_full_name(), firstname.first_name)
 
-        lastname = LTIUser.objects.create_user('lastname', last_name = 'Last')
+        lastname = User.objects.create_user('lastname', last_name = 'Last')
         self.assertEquals(lastname.get_full_name(), lastname.last_name)
 
-        fullname = LTIUser.objects.create_user('fullname', first_name='First', last_name = 'Last')
+        fullname = User.objects.create_user('fullname', first_name='First', last_name = 'Last')
         self.assertEquals(fullname.get_full_name(), 
                           '%s %s' % (fullname.first_name, fullname.last_name))
 
-        trimname = LTIUser.objects.create_user('trimname', first_name=' First', last_name = 'Last ')
+        trimname = User.objects.create_user('trimname', first_name=' First', last_name = 'Last ')
         self.assertEquals(trimname.get_full_name(), 
                           ('%s %s' % (trimname.first_name, trimname.last_name)).strip())
 
     def test_short_name(self):
-        noname = LTIUser.objects.create_user('noname')
+        noname = User.objects.create_user('noname')
         self.assertEquals(noname.get_short_name(), '')
 
-        firstname = LTIUser.objects.create_user('firstname', first_name = 'First')
+        firstname = User.objects.create_user('firstname', first_name = 'First')
         self.assertEquals(firstname.get_short_name(), firstname.first_name)
 
-        lastname = LTIUser.objects.create_user('lastname', last_name = 'Last')
+        lastname = User.objects.create_user('lastname', last_name = 'Last')
         self.assertEquals(lastname.get_short_name(), '')
 
-        fullname = LTIUser.objects.create_user('fullname', first_name='First', last_name = 'Last')
+        fullname = User.objects.create_user('fullname', first_name='First', last_name = 'Last')
         self.assertEquals(fullname.get_short_name(), fullname.first_name)
 
-        trimname = LTIUser.objects.create_user('trimname', first_name=' First', last_name = 'Last ')
+        trimname = User.objects.create_user('trimname', first_name=' First', last_name = 'Last ')
         self.assertEquals(trimname.get_short_name(), trimname.first_name)
 
     def test_email_user(self):
@@ -55,7 +55,7 @@ class LTIUserTests(TestCase):
             "connection": None,
             "html_message": None,
         }
-        user = LTIUser(email='foo@bar.com')
+        user = User(email='foo@bar.com')
         user.email_user(subject="Subject here",
             message="This is a message", from_email="from@domain.com", **kwargs)
         # Test that one message has been sent.

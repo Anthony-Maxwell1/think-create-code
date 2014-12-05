@@ -167,5 +167,5 @@ AUTHENTICATION_BACKENDS = [
     'rulez.backends.ObjectPermissionBackend',
 ]
 
-AUTH_USER_MODEL = 'uofa.LTIUser'
+AUTH_USER_MODEL = 'uofa.User'
 
