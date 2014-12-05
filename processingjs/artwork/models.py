@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django import forms
 from django.core.urlresolvers import reverse
 from rulez import registry
@@ -10,7 +11,7 @@ class Artwork(models.Model):
 
     title = models.CharField(max_length=500)
     code = models.TextField()
-    author = models.ForeignKey('auth.User')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL)
     shared = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     modified_at = models.DateTimeField(auto_now=True, editable=False)

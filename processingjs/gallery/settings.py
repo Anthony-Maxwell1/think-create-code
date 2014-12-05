@@ -166,3 +166,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Django's default auth backend
     'rulez.backends.ObjectPermissionBackend',
 ]
+
+AUTH_USER_MODEL = 'uofa.LTIUser'
+

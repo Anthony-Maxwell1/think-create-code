@@ -40,7 +40,7 @@ Use the given fixture to load the users:
 Or use the django shell/console to create users.
 
     (.virtualenv)$ ./manage.py shell
-    >>> from django.contrib.auth.models import User
+    >>> from uofa.models import User
     >>> jill = User.objects.create_user('jill', 'jill.vogel@adelaide.edu.au', 'l0c0gallery')
 
 
@@ -49,7 +49,7 @@ Create Artworks
 Use the django shell/console to create artwork, authored by a user.
 
     (.virtualenv)$ ./manage.py shell
-    >>> from django.contrib.auth.models import User
+    >>> from uofa.models import User
     >>> from artwork.models import Artwork
     >>> Artwork.objects.all()
     []

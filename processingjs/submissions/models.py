@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django import forms
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -21,7 +22,7 @@ class Submission(models.Model):
     exhibition = models.ForeignKey(Exhibition)
     artwork = models.ForeignKey(Artwork)
     score = models.IntegerField(default=0)
-    submitted_by = models.ForeignKey('auth.User')
+    submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     modified_at = models.DateTimeField(auto_now=True, editable=False)
 

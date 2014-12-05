@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.db.models import F
 from django.db.models.signals import post_save, post_delete
 from django import forms
@@ -23,7 +24,7 @@ class Vote(models.Model):
     )
 
     submission = models.ForeignKey(Submission)
-    voted_by = models.ForeignKey('auth.User')
+    voted_by = models.ForeignKey(settings.AUTH_USER_MODEL)
     status = models.IntegerField(choices=VOTE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     modified_at = models.DateTimeField(auto_now=True, editable=False)
