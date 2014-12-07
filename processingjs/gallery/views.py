@@ -9,9 +9,6 @@ from harvard.django_auth_lti.mixins import LTIUtilityMixin, LTIRoleRestrictionMi
 from uofa.models import UserForm
 from uofa.views import TemplatePathMixin, CSRFExemptMixin
 
-import logging
-logger = logging.getLogger(__name__)
-
 
 class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateView):
 
@@ -22,25 +19,25 @@ class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
     template_name = TemplatePathMixin.prepend_template_path('lti.html')
 
     def post(self, request, *args, **kwargs):
+        '''Bypass this form if we already have a user.first_name'''
 
-        # If we already have a first_name, skip this form.
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-
-        obj = self.get_object()
-        if obj.first_name:
+        self.object = self.get_object()
+        if self.object.first_name:
             return HttpResponseRedirect(self.get_success_url())
         else:
-            return self.form_invalid(form)
+            return super(LTILoginView, self).post(request, *args, **kwargs)
 
     def get_object(self):
+        '''This view's object is the current user'''
         return get_object_or_404(self.model, pk=self.request.user.id)
 
     def get_success_url(self):
+        '''If edX sent a 'next' query parameter, redirect there.
+           Otherwise, redirect to home.'''
 
         url_name = 'home'
-        custom_page = self.request.POST.get('custom_page')
-        if custom_page and is_safe_url(url=custom_page, host=self.request.get_host()):
-            url_name = resolve(custom_page).url_name
+        custom_next = self.request.POST.get('custom_next')
+        if custom_next and is_safe_url(url=custom_next, host=self.request.get_host()):
+            url_name = resolve(custom_next).url_name
 
         return reverse(url_name)

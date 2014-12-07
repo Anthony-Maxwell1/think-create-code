@@ -9,9 +9,7 @@ your username in edX.</em></p>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <ul class="edit_fields">
-    <li><ul class="errorlist"><li>This field is required.</li></ul><label
-    for="id_first_name">Username:</label> <input id="id_first_name"
-    maxlength="255" name="first_name" type="text" value="{{ user.first_name }}"></li>
+    {{ form.as_ul }}
     </ul>
     <div class="row">
         <div class="small-6 columns">
