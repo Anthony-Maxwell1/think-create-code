@@ -36,8 +36,11 @@ class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
            Otherwise, redirect to home.'''
 
         url_name = 'home'
+        kwargs = {}
         custom_next = self.request.POST.get('custom_next')
         if custom_next and is_safe_url(url=custom_next, host=self.request.get_host()):
-            url_name = resolve(custom_next).url_name
+            resolved = resolve(custom_next)
+            url_name = resolved.url_name
+            kwargs = resolved.kwargs
 
-        return reverse(url_name)
+        return reverse(url_name, kwargs=kwargs)
