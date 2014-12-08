@@ -9,7 +9,14 @@ your username in edX.</em></p>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <ul class="edit_fields">
-    {{ form.as_ul }}
+    {% for field in form %}
+    <li>
+        {{ field.label_tag }}
+        <label class="error">{{ field.errors }}</label>
+        <div class="helptext">{{ field.help_text }}</div>
+        {{ field }}
+    </li>
+    {% endfor %}
     </ul>
     <div class="row">
         <div class="small-6 columns">

@@ -55,6 +55,11 @@ ul.edit_fields {
     list-style-type: none;
     margin: 0;
 }
+/* Show help text in italics */
+ul.edit_fields .helptext {
+    font-size: 0.85rem;
+    font-style: italic;
+}
 /* Format code blocks */
 .code-block {
     font-family: monospace;

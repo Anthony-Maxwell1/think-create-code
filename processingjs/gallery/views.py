@@ -18,6 +18,11 @@ class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
     TemplatePathMixin.template_dir = 'gallery'
     template_name = TemplatePathMixin.prepend_template_path('lti.html')
 
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated():
+            return super(LTILoginView, self).get(request, *args, **kwargs)
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), self.request.get_full_path()))
+
     def post(self, request, *args, **kwargs):
         '''Bypass this form if we already have a user.first_name'''
 
