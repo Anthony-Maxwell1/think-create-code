@@ -27,12 +27,7 @@ class ExcludeAppsTestSuiteRunner(DiscoverRunner):
         if not args[0] and not getattr(settings, 'RUN_ALL_TESTS', False):
             tests = []
             for case in suite:
-                print "test case: %s" % case
-
                 pkg = case.__class__.__module__.split('.')[0]
-
-                print "test pkg: %s" % pkg
-
                 if pkg not in self.EXCLUDED_APPS:
                     tests.append(case)
             suite._tests = tests 
