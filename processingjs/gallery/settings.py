@@ -176,6 +176,10 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
 )
 
+# Testing - exclude harvard django auth
+TEST_RUNNER = 'uofa.test.ExcludeAppsTestSuiteRunner'
+TEST_EXCLUDE = ['harvard',]
+
 # Authentication
 LOGIN_URL = 'django.contrib.auth.views.login'
 LOGIN_REDIRECT_URL = '/'
