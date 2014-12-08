@@ -31,6 +31,17 @@ class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
         '''This view's object is the current user'''
         return get_object_or_404(self.model, pk=self.request.user.id)
 
+    def form_valid(self, form):
+        '''Set is_staff setting based on LTI User roles'''
+
+        roles = self.current_user_roles()
+        if 'Instructor' in roles:
+            form.instance.is_staff = True
+        else:
+            form.instance.is_staff = False
+
+        return super(LTILoginView, self).form_valid(form)
+
     def get_success_url(self):
         '''If edX sent a 'next' query parameter, redirect there.
            Otherwise, redirect to home.'''
