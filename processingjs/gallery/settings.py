@@ -31,8 +31,8 @@ if 'test' in sys.argv:
 elif 'runserver' in sys.argv:
     ENVIRONMENT = "development"
 else:
-    #FIXME ENVIRONMENT = "production"
-    ENVIRONMENT = "lti-test"
+    # FIXME
+    ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "lti-test")
 
 
 if ENVIRONMENT == 'production':
@@ -58,7 +58,7 @@ elif ENVIRONMENT == 'lti-test':
              'PASSWORD': 'gAll3rY-rw',
         }
     }
-    STATIC_URL = '/Think.Create.Code/static/'
+    STATIC_URL = '/Think.Create.Code/lti/static/'
     ALLOWED_HOSTS = ['*']
 
     DEBUG = True
