@@ -13,6 +13,10 @@ from uofa.fields import NullableCharField
 
 class UserManager(UserManager):
 
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        return self._create_user(username, email, password, is_staff=False, is_superuser=True,
+                                 **extra_fields)
+
     def create_staffuser(self, username, email=None, password=None, **extra_fields):
         return self._create_user(username, email, password, is_staff=True, is_superuser=False,
                                  **extra_fields)
@@ -24,13 +28,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     Username, password and email are required. Other fields are optional.
     """
-    username = models.CharField(_('user_id'), max_length=255, unique=True,
+    username = models.CharField(_('username'), max_length=255, unique=True,
         help_text=_('Required. 255 characters or fewer. Letters, digits and '
                     '@/./+/-/_ only.'),
         validators=[
-            validators.RegexValidator(r'^[\w.@+-]+$', _('Enter a valid username.'), 'invalid')
+            validators.RegexValidator(r'^[\w.@+-]+$', _('Enter a valid username.'), 'invalid'),
         ])
-    first_name = NullableCharField(_('username'), max_length=255, blank=True, null=True, unique=True, default=None)
+    first_name = NullableCharField(_('nickname'), max_length=255, unique=True,
+            blank=True, null=True, default=None,
+            help_text=_('255 characters or fewer. Letters, digits and '
+                        '@/./+/-/_ only.'),
+            validators=[
+                validators.RegexValidator(r'^[\w.@+-]+$', _('Please enter a valid nickname.'), 'invalid'),
+            ])
     last_name = models.CharField(_('last name'), max_length=255, blank=True)
     email = models.EmailField(_('email address'), blank=True)
     is_staff = models.BooleanField(_('staff status'), default=False,
@@ -44,7 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
+    REQUIRED_FIELDS = ['first_name']
 
     class Meta:
         verbose_name = _('user')
@@ -76,13 +86,16 @@ class UserForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
-        # Require non-empty values with one or more non-whitespace character
-        self.fields['first_name'].required = True
-        self.fields['first_name'].validators=[
-            validators.RegexValidator(r'\S', _('Enter a valid username.'), 'invalid')
-        ]
+
+        # n.b I have no idea why ModelForm doesn't already do this!
+        for field in self._meta.fields:
+            self.fields[field].validators = self._meta.model._meta.get_field(field).validators
+
+        # Require the user to provide a nickname
+        first_name = self.fields['first_name']
+        first_name.required = True
 
     def clean_first_name(self):
-        # Strip leading/trailing spaces
+        # Strip leading/trailing spaces from nickname
         first_name = self.cleaned_data.get('first_name', '').strip()
         return first_name

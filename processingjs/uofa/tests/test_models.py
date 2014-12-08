@@ -6,8 +6,14 @@ from uofa.models import User, UserManager, UserForm
 class UserManagerTests(TestCase):
 
     def test_create_staffuser(self):
-        staff_user = User.objects.create_staffuser('staff_member', password='bad password')
+        staff_user = User.objects.create_staffuser('staff_member', password='password')
         self.assertTrue(staff_user.is_staff)
+        self.assertFalse(staff_user.is_superuser)
+
+    def test_create_superuser(self):
+        super_user = User.objects.create_superuser('super_member', password='password')
+        self.assertFalse(super_user.is_staff)
+        self.assertTrue(super_user.is_superuser)
 
 
 class UserTests(TestCase):
@@ -91,8 +97,12 @@ class UserModelFormTests(TestCase):
         form = UserForm(data={'first_name': '  '})
         self.assertFalse(form.is_valid())
 
-        # User requires a non-empty first_name
+        # User requires a first_name without spaces
         form = UserForm(data={'first_name': 'name goes here'})
+        self.assertFalse(form.is_valid())
+
+        # User accepts a single word first name.
+        form = UserForm(data={'first_name': 'name_goes@here-or-there.com'})
         self.assertTrue(form.is_valid())
 
     def test_name_unique(self):
@@ -104,5 +114,5 @@ class UserModelFormTests(TestCase):
         form = UserForm(data={'first_name': user.first_name})
         self.assertFalse(form.is_valid())
 
-        form = UserForm(data={'first_name': 'something else'})
+        form = UserForm(data={'first_name': 'something-else'})
         self.assertTrue(form.is_valid())
