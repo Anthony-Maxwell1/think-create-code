@@ -16,7 +16,7 @@ class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
     model = UserForm._meta.model
 
     TemplatePathMixin.template_dir = 'gallery'
-    template_name = TemplatePathMixin.prepend_template_path('lti.html')
+    template_name = TemplatePathMixin.prepend_template_path('lti-login.html')
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_authenticated():
@@ -24,10 +24,11 @@ class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
         return HttpResponseRedirect('%s?next=%s' % (reverse('login'), self.request.get_full_path()))
 
     def post(self, request, *args, **kwargs):
-        '''Bypass this form if we already have a user.first_name'''
+        '''Bypass this form if we already have a user.first_name 
+           (and we're not trying to POST an update).'''
 
         self.object = self.get_object()
-        if self.object.first_name:
+        if not 'first_name' in self.request.POST and self.object.first_name:
             return HttpResponseRedirect(self.get_success_url())
         else:
             return super(LTILoginView, self).post(request, *args, **kwargs)
