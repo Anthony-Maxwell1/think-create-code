@@ -61,9 +61,10 @@ Use the django shell/console to create artwork, authored by a user.
 
 Test Coverage
 -------------
-Run the unit and integration tests, and get test coverage
+Run the unit and integration tests, and get test coverage.
+Ensure we maintain at least 98%.
 
-    (.virtualenv)$ coverage run --include=./*  manage.py test
+    (.virtualenv)$ coverage run --include=./* --omit=./harvard*  manage.py test
     (.virtualenv)$ coverage report
     Name               Stmts   Miss  Cover
     --------------------------------------

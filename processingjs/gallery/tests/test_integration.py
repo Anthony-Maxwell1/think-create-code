@@ -99,12 +99,10 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
             exhibitions_url
         )
 
-        # Sign out
-        link = self.selenium.find_element_by_id('nav-signout')
-        logout_url = '%s%s?next=%s' % (self.live_server_url, reverse('logout'), reverse('home'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            logout_url
+        # No sign out
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('nav-signout')
         )
 
         # No Sign in
