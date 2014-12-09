@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import ModelForm
 from django.core import validators
 from django.utils import timezone
 from django.utils.http import urlquote
@@ -7,8 +8,14 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.models import UserManager
 
+from uofa.fields import NullableCharField
+
 
 class UserManager(UserManager):
+
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        return self._create_user(username, email, password, is_staff=False, is_superuser=True,
+                                 **extra_fields)
 
     def create_staffuser(self, username, email=None, password=None, **extra_fields):
         return self._create_user(username, email, password, is_staff=True, is_superuser=False,
@@ -25,9 +32,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_('Required. 255 characters or fewer. Letters, digits and '
                     '@/./+/-/_ only.'),
         validators=[
-            validators.RegexValidator(r'^[\w.@+-]+$', _('Enter a valid username.'), 'invalid')
+            validators.RegexValidator(r'^[\w.@+-]+$', _('Enter a valid username.'), 'invalid'),
         ])
-    first_name = models.CharField(_('first name'), max_length=255, blank=True)
+    first_name = NullableCharField(_('nickname'), max_length=255, unique=True,
+            blank=True, null=True, default=None,
+            help_text=_('255 characters or fewer. Letters, digits and '
+                        '@/./+/-/_ only.'),
+            validators=[
+                validators.RegexValidator(r'^[\w.@+-]+$', _('Please enter a valid nickname.'), 'invalid'),
+            ])
     last_name = models.CharField(_('last name'), max_length=255, blank=True)
     email = models.EmailField(_('email address'), blank=True)
     is_staff = models.BooleanField(_('staff status'), default=False,
@@ -41,12 +54,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
+    REQUIRED_FIELDS = ['first_name']
 
     class Meta:
         verbose_name = _('user')
         verbose_name_plural = _('users')
         db_table = 'auth_user'
+
+    def __unicode__(self):
+        return self.get_short_name() or self.username
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
 
     def get_full_name(self):
         """
@@ -64,3 +83,25 @@ class User(AbstractBaseUser, PermissionsMixin):
         Sends an email to this User.
         """
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+class UserForm(ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name']
+
+    def __init__(self, *args, **kwargs):
+        super(UserForm, self).__init__(*args, **kwargs)
+
+        # n.b I have no idea why ModelForm doesn't already do this!
+        for field in self._meta.fields:
+            self.fields[field].validators = self._meta.model._meta.get_field(field).validators
+
+        # Require the user to provide a nickname
+        first_name = self.fields['first_name']
+        first_name.required = True
+
+    def clean_first_name(self):
+        # Strip leading/trailing spaces from nickname
+        first_name = self.cleaned_data.get('first_name', '').strip()
+        return first_name

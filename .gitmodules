@@ -1,0 +1,3 @@
+[submodule "processingjs/harvard"]
+	path = processingjs/harvard
+	url = git@github.com:uofajillian/django-auth-lti.git

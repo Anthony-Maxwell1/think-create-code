@@ -1,4 +1,6 @@
 from django.test import LiveServerTestCase
+from django.test.runner import DiscoverRunner
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities    
@@ -12,6 +14,25 @@ import re
 import time
 from contextlib import contextmanager
 
+
+class ExcludeAppsTestSuiteRunner(DiscoverRunner):
+    EXCLUDED_APPS = getattr(settings, 'TEST_EXCLUDE', [])
+
+    def __init__(self, *args, **kwargs):
+        settings.TESTING = True
+        super(ExcludeAppsTestSuiteRunner, self).__init__(*args, **kwargs)
+    
+    def build_suite(self, *args, **kwargs):
+        suite = super(ExcludeAppsTestSuiteRunner, self).build_suite(*args, **kwargs)
+        if not args[0] and not getattr(settings, 'RUN_ALL_TESTS', False):
+            tests = []
+            for case in suite:
+                pkg = case.__class__.__module__.split('.')[0]
+                if pkg not in self.EXCLUDED_APPS:
+                    tests.append(case)
+            suite._tests = tests 
+        return suite
+    
 
 class UserSetUp:
     def setUp(self):
@@ -48,6 +69,12 @@ class UserSetUp:
         elif user == 'super':
             return self.super_password
         return self.password
+
+    def performLogout(self):
+        '''Go to the logout page'''
+
+        logout_url = '%s%s' % (self.live_server_url, reverse('logout'))
+        self.selenium.get(logout_url)
 
     def assertLogin(self, client, next_path='', user='default'):
         login_path = reverse('login')

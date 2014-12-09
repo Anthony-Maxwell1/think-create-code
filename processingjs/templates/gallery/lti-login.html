@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Welcome!</h1>
+
+<p><em>This username will only be used to identify your Artworks to other students
+in the Gallery. It will not be used for any other purposes, and need not match
+your username in edX.</em></p>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <ul class="edit_fields">
+    {% for field in form %}
+    <li>
+        {{ field.label_tag }}
+        <label class="error">{{ field.errors }}</label>
+        <div class="helptext">{{ field.help_text }}</div>
+        {{ field }}
+    </li>
+    {% endfor %}
+    </ul>
+    <div class="row">
+        <div class="small-6 columns">
+            <button id="save_user" type="submit" class="postfix button">Save</button>
+        </div>
+    </div>
+</form>
+
+{% endblock content %}

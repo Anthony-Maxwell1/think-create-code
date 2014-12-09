@@ -107,6 +107,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'harvard.django_auth_lti.middleware.LTIAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
@@ -158,14 +159,26 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
 )
 
+
+# Testing - exclude harvard django auth
+TEST_RUNNER = 'uofa.test.ExcludeAppsTestSuiteRunner'
+TEST_EXCLUDE = ['harvard',]
+
+
 # Authentication
 LOGIN_URL = 'django.contrib.auth.views.login'
 LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Django's default auth backend
+    'harvard.django_auth_lti.backends.LTIAuthBackend',
     'rulez.backends.ObjectPermissionBackend',
 ]
 
 AUTH_USER_MODEL = 'uofa.User'
 
+# FIXME - how to manage security?
+LTI_OAUTH_CREDENTIALS = {
+    'test': 'uoa_secret',
+    'test2': 'uoa_reallysecret',
+}

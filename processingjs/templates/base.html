@@ -50,11 +50,6 @@
             <a href="{% url "login" %}?next={{ request.get_full_path|urlencode }}" id="nav-signin" title="sign in">Sign in
             <i class="fa fa-sign-in"></i></a>
         </li>
-        {% else %}
-        <li>
-            <a href="{% url "logout" %}?next={% url "home" %}" id="nav-signout" title="sign out">Sign out 
-            <i class="fa fa-sign-out"></i></a>
-        </li>
         {% endif %}
         </ul>
         </section>
