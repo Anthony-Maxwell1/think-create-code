@@ -24,7 +24,7 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
         # public doesn't see add button
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_id, ('list-add-button')
+            self.selenium.find_element_by_id, ('exhibition-add')
         )
 
     def test_empty_list_student(self):
@@ -38,7 +38,7 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
         # students doesn't see add button
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_id, ('list-add-button')
+            self.selenium.find_element_by_id, ('exhibition-add')
         )
 
     def test_empty_list_staff(self):
@@ -50,7 +50,7 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
             0
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('list-add-button')
+            self.selenium.find_element_by_id('exhibition-add')
         )
 
     def test_empty_list_super(self):
@@ -62,7 +62,7 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
             0
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('list-add-button')
+            self.selenium.find_element_by_id('exhibition-add')
         )
 
     def test_exhibition_listed(self):
@@ -77,7 +77,7 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
         # public don't see add button
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_id, ('list-add-button')
+            self.selenium.find_element_by_id, ('exhibition-add')
         )
 
     def test_exhibition_listed_descr_truncated(self):
@@ -103,7 +103,7 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
         # students don't see add button
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_id, ('list-add-button')
+            self.selenium.find_element_by_id, ('exhibition-add')
         )
 
     def test_exhibition_listed_staff(self):
@@ -117,7 +117,7 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
             1
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('list-add-button')
+            self.selenium.find_element_by_id('exhibition-add')
         )
 
     def test_exhibition_listed_super(self):
@@ -131,7 +131,7 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
             1
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('list-add-button')
+            self.selenium.find_element_by_id('exhibition-add')
         )
 
     def test_list_before_release_date(self):

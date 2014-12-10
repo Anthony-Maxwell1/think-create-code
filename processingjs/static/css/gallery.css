@@ -44,12 +44,6 @@ nav #nav-usermenu {
     right: -9999px;
     margin: auto;
 }
-/* Fill the div with a big 'add' button */
-#list-add-button {
-    width: 200px;
-    height: 200px;
-    font-size: 500%;
-}
 /* Adjust margins for form fields */
 ul.edit_fields {
     list-style-type: none;

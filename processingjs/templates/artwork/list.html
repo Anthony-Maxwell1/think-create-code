@@ -5,9 +5,14 @@
 <h1>Artwork by {{ author }}</h1>
 {% endif %}
 
+{% if user.is_anonymous or author == user %}
 <div class="row">
-    <div class="small-grid-2">&nbsp;</div>
-    <ul class="small-block-grid-2">
+    <a href="{% url 'artwork-add' %}" id="artwork-add">&#43; Add Artwork</a<>
+</div>
+{% endif %}
+
+<div class="small-grid-2">&nbsp;</div>
+<ul class="small-block-grid-2">
     {% for artwork in object_list %}
     <li><div class="artwork canvas-preview">
         {% include 'artwork/_render.html' with object=artwork %}
@@ -21,14 +26,7 @@
         {% endif %}
     </li>
     {% endfor %}
-    <li><div class="canvas-preview">
-        <form action="{% url 'artwork-add' %}">
-            <button class="postfix button" type="submit" id="list-add-button" title="add artwork">&#43;</button>
-        </form>
-        </div>
-    </li>
-    </ul>
-    <div class="small-grid-2">&nbsp;</div>
-</div>
+</ul>
+
 </div>
 {% endblock content %}

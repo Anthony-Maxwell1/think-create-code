@@ -34,7 +34,7 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         )
 
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('list-add-button')
+            self.selenium.find_element_by_id('artwork-add')
         )
 
     def test_user_artwork_listed(self):
@@ -123,7 +123,7 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         list_path = reverse('artwork-list')
         self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('list-add-button')
+            self.selenium.find_element_by_id('artwork-add')
         )
 
     def test_artwork_compile_error(self):
