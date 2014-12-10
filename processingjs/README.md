@@ -63,7 +63,7 @@ Test Coverage
 -------------
 Run the unit and integration tests, and get test coverage.
 
-    (.virtualenv)$ coverage run --include=./* --omit=./harvard*  manage.py test
+    (.virtualenv)$ coverage run --include=./* manage.py test
     (.virtualenv)$ coverage report
     Name               Stmts   Miss  Cover
     --------------------------------------

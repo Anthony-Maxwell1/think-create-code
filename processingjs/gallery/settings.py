@@ -14,6 +14,9 @@ import sys
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+# Include submodule directories in path
+sys.path.append(os.path.join(BASE_DIR, 'harvard'))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -107,7 +110,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'harvard.django_auth_lti.middleware.LTIAuthMiddleware',
+    'django_auth_lti.middleware.LTIAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
@@ -160,18 +163,13 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 
-# Testing - exclude harvard django auth
-TEST_RUNNER = 'uofa.test.ExcludeAppsTestSuiteRunner'
-TEST_EXCLUDE = ['harvard',]
-
-
 # Authentication
 LOGIN_URL = 'django.contrib.auth.views.login'
 LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Django's default auth backend
-    'harvard.django_auth_lti.backends.LTIAuthBackend',
+    'django_auth_lti.backends.LTIAuthBackend',
     'rulez.backends.ObjectPermissionBackend',
 ]
 
