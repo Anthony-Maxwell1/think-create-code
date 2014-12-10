@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django import forms
+from django.utils.translation import ugettext_lazy as _
 from rulez import registry
 
 
@@ -11,6 +12,10 @@ class Exhibition(models.Model):
 
     title = models.CharField(max_length=500)
     description = models.TextField()
+    image = models.ImageField(upload_to='not required',
+        null=True, blank=True, default=None,
+        help_text=_('Max file size 4MB.'),
+    )
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
     released_at = models.DateTimeField(verbose_name="release date", default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
@@ -53,4 +58,4 @@ registry.register('can_save', Exhibition)
 class ExhibitionForm(forms.ModelForm):
     class Meta:
         model = Exhibition
-        fields = ['title', 'description', 'released_at',]
+        fields = ['title', 'description', 'image', 'released_at',]

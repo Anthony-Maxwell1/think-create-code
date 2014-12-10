@@ -16,6 +16,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Include submodule directories in path
 sys.path.append(os.path.join(BASE_DIR, 'harvard'))
+sys.path.append(os.path.join(BASE_DIR, 'django-database-files'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -98,6 +99,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'rulez',
+    'database_files',
     'uofa',
     'artwork',
     'exhibitions',
@@ -119,6 +121,8 @@ ROOT_URLCONF = 'gallery.urls'
 WSGI_APPLICATION = 'gallery.wsgi.application'
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+DEFAULT_FILE_STORAGE = 'database_files.storage.DatabaseStorage'
 
 
 # Internationalization

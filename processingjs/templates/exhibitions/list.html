@@ -12,12 +12,20 @@
 
 <ul class="small-block-grid-1">
     {% for exhibition in object_list %}
-    <li><div class="exhibition">
-        <h3 class="exhibition-title"><a href="{% url 'exhibition-view' exhibition.id %}">{{ exhibition.title }}</a></h2>
-        <div class="exhibition-description">{{ exhibition.description|truncatechars:100 }}</div>
-        {% if not exhibition.released_yet %}
-        <div class="not-available">Release date <time>{{ exhibition.released_at|date }} {{ exhibition.released_at|time }}</time></div>
-        {% endif %}
+    <li><div class="exhibition row">
+        <div class="small-4 columns">
+            {% if exhibition.image %}
+            <a href="{% url 'exhibition-view' exhibition.id %}" title="Click to view {{ exhibition.title }}">
+                <img class="exhibition-image" src="{{ exhibition.image.url }}" alt="{{ exhibition.title }}" />
+            </a>
+            {% endif %}
+        </div>
+        <div class="small-8 columns">
+            <h3 class="exhibition-title"><a href="{% url 'exhibition-view' exhibition.id %}">{{ exhibition.title }}</a></h3>
+            <div class="exhibition-description">{{ exhibition.description|truncatechars:100 }}</div>
+            {% if not exhibition.released_yet %}
+            <div class="not-available">Release date <time>{{ exhibition.released_at|date }} {{ exhibition.released_at|time }}</time></div>
+            {% endif %}
         </div>
     </li>
     {% endfor %}

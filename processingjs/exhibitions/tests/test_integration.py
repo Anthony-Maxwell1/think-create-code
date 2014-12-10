@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from selenium.common.exceptions import NoSuchElementException
 from django.utils import timezone
 from datetime import timedelta
+import os, os.path
 
 from exhibitions.models import Exhibition
 from uofa.test import SeleniumTestCase, wait_for_page_load
@@ -638,3 +639,118 @@ class ExhibitionDeleteIntegrationTests(SeleniumTestCase):
         # delete redirects to login form, which redirects to list page
         list_path = reverse('exhibition-list')
         self.assertLoginRedirects(delete_path, redirect_path=list_path)
+
+
+class ExhibitionImageIntegrationTests(SeleniumTestCase):
+
+    def test_edit_exhibition_image(self):
+
+        exhibition = Exhibition.objects.create(title='Title bar', description='description goes here', author=self.staff_user)
+
+        # exhibition doesn't contain an image yet
+        view_path = reverse('exhibition-view', kwargs={'pk': exhibition.id})
+        self.selenium.get('%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition-image')),
+            0
+        )
+        
+        # edit redirects to login form
+        edit_path = reverse('exhibition-edit', kwargs={'pk': exhibition.id})
+        self.selenium.get('%s%s' % (self.live_server_url, edit_path))
+        self.assertLogin(edit_path, user='staff')
+
+        # send image file url to form
+        image_path = os.path.join(os.getcwd(), 'exhibitions', 'tests', 'img', 'tiny.gif')
+        self.selenium.find_element_by_id('id_image').send_keys(image_path)
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        view_path = reverse('exhibition-view', kwargs={'pk': exhibition.id})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition-image')),
+            1
+        )
+
+        # image should be shown in list view too
+        list_path = reverse('exhibition-list')
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition-image')),
+            1
+        )
+
+    def test_delete_exhibition_image(self):
+
+        exhibition = Exhibition.objects.create(title='Title bar', description='description goes here', author=self.staff_user)
+        # edit redirects to login form
+        edit_path = reverse('exhibition-edit', kwargs={'pk': exhibition.id})
+        self.selenium.get('%s%s' % (self.live_server_url, edit_path))
+        self.assertLogin(edit_path, user='staff')
+
+        # send image file url to form
+        image_path = os.path.join(os.getcwd(), 'exhibitions', 'tests', 'img', 'tiny.gif')
+        self.selenium.find_element_by_id('id_image').send_keys(image_path)
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        view_path = reverse('exhibition-view', kwargs={'pk': exhibition.id})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition-image')),
+            1
+        )
+
+        # visit the edit form to delete the image
+        self.selenium.get('%s%s' % (self.live_server_url, edit_path))
+
+        # click the 'clear' checkbox to remove the image
+        self.selenium.find_element_by_id('image-clear_id').click()
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        view_path = reverse('exhibition-view', kwargs={'pk': exhibition.id})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition-image')),
+            0
+        )
+
+        # image should be removed from list view too
+        list_path = reverse('exhibition-list')
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition-image')),
+            0
+        )

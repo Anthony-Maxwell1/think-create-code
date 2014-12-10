@@ -60,6 +60,8 @@ urlpatterns = patterns('',
         name='login'),
     url(r'^logout/$', auth_views.logout,
         name='logout'),
+    url(r'^media/(?P<name>.+)$', 'database_files.views.serve',
+        name='database_file'),
 )
 
 # n.b. Used in dev only

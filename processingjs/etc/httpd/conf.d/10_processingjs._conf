@@ -15,4 +15,8 @@ WSGIScriptAlias /Think.Create.Code/gallery      /var/www/adx/think-create-code/p
     Order deny,allow
     Allow from all
   </Files>
+
+  # Limit request size to 4Mb, for file uploads
+  LimitRequestBody 4194304
+
 </Directory>
