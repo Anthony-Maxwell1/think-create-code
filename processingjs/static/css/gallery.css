@@ -6,6 +6,10 @@ nav a {
 nav {
     margin-bottom: 3em !important;
 }
+/* Make the title-area text bigger */
+nav .title-area li a {
+    font-size: 1.04rem;
+}
 /* Magnify the font-awesome nav icons */
 nav .fa {
     font-size: 150%;
@@ -17,10 +21,6 @@ nav #nav-logged-in {
 /* Hide the drop-down arrow */
 nav #nav-logged-in:after {
     border-color: transparent transparent transparent !important;
-}
-/* Right-align the logged-in menu items */
-nav #nav-usermenu {
-    text-align: right;
 }
 /* pad the object-actions */
 .object-actions {

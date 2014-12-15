@@ -7,7 +7,7 @@
 
 {% if user.is_anonymous or author == user %}
 <div class="row">
-    <a href="{% url 'artwork-add' %}" id="artwork-add">&#43; Add Artwork</a>
+    <h4><a href="{% url 'artwork-add' %}" id="artwork-add">&#43; Add Artwork</a></h4>
 </div>
 {% endif %}
 
@@ -17,7 +17,7 @@
     <li><div class="artwork preview">
         {% include 'artwork/_render.html' with object=artwork %}
         </div>
-        <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h2>
+        <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h3>
         {% if not author %}
         <div class="artwork-detail">Created by 
             <a href="{% url 'artwork-author-list' artwork.author.id %}" 

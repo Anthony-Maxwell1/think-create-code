@@ -2,7 +2,7 @@
 {% if object %}
 <div class="artwork" id="artwork-{{ object.id }}">
 {% include 'artwork/_render.html' with object=object autosize=True %}
-<h3 class="artwork-title">{{ object.title }}</h2>
+<h3 class="artwork-title">{{ object.title }}</h3>
 <p class="artwork-detail">Created by {{ object.author }}, updated <time>{{ object.modified_at|date }}</time></p>
 </div>
 {% endif %}
