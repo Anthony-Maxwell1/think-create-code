@@ -1,0 +1,35 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>ProcessingJS :: Rendered Artwork</title>
+    {% block css %}
+    <style>
+    html, body { 
+        height: 100%; 
+        width: 100%;
+        position: absolute;
+    }
+    canvas {
+        outline:none;
+        border: 0;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+    }
+    </style>
+    {% endblock css %}
+    {% block js %}
+    <script type="text/javascript" src="{% static "js/processing.min.js" %}"></script>
+    {% endblock js %}
+    {% block extras %}
+    <!-- for use by child templates -->
+    {% endblock extras %}
+</head>
+<body>
+{% block content %}
+<canvas id="canvas-preview"></canvas>
+<script id="script-preview" data-processing-target="canvas-preview"
+    type="text/processing">{% autoescape off %}{{ object.code }}{% endautoescape %}</script>
+{% endblock %}
+</body>
+</html>

@@ -13,7 +13,6 @@ class ArtworkView(TemplatePathMixin):
     model = Artwork
     form_class = ArtworkForm
     template_dir = 'artwork'
-    save_perm = 'can_save'
 
 
 class ShowArtworkView(ArtworkView, DetailView):
@@ -50,9 +49,14 @@ class ShowArtworkView(ArtworkView, DetailView):
 
         return context
 
+
 class ShowArtworkCodeView(ArtworkView, DetailView):
     template_name = ArtworkView.prepend_template_path('code.pde')
     content_type = 'application/javascript; charset=utf-8'
+
+
+class RenderArtworkView(ArtworkView, DetailView):
+    template_name = ArtworkView.prepend_template_path('render.html')
 
 
 class ListArtworkView(ArtworkView, ListView):
@@ -105,7 +109,7 @@ class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):
 class UpdateArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, UpdateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')
-    user_perm = 'can_save'
+    user_perm = 'can_edit'
 
     def get_error_url(self):
         return reverse('artwork-view', kwargs={'pk': self.get_object().id})
@@ -121,7 +125,7 @@ class UpdateArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, UpdateVi
 class DeleteArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, DeleteView):
 
     template_name = ArtworkView.prepend_template_path('delete.html')
-    user_perm = 'can_save'
+    user_perm = 'can_delete'
 
     def get_error_url(self):
         return reverse('artwork-view', kwargs={'pk': self.get_object().id})

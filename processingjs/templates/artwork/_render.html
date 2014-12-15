@@ -1,6 +1,17 @@
-<script id="script-{{ object.id }}" type="text/processing" 
-    data-processing-target="canvas-{{ object.id }}" 
-    src="{% url 'artwork-code' pk=object.id %}"></script>
-<a href="{% url "artwork-view" object.id %}" title="Click to view {{ object.title }}">
-<canvas id="canvas-{{ object.id }}"></canvas>
-</a>
+<iframe class="artwork-iframe" id="iframe-{{ object.id }}"
+          src="{% url 'artwork-render' pk=object.id %}" width="100%" height="100%" scrolling="no">
+<p>Please enable iframes to view this content.</p>
+</iframe>
+{% if autosize %}
+<script>
+$('#iframe-{{ object.id }}').load(function () {
+    // Give the iframe time to finish rendering before resizing.
+    var $iframe = $(this);
+    setTimeout(function() {
+        var canvas = $iframe.contents().find('canvas');
+        $iframe.height(canvas.height());
+        $iframe.width(canvas.width());
+    }, 100);
+});
+</script>
+{% endif %}

@@ -27,22 +27,29 @@ nav #nav-usermenu {
     padding-top: 1.5ex;
 }
 
-/* Wrap the canvas art in a smaller div */
-.canvas-preview {
+/* Preview the artwork in a smaller div */
+.artwork.preview {
     overflow: hidden;
     width: 200px;
     height: 200px;
     position: relative;
 }
-/* center the canvas inside the preview div:
+
+/* center the canvas/iframe inside the preview div:
  * http://stackoverflow.com/a/19414020 */
-.canvas-preview canvas {
+.artwork.preview iframe,
+.artwork.preview canvas {
     position: absolute;
     top: -9999px;
     bottom: -9999px;
     left: -9999px;
     right: -9999px;
     margin: auto;
+}
+iframe {
+    border: 0;
+    overflow: hidden;
+    outline: none;
 }
 /* Adjust margins for form fields */
 ul.edit_fields {

@@ -34,7 +34,8 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
     def test_empty_list_student(self):
 
         self.performLogin(user='student')
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.exhibition')),
             1
@@ -75,13 +76,14 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         # Submit artwork to the exhibition
         submission = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
 
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.exhibition')),
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
         )
 
@@ -91,13 +93,14 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         submission = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
 
         self.performLogin(user='student')
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.exhibition')),
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
         )
 
@@ -107,13 +110,14 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         submission = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
 
         self.performLogin(user='staff')
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.exhibition')),
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
         )
 
@@ -123,13 +127,14 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         submission = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
 
         self.performLogin(user='super')
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.exhibition')),
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
         )
 
@@ -138,13 +143,14 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         # Submit artwork to the exhibition
         submission = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
 
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.exhibition')),
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
         )
 
@@ -209,14 +215,14 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         like_button = self.selenium.find_element_by_css_selector('a.like')
         self.assertIsNotNone(like_button)
         like_button.click()
-        time.sleep(3)   # wait for vote to be counted
+        time.sleep(5)   # wait for vote to be counted
         self.assertEquals(artwork_score.text, '2')
 
         # And we can unlike it too
         unlike_button = self.selenium.find_element_by_css_selector('a.unlike')
         self.assertIsNotNone(unlike_button)
         unlike_button.click()
-        time.sleep(3)   # wait for vote to be removed
+        time.sleep(5)   # wait for vote to be removed
         self.assertEquals(artwork_score.text, '1')
 
     def test_artwork_compile_error(self):
@@ -230,7 +236,8 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         submission2 = Submission.objects.create(artwork=good_artwork, exhibition=self.exhibition, submitted_by=self.user)
         submission2 = Submission.objects.create(artwork=bad_artwork2, exhibition=self.exhibition, submitted_by=self.user)
 
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             3
@@ -259,9 +266,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
     def test_no_submit_link_public(self):
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
         self.assertRaises(
@@ -272,9 +280,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
     def test_no_submit_link_student(self):
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.staff_artwork.id}))
         self.performLogin(user='student')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.staff_artwork.id)),
             1
         )
 
@@ -286,7 +295,8 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         # save the exhibition, and submit link still doesn't appear
         self.exhibition.save()
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertRaises(
             NoSuchElementException,
             self.selenium.find_element_by_link_text, ('SUBMIT')
@@ -295,9 +305,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
     def test_owned_submit_link_student(self):
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='student')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
         # no submit link until exhibition available
@@ -308,7 +319,8 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         # save the exhibition, and submit link appears
         self.exhibition.save()
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_link_text('SUBMIT')
         )
@@ -316,11 +328,13 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
     def test_submit_link_staff(self):
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='staff')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
+
         # no submit link until exhibition available
         self.assertRaises(
             NoSuchElementException,
@@ -329,7 +343,8 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         # save the exhibition, and submit link appears
         self.exhibition.save()
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_link_text('SUBMIT')
         )
@@ -337,9 +352,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
     def test_submit_link_super(self):
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='super')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
         # no submit link until exhibition available
@@ -350,7 +366,8 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         # save the exhibition, and submit link appears
         self.exhibition.save()
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_link_text('SUBMIT')
         )
@@ -363,9 +380,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='student')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
@@ -393,9 +411,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='student')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
@@ -423,9 +442,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='student')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
@@ -493,9 +513,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='student')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
@@ -533,9 +554,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='student')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
@@ -568,7 +590,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         
         # And exhibition options (since there's >1 choice)
         exhibition_options = self.selenium.find_elements_by_tag_name('option')
-        self.assertEqual( 3, len(exhibition_options))
+        self.assertEqual(3, len(exhibition_options))
         self.assertEqual('', exhibition_options[0].get_attribute('value'))
         self.assertEqual(self.exhibition.id, long(exhibition_options[1].get_attribute('value')))
         self.assertEqual(exhibition2.id, long(exhibition_options[2].get_attribute('value')))
@@ -594,9 +616,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
 
         artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
         self.performLogin(user='student')
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
@@ -635,11 +658,13 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
 
         # Go back to the artwork submit modal
-        self.selenium.get(artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
+
         self.selenium.find_element_by_link_text('SUBMIT').click()
         time.sleep(3)
 
@@ -690,15 +715,17 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.performLogin(user='student')
 
         # Confirm my submission is on the exhibition page
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
 
         # View the artwork to get to the submit link
-        self.selenium.get(self.artwork_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.artwork_url)
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
@@ -747,7 +774,8 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.performLogin(user='student')
 
         # Go to delete submission page
-        self.selenium.get(self.delete_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
 
         # Cancel delete
@@ -758,7 +786,8 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, self.artwork_url)
 
         # Confirm my submission is still on the exhibition page
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
@@ -768,14 +797,15 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         staff_submission = Submission.objects.create(
             artwork=self.staff_artwork,
             exhibition=self.exhibition,
-            submitted_by = self.user,
+            submitted_by = self.staff_user,
         )
 
         self.performLogin(user='student')
 
         # Delete submission page should throw permission denied
         delete_url = '%s%s' % (self.live_server_url, reverse('submission-delete', kwargs={'pk': staff_submission.id}))
-        self.selenium.get(delete_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'403 Forbidden')
 
 
@@ -783,7 +813,8 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.performLogin(user='staff')
 
         # Confirm my submission is on the exhibition page
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
@@ -811,7 +842,8 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.performLogin(user='super')
 
         # Confirm my submission is on the exhibition page
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
@@ -846,7 +878,8 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.performLogin(user='student')
 
         # Visit submission delete page
-        self.selenium.get(self.delete_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
 
         # Confirm delete
@@ -881,7 +914,8 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.performLogin(user='student')
 
         # Visit submission delete page
-        self.selenium.get(self.delete_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.delete_url)
         self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
 
         # Cancel delete
@@ -892,7 +926,8 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, self.artwork_url)
 
         # Confirm my submission is still on the exhibition page
-        self.selenium.get(self.exhibition_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )

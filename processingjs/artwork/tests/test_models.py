@@ -16,30 +16,80 @@ class ArtworkTests(UserSetUp, TestCase):
             'Empty code'
         )
 
-    def test_can_save(self):
+    def test_can_edit(self):
         student = Artwork(
             author=self.user,
             title='Empty code',
             code='// code goes here')
-        self.assertTrue(student.can_save(self.user))
-        self.assertTrue(student.can_save(self.staff_user))
-        self.assertTrue(student.can_save(self.super_user))
+        self.assertTrue(student.can_edit(self.user))
+        self.assertFalse(student.can_edit(self.staff_user))
+        self.assertFalse(student.can_edit(self.super_user))
 
         staff = Artwork(
             author=self.staff_user,
             title='Empty code',
             code='// code goes here')
-        self.assertFalse(staff.can_save(self.user))
-        self.assertTrue(staff.can_save(self.staff_user))
-        self.assertTrue(staff.can_save(self.super_user))
+        self.assertFalse(staff.can_edit(self.user))
+        self.assertTrue(staff.can_edit(self.staff_user))
+        self.assertFalse(staff.can_edit(self.super_user))
 
         superuser = Artwork(
             author=self.super_user,
             title='Empty code',
             code='// code goes here')
-        self.assertFalse(superuser.can_save(self.user))
-        self.assertTrue(superuser.can_save(self.staff_user))
-        self.assertTrue(superuser.can_save(self.super_user))
+        self.assertFalse(superuser.can_edit(self.user))
+        self.assertFalse(superuser.can_edit(self.staff_user))
+        self.assertTrue(superuser.can_edit(self.super_user))
+
+    def test_can_delete(self):
+        student = Artwork(
+            author=self.user,
+            title='Empty code',
+            code='// code goes here')
+        self.assertTrue(student.can_delete(self.user))
+        self.assertTrue(student.can_delete(self.staff_user))
+        self.assertTrue(student.can_delete(self.super_user))
+
+        staff = Artwork(
+            author=self.staff_user,
+            title='Empty code',
+            code='// code goes here')
+        self.assertFalse(staff.can_delete(self.user))
+        self.assertTrue(staff.can_delete(self.staff_user))
+        self.assertTrue(staff.can_delete(self.super_user))
+
+        superuser = Artwork(
+            author=self.super_user,
+            title='Empty code',
+            code='// code goes here')
+        self.assertFalse(superuser.can_delete(self.user))
+        self.assertTrue(superuser.can_delete(self.staff_user))
+        self.assertTrue(superuser.can_delete(self.super_user))
+
+    def test_can_submit(self):
+        student = Artwork(
+            author=self.user,
+            title='Empty code',
+            code='// code goes here')
+        self.assertTrue(student.can_submit(self.user))
+        self.assertTrue(student.can_submit(self.staff_user))
+        self.assertTrue(student.can_submit(self.super_user))
+
+        staff = Artwork(
+            author=self.staff_user,
+            title='Empty code',
+            code='// code goes here')
+        self.assertFalse(staff.can_submit(self.user))
+        self.assertTrue(staff.can_submit(self.staff_user))
+        self.assertTrue(staff.can_submit(self.super_user))
+
+        superuser = Artwork(
+            author=self.super_user,
+            title='Empty code',
+            code='// code goes here')
+        self.assertFalse(superuser.can_submit(self.user))
+        self.assertTrue(superuser.can_submit(self.staff_user))
+        self.assertTrue(superuser.can_submit(self.super_user))
 
     def test_can_submit_queryset(self):
         student = Artwork(

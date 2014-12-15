@@ -91,6 +91,7 @@ class ArtworkViewTests(UserSetUp, TestCase):
         response = client.get(reverse('artwork-view', kwargs={'pk':1}))
         self.assertEquals(response.status_code, 404)
 
+
 class ArtworkViewCodeTests(UserSetUp, TestCase):
     """Artwork view code tests."""
 
@@ -105,6 +106,24 @@ class ArtworkViewCodeTests(UserSetUp, TestCase):
         
         client = Client()
         response = client.get(reverse('artwork-code', kwargs={'pk':1}))
+        self.assertEquals(response.status_code, 404)
+
+
+class ArtworkViewRenderTests(UserSetUp, TestCase):
+    """Artwork view render tests."""
+
+    def test_artwork_render(self):
+        
+        client = Client()
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        response = client.get(reverse('artwork-render', kwargs={'pk':artwork.id}))
+        self.assertEquals(response.context['object'].title, artwork.title)
+        self.assertEquals(response.context['object'].code, artwork.code)
+
+    def test_artwork_render_404(self):
+        
+        client = Client()
+        response = client.get(reverse('artwork-render', kwargs={'pk':1}))
         self.assertEquals(response.status_code, 404)
 
 
@@ -210,6 +229,66 @@ class ArtworkEditTests(UserSetUp, TestCase):
         self.assertTrue(logged_in)
 
         # however, we can't edit the artwork
+        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        response = client.get(edit_url)
+        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+
+        # nor by post
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+
+        # Ensure the change wasn't made
+        response = client.get(view_url)
+        self.assertEquals(response.context['object'].title, artwork.title)
+
+    def test_not_author_staff_cant_edit_artwork(self):
+       
+        # Because the artwork edit form embeds the processingJS directly,
+        # we don't want anyone but the author to see the edit form.
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+
+        client = Client()
+
+        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
+        response = client.get(edit_url)
+
+        # edit requires login
+        login_url = '%s?next=%s' % (reverse('login'), edit_url)
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+        logged_in = client.login(username=self.get_username('staff'), password=self.get_password('staff'))
+        self.assertTrue(logged_in)
+
+        # however, staff can't edit the artwork
+        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        response = client.get(edit_url)
+        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+
+        # nor by post
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+
+        # Ensure the change wasn't made
+        response = client.get(view_url)
+        self.assertEquals(response.context['object'].title, artwork.title)
+
+    def test_not_author_super_cant_edit_artwork(self):
+       
+        # Because the artwork edit form embeds the processingJS directly,
+        # we don't want anyone but the author, even superusers, to see the edit form.
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+
+        client = Client()
+
+        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
+        response = client.get(edit_url)
+
+        # edit requires login
+        login_url = '%s?next=%s' % (reverse('login'), edit_url)
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+        logged_in = client.login(username=self.get_username('super'), password=self.get_password('super'))
+        self.assertTrue(logged_in)
+
+        # however, staff can't edit the artwork
         view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
         response = client.get(edit_url)
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)

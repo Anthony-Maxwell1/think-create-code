@@ -6,7 +6,7 @@
     <ul class="small-block-grid-2">
     {% for submission in object_list %}
     {% with submission.artwork as artwork %}
-    <li><div class="artwork canvas-preview" id="artwork-{{ artwork.id }}">
+    <li><div class="artwork preview" id="artwork-{{ artwork.id }}">
         {% include 'artwork/_render.html' with object=artwork %}
         </div>
         <div class="artwork-detail">

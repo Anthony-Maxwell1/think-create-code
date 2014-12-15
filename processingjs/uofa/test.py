@@ -189,14 +189,21 @@ def wait_for_page_load(browser):
             'Timeout waiting for {}'.format(condition_function.__name__)
         )
 
-    old_page = browser.find_element_by_tag_name('html')
+    # Get current page id, if any
+    old_page_id = None
+    try:
+        old_page = browser.find_element_by_tag_name('html')
+        old_page_id = old_page.id
+    except NoSuchElementException:
+        old_page_id = None
 
+    # Yield to run requested functions
     yield
 
     def page_has_loaded():
         try:
             new_page = browser.find_element_by_tag_name('html')
-            return new_page.id != old_page.id
+            return new_page.id != old_page_id
         except NoSuchElementException:
             return False
 
@@ -215,7 +222,8 @@ def patch_broken_pipe_error():
 
     def is_broken_pipe_error():
         type, err, tb = sys.exc_info()
-        return repr(err) == "error(32, 'Broken pipe')"
+        return (repr(err) == "error(32, 'Broken pipe')"
+            or repr(err) == "error(104, 'Connection reset by peer')")
 
     def my_handle_error(self, request, client_address):
         if not is_broken_pipe_error():

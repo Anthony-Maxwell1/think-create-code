@@ -2,20 +2,34 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>ProcessingJS Artworks</title>
     {% block css %}
     <link rel="stylesheet" type="text/css" href="{% static "css/foundation.min.css" %}">
     <link rel="stylesheet" type="text/css" href="{% static "css/font-awesome.min.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/jquery.ui.resizable.min.css" %}">
     <link rel="stylesheet" type="text/css" href="{% static "css/gallery.css" %}">
     {% endblock css %}
     {% block js %}
-    <script lang="text/javascript" src="{% static "js/vendor/modernizr.js" %}"></script>
-    <script lang="text/javascript" src="{% static "js/vendor/jquery.js" %}"></script>
-    <script lang="text/javascript" src="{% static "js/foundation.min.js" %}"></script>
-    <script lang="text/javascript" src="{% static "js/processing.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/vendor/modernizr.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/vendor/jquery.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/foundation.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/jquery.ui.resizable.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/jquery.ui.touch-punch.min.js" %}"></script>
     <script>
         $(document).ready(function(){ 
             $(document).foundation();
+            $('.artwork.preview').resizable({
+                start: function(event, ui) {
+                    $(this).css('pointer-events','none');
+                },
+                stop: function(event, ui) {
+                    $(this).css('pointer-events','auto');
+                } 
+            }).find('.ui-icon-gripsmall-diagonal-se')
+            // Replace small grip icon with large grip
+              .removeClass('ui-icon-gripsmall-diagonal-se')
+              .addClass('ui-icon-grip-diagonal-se');
         });
     </script>
     {% endblock js %}

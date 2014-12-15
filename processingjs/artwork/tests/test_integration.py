@@ -1,5 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
+import time
 
 from artwork.models import Artwork
 from uofa.test import SeleniumTestCase, wait_for_page_load
@@ -14,7 +15,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
 
         list_path = reverse('artwork-list')
-        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             3
@@ -44,7 +46,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
 
         list_path = reverse('artwork-author-list', kwargs={'author': self.user.id})
-        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -55,7 +58,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         )
 
         list_path = reverse('artwork-author-list', kwargs={'author': self.staff_user.id})
-        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -66,7 +70,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         )
 
         list_path = reverse('artwork-author-list', kwargs={'author': self.super_user.id})
-        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -85,7 +90,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         list_url = '%s%s' % (self.live_server_url, reverse('artwork-list'))
 
         self.performLogin(user="student")
-        self.selenium.get(list_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(list_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -96,7 +102,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         )
 
         self.performLogin(user="staff")
-        self.selenium.get(list_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(list_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -108,7 +115,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
 
         self.performLogout()
         self.performLogin(user="super")
-        self.selenium.get(list_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(list_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -133,7 +141,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
 
         list_path = reverse('artwork-list')
-        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             3
@@ -180,6 +189,46 @@ class ArtworkCodeViewIntegrationTests(SeleniumTestCase):
         self.assertEqual(
             pre_code.text, artwork.code
         )
+
+
+class ArtworkRenderViewIntegrationTests(SeleniumTestCase):
+
+    def test_artwork_render(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+
+        render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, render_path))
+
+        script_code = self.selenium.find_element_by_id('script-preview').get_attribute('innerHTML');
+        self.assertEqual(
+            script_code, artwork.code
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('canvas')),
+            1
+        )
+
+    def test_artwork_render_compile_error(self):
+
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+
+        render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, render_path))
+
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('canvas')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('script-preview')),
+            1
+        )
+
+        # We should get 1 error in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
 
 
 class ArtworkAddIntegrationTests(SeleniumTestCase):
@@ -251,10 +300,14 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
-        # Save button takes you to the view page, where the error shows in the console
+        # Save button takes you to the view page
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
 
+        # Wait for iframe to load, and error to appear in console
+        time.sleep(5)
+
+        # There should be no error in the console, because the artwork is iframed.
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
@@ -284,9 +337,13 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
 
+        # Wait for iframe to load
+        time.sleep(5)
+
         # ensure edit was saved
+        artwork = Artwork.objects.get(pk=artwork.id)
         self.assertEqual(
-            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork.title,
             'updated title'
         )
 
@@ -312,11 +369,10 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         list_path = reverse('artwork-list')
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
 
-        # view the work to ensure edit was canceled
-        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
-        self.selenium.get('%s%s' % (self.live_server_url, view_path))
+        # edit was canceled
+        artwork = Artwork.objects.get(pk=artwork.id)
         self.assertEqual(
-            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork.title,
             'Title bar'
         )
 

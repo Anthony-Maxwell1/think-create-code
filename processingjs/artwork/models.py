@@ -26,11 +26,22 @@ class Artwork(models.Model):
     def get_absolute_url(self):
         return reverse('artwork-view', kwargs={'pk': self.id})
 
-    # Allow authenticated staff, superusers or authors to save artwork
-    def can_save(self, user=None):
+    # Allow authenticated staff, superusers or authors to delete artwork
+    def can_delete(self, user=None):
         if (user and user.is_authenticated() and 
             (user.is_superuser or user.is_staff or 
              (self.author.id == user.id))):
+            return True
+        return False
+
+    # Allow authenticated staff, superusers or authors to submit artwork
+    def can_submit(self, user=None):
+        return self.can_delete(user)
+
+    # Only allow authors to edit artwork
+    def can_edit(self, user=None):
+        if (user and user.is_authenticated() and 
+             (self.author.id == user.id)):
             return True
         return False
 
@@ -48,7 +59,9 @@ class Artwork(models.Model):
             return qs.none()
 
 
-registry.register('can_save', Artwork)
+registry.register('can_edit', Artwork)
+registry.register('can_delete', Artwork)
+registry.register('can_submit', Artwork)
 
 
 class ArtworkForm(forms.ModelForm):
