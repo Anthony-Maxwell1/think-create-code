@@ -18,7 +18,7 @@
       "email": "jill.vogel@adelaide.edu.au",
       "date_joined": "2014-10-03T06:35:04Z"
     },
-    "model": "auth.user",
+    "model": "uofa.user",
     "pk": 1
   },
   {
@@ -40,7 +40,7 @@
       "email": "katrina.falkner@adelaide.edu.au",
       "date_joined": "2014-10-03T06:38:51Z"
     },
-    "model": "auth.user",
+    "model": "uofa.user",
     "pk": 2
   },
   {
@@ -62,7 +62,7 @@
       "email": "claudia.szabo@adelaide.edu.au",
       "date_joined": "2014-10-03T06:38:57Z"
     },
-    "model": "auth.user",
+    "model": "uofa.user",
     "pk": 3
   },
   {
@@ -84,7 +84,7 @@
       "email": "nickolas.falkner@adelaide.edu.au",
       "date_joined": "2014-10-03T06:39:02Z"
     },
-    "model": "auth.user",
+    "model": "uofa.user",
     "pk": 4
   },
   {
@@ -106,7 +106,7 @@
       "email": "rebecca.vivian@adelaide.edu.au",
       "date_joined": "2014-10-03T06:39:07Z"
     },
-    "model": "auth.user",
+    "model": "uofa.user",
     "pk": 5
   },
   {
@@ -128,7 +128,7 @@
       "email": "jill.vogel@adelaide.edu.au",
       "date_joined": "2014-10-03T06:35:04Z"
     },
-    "model": "auth.user",
+    "model": "uofa.user",
     "pk": 6
   },
   {
@@ -150,7 +150,7 @@
       "email": "travis.clapp@adelaide.edu.au",
       "date_joined": "2014-11-03T04:34:27Z"
     },
-    "model": "auth.user",
+    "model": "uofa.user",
     "pk": 6
   },
   {
@@ -172,7 +172,7 @@
       "email": "travis.clapp@adelaide.edu.au",
       "date_joined": "2014-11-03T04:34:46Z"
     },
-    "model": "auth.user",
+    "model": "uofa.user",
     "pk": 7
   }
 ]
