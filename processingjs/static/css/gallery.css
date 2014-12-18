@@ -34,6 +34,11 @@ nav #nav-logged-in:after {
     height: 200px;
     position: relative;
 }
+/* give the view page a larger div */
+#artwork-view-include .artwork.preview {
+    width: 400px;
+    height: 300px;
+}
 
 /* center the canvas/iframe inside the preview div:
  * http://stackoverflow.com/a/19414020 */
@@ -50,6 +55,9 @@ iframe {
     border: 0;
     overflow: hidden;
     outline: none;
+}
+.artwork-iframe iframe {
+    padding: 10px;
 }
 /* Adjust margins for form fields */
 ul.edit_fields {

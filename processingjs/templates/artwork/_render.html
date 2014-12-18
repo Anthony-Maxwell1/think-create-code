@@ -1,17 +1,20 @@
-<iframe class="artwork-iframe" id="iframe-{{ object.id }}"
-          src="{% url 'artwork-render' pk=object.id %}" width="100%" height="100%" scrolling="no">
-<p>Please enable iframes to view this content.</p>
-</iframe>
-{% if autosize %}
+<div class="artwork-iframe" id="iframe-{{ object.id }}">
+<h4>Please upgrade your browser</h4>
+<p>Your browser does not support HTML5 iframe settings, so for your safety, we
+   are hiding this untrusted content for more information.</p>
+<p><a href="http://msdn.microsoft.com/en-us/hh563496.aspx">Read more about iframe security risks.</a></p>
+</div>
 <script>
-$('#iframe-{{ object.id }}').load(function () {
-    // Give the iframe time to finish rendering before resizing.
-    var $iframe = $(this);
-    setTimeout(function() {
-        var canvas = $iframe.contents().find('canvas');
-        $iframe.height(canvas.height());
-        $iframe.width(canvas.width());
-    }, 100);
-});
+// If we can sandbox the iframe, create it.
+if ( Modernizr.sandbox && Modernizr.srcdoc ) {
+    $('#iframe-{{ object.id }}').html(
+        $('<iframe>', { 
+            'sandbox': 'allow-scripts',
+            'srcdoc': "{% filter escapejs %}{% include 'artwork/render.html' %}{% endfilter %}",
+            'width': '100%',
+            'height': '100%',
+            'scrolling': 'no'
+        })
+    );
+}
 </script>
-{% endif %}

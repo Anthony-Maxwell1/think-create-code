@@ -6,7 +6,7 @@ from artwork.models import Artwork
 from exhibitions.models import Exhibition
 from submissions.models import Submission
 from votes.models import Vote
-from uofa.test import SeleniumTestCase, wait_for_page_load
+from uofa.test import SeleniumTestCase, HTML5SeleniumTestCase, wait_for_page_load
 
 
 class SubmissionListIntegrationTests(SeleniumTestCase):
@@ -224,35 +224,6 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         unlike_button.click()
         time.sleep(5)   # wait for vote to be removed
         self.assertEquals(artwork_score.text, '1')
-
-    def test_artwork_compile_error(self):
-
-        bad_artwork1 = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
-        good_artwork = Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
-        bad_artwork2 = Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
-
-        # Submit artwork to exhibition
-        submission1 = Submission.objects.create(artwork=bad_artwork1, exhibition=self.exhibition, submitted_by=self.user)
-        submission2 = Submission.objects.create(artwork=good_artwork, exhibition=self.exhibition, submitted_by=self.user)
-        submission2 = Submission.objects.create(artwork=bad_artwork2, exhibition=self.exhibition, submitted_by=self.user)
-
-        with wait_for_page_load(self.selenium):
-            self.selenium.get(self.exhibition_url)
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
-            3
-        )
-
-        # We should get 2 errors in the logs
-        errors = self.get_browser_log(level=u'SEVERE')
-        self.assertEqual(len(errors), 2)
-        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
-        self.assertEqual(errors[1]['message'], 'SyntaxError: missing ; before statement')
-
-        # TODO: we're inferring that the 2nd "good" artwork did get rendered,
-        # by assuring that the error from the  1st "bad" artwork did not halt
-        # processing, since the 3rd bad artwork threw an error too.
-        # Not sure how else to test this?
 
 
 class SubmissionCreateIntegrationTests(SeleniumTestCase):
@@ -935,4 +906,85 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         # Confirm that votes were not deleted
         submission_votes = Vote.objects.filter(submission=self.submission)
         self.assertEqual(submission_votes.count(), 2)
+
+class SubmissionList_NoHTML5Iframe_IntegrationTests(SeleniumTestCase):
+
+    '''Tests the artwork rendering in a browser that does not support HTML5 iframe srcdoc/sandbox'''
+
+    def setUp(self):
+        super(SubmissionList_NoHTML5Iframe_IntegrationTests, self).setUp()
+        self.exhibition = Exhibition.objects.create(title='New Exhibition', description='goes here', author=self.staff_user)
+        self.artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        self.exhibition_path = reverse('exhibition-view', kwargs={'pk': self.exhibition.id})
+        self.exhibition_url = '%s%s' % (self.live_server_url, self.exhibition_path)
+
+    def test_artwork_compile_error(self):
+
+        bad_artwork1 = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        good_artwork = Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
+        bad_artwork2 = Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
+
+        # Submit artwork to exhibition
+        submission1 = Submission.objects.create(artwork=bad_artwork1, exhibition=self.exhibition, submitted_by=self.user)
+        submission2 = Submission.objects.create(artwork=good_artwork, exhibition=self.exhibition, submitted_by=self.user)
+        submission2 = Submission.objects.create(artwork=bad_artwork2, exhibition=self.exhibition, submitted_by=self.user)
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+
+        # We should get no errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+        # We should be able to see the HTML5 support warning text
+        upgradeBrowser = self.selenium.find_element_by_css_selector('.artwork h4')
+        self.assertEqual(
+            upgradeBrowser.text,
+            'Please upgrade your browser'
+        )
+
+
+class SubmissionList_HTML5Iframe_IntegrationTests(HTML5SeleniumTestCase):
+
+    '''Tests the artwork rendering in a browser that does support HTML5 iframe srcdoc/sandbox'''
+
+    def setUp(self):
+        super(SubmissionList_HTML5Iframe_IntegrationTests, self).setUp()
+        self.exhibition = Exhibition.objects.create(title='New Exhibition', description='goes here', author=self.staff_user)
+        self.artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        self.exhibition_path = reverse('exhibition-view', kwargs={'pk': self.exhibition.id})
+        self.exhibition_url = '%s%s' % (self.live_server_url, self.exhibition_path)
+
+    def test_artwork_compile_error(self):
+
+        bad_artwork1 = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        good_artwork = Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
+        bad_artwork2 = Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
+
+        # Submit artwork to exhibition
+        submission1 = Submission.objects.create(artwork=bad_artwork1, exhibition=self.exhibition, submitted_by=self.user)
+        submission2 = Submission.objects.create(artwork=good_artwork, exhibition=self.exhibition, submitted_by=self.user)
+        submission2 = Submission.objects.create(artwork=bad_artwork2, exhibition=self.exhibition, submitted_by=self.user)
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+
+        # We should get 2 errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 2)
+        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
+        self.assertEqual(errors[1]['message'], 'SyntaxError: missing ; before statement')
+
+        # TODO: we're inferring that the 2nd "good" artwork did get rendered,
+        # by assuring that the error from the  1st "bad" artwork did not halt
+        # processing, since the 3rd bad artwork threw an error too.
+        # Not sure how else to test this?
 

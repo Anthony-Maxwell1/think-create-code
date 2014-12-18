@@ -5,31 +5,27 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>ProcessingJS :: Rendered Artwork</title>
     {% block css %}
-    <style>
-    html, body { 
-        height: 100%; 
-        width: 100%;
-        position: absolute;
-    }
-    canvas {
-        outline:none;
-        border: 0;
-        -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
-    }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static "css/render.css" %}">
     {% endblock css %}
     {% block js %}
+    <script type="text/javascript" src="{% static "js/docready.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/processing.min.js" %}"></script>
+    <script type="text/javascript">
+        var scriptCode = "{% filter escapejs %}{% autoescape off %}{{ object.code }}{% endautoescape %}{% endfilter %}";
+    </script>
+    <script type="text/javascript" src="{% static "js/render.js" %}"></script>
     {% endblock js %}
-    {% block extras %}
-    <!-- for use by child templates -->
-    {% endblock extras %}
 </head>
 <body>
 {% block content %}
+<div id="artwork-rendered" style="display: none;">
 <canvas id="canvas-preview"></canvas>
-<script id="script-preview" data-processing-target="canvas-preview"
-    type="text/processing">{% autoescape off %}{{ object.code }}{% endautoescape %}</script>
+<script id="script-preview" data-processing-target="canvas-preview" type="text/processing"></script>
+</div>
+<div id="artwork-not-rendered" style="display: none;">
+<h1>Security Warning</h1>
+<p>For security reasons, please view this artwork from within an <a href="{% url 'artwork-view' pk=object.id %}">HTML5-secured iframe</a>.
+</div>
 {% endblock %}
 </body>
 </html>

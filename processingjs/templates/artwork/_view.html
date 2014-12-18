@@ -1,7 +1,9 @@
 <div id="artwork-view-include">
 {% if object %}
-<div class="artwork" id="artwork-{{ object.id }}">
+<div id="artwork-{{ object.id }}">
+<div class="artwork preview">
 {% include 'artwork/_render.html' with object=object autosize=True %}
+</div>
 <h3 class="artwork-title">{{ object.title }}</h3>
 <p class="artwork-detail">Created by {{ object.author }}, updated <time>{{ object.modified_at|date }}</time></p>
 </div>

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 import time
 
 from artwork.models import Artwork
-from uofa.test import SeleniumTestCase, wait_for_page_load
+from uofa.test import SeleniumTestCase, HTML5SeleniumTestCase, wait_for_page_load
 
 
 class ArtworkListIntegrationTests(SeleniumTestCase):
@@ -134,31 +134,6 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('artwork-add')
         )
 
-    def test_artwork_compile_error(self):
-
-        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
-        Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
-        Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
-
-        list_path = reverse('artwork-list')
-        with wait_for_page_load(self.selenium):
-            self.selenium.get('%s%s' % (self.live_server_url, list_path))
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
-            3
-        )
-
-        # We should get 2 errors in the logs
-        errors = self.get_browser_log(level=u'SEVERE')
-        self.assertEqual(len(errors), 2)
-        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
-        self.assertEqual(errors[1]['message'], 'SyntaxError: missing ; before statement')
-
-        # TODO: we're inferring that the 2nd "good" artwork did get rendered,
-        # by assuring that the error from the  1st "bad" artwork did not halt
-        # processing, since the 3rd bad artwork threw an error too.
-        # Not sure how else to test this?
-
 
 class ArtworkViewIntegrationTests(SeleniumTestCase):
 
@@ -200,35 +175,23 @@ class ArtworkRenderViewIntegrationTests(SeleniumTestCase):
         render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, render_path))
 
+        # Render page must be iframed to actually render code
+
+        # Should show not-rendered div
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('#artwork-not-rendered').get_attribute('style'),
+            'display: block;'
+        )
+
+        # .. instead of the rendered div
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('#artwork-rendered').get_attribute('style'),
+            'display: none;'
+        )
         script_code = self.selenium.find_element_by_id('script-preview').get_attribute('innerHTML');
         self.assertEqual(
-            script_code, artwork.code
+            script_code, ''
         )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('canvas')),
-            1
-        )
-
-    def test_artwork_render_compile_error(self):
-
-        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
-
-        render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
-        self.selenium.get('%s%s' % (self.live_server_url, render_path))
-
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('canvas')),
-            1
-        )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_id('script-preview')),
-            1
-        )
-
-        # We should get 1 error in the logs
-        errors = self.get_browser_log(level=u'SEVERE')
-        self.assertEqual(len(errors), 1)
-        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
 
 
 class ArtworkAddIntegrationTests(SeleniumTestCase):
@@ -278,39 +241,6 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
         )
-
-    def test_add_artwork_compile_error(self):
-
-        add_path = reverse('artwork-add')
-        self.selenium.get('%s%s' % (self.live_server_url, add_path))
-
-        # add redirects to login form
-        self.assertLogin(add_path)
-
-        # login form redirects to add form
-        self.selenium.find_element_by_id('id_title').send_keys('bad submission')
-        self.selenium.find_element_by_id('id_code').send_keys('bad code!')
-
-        # Draw button catches error, which shows on screen, not in the console
-        self.selenium.find_element_by_id('draw').click()
-        self.assertEqual(
-            self.selenium.find_element_by_id('error').text,
-            'missing ; before statement'
-        )
-        errors = self.get_browser_log(level=u'SEVERE')
-        self.assertEqual(len(errors), 0)
-
-        # Save button takes you to the view page
-        with wait_for_page_load(self.selenium):
-            self.selenium.find_element_by_id('save_artwork').click()
-
-        # Wait for iframe to load, and error to appear in console
-        time.sleep(5)
-
-        # There should be no error in the console, because the artwork is iframed.
-        errors = self.get_browser_log(level=u'SEVERE')
-        self.assertEqual(len(errors), 1)
-        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
 
 
 class ArtworkEditIntegrationTests(SeleniumTestCase):
@@ -457,3 +387,193 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         view_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': artwork.id}))
         self.assertEqual(self.selenium.current_url, view_url)
 
+
+class ArtworkRender_NoHTML5Iframe_IntegrationTests(SeleniumTestCase):
+    '''Tests the artwork rendering in a browser that does not support HTML5 iframe srcdoc/sandbox'''
+
+    def test_artwork_render_compile_error(self):
+
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+
+        render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, render_path))
+
+        # Render page must be iframed to do its job
+        # Should show not-rendered div
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('#artwork-not-rendered').get_attribute('style'),
+            'display: block;'
+        )
+
+        # .. instead of the rendered div
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('#artwork-rendered').get_attribute('style'),
+            'display: none;'
+        )
+        script_code = self.selenium.find_element_by_id('script-preview').get_attribute('innerHTML');
+        self.assertEqual(
+            script_code, ''
+        )
+
+        # We should get no errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+    def test_view_artwork_compile_error(self):
+
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, view_path))
+
+        # We should get no errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+        # We should be able to see the HTML5 support warning text
+        upgradeBrowser = self.selenium.find_element_by_css_selector('.artwork h4')
+        self.assertEqual(
+            upgradeBrowser.text,
+            'Please upgrade your browser'
+        )
+
+    def test_artwork_list_compile_error(self):
+
+        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
+        Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
+
+        list_path = reverse('artwork-list')
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+
+        # We should get no errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+        # We should be able to see the HTML5 support warning text
+        upgradeBrowser = self.selenium.find_elements_by_css_selector('.artwork h4')
+        self.assertEqual(len(upgradeBrowser), 3);
+        self.assertEqual(
+            upgradeBrowser[0].text,
+            'Please upgrade your browser'
+        )
+
+    def test_add_artwork_compile_error(self):
+
+        add_path = reverse('artwork-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path)
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('bad submission')
+        self.selenium.find_element_by_id('id_code').send_keys('bad code!')
+
+        # Draw button catches error, which shows on screen, not in the console
+        self.selenium.find_element_by_id('draw').click()
+        self.assertEqual(
+            self.selenium.find_element_by_id('error').text,
+            'missing ; before statement'
+        )
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
+class ArtworkRender_HTML5Iframe_IntegrationTests(HTML5SeleniumTestCase):
+    '''Tests the artwork rendering in a browser that does support HTML5 iframe srcdoc/sandbox'''
+
+    def test_artwork_render_compile_error(self):
+
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+
+        render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, render_path))
+
+        # Render page must be iframed to do its job
+        # Should show not-rendered div
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('#artwork-not-rendered').get_attribute('style'),
+            'display: block;'
+        )
+
+        # .. instead of the rendered div
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('#artwork-rendered').get_attribute('style'),
+            'display: none;'
+        )
+        script_code = self.selenium.find_element_by_id('script-preview').get_attribute('innerHTML');
+        self.assertEqual(
+            script_code, ''
+        )
+
+        # We should get no errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+    def test_artwork_view_compile_error(self):
+
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, view_path))
+
+        # HTML5 attributes should be detectable via javascript
+        self.assertTrue(self.selenium.execute_script('return Modernizr.sandbox'))
+        self.assertTrue(self.selenium.execute_script('return Modernizr.srcdoc'))
+
+        # We should get 1 error in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
+
+    def test_artwork_list_compile_error(self):
+
+        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
+        Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
+
+        list_path = reverse('artwork-list')
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+
+        # We should get 2 errors in the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 2)
+        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
+        self.assertEqual(errors[1]['message'], 'SyntaxError: missing ; before statement')
+
+        # n.b: we're inferring that the 2nd "good" artwork did get rendered,
+        # by assuring that the error from the  1st "bad" artwork did not halt
+        # processing, since the 3rd bad artwork threw an error too.
+        # Not sure how else to test this?
+
+    def test_add_artwork_compile_error(self):
+
+        add_path = reverse('artwork-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path)
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('bad submission')
+        self.selenium.find_element_by_id('id_code').send_keys('bad code!')
+
+        # Draw button catches error, which shows on screen, not in the console
+        self.selenium.find_element_by_id('draw').click()
+        self.assertEqual(
+            self.selenium.find_element_by_id('error').text,
+            'missing ; before statement'
+        )
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)

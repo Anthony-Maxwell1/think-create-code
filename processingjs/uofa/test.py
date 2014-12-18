@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities    
 
 from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.common.exceptions import NoSuchElementException
 from pyvirtualdisplay import Display
 
@@ -93,16 +94,20 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
     """Run live server integration tests.  Requires running xvfb service."""
 
     @classmethod
+    def getWebDriver(cls, **kwargs):
+        # enable browser logging
+        capabilities = DesiredCapabilities.FIREFOX
+        capabilities['loggingPrefs'] = { 'browser':'ALL' }
+        return  WebDriver(capabilities=capabilities, **kwargs)
+
+    @classmethod
     def setUpClass(cls):
         # /etc/init.d/xfvb running on port 0
         os.environ['DISPLAY'] = ':0'
         os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = '0.0.0.0:8080'
 
-        # enable browser logging
-        capabilities = DesiredCapabilities.FIREFOX
-        capabilities['loggingPrefs'] = { 'browser':'ALL' }
+        cls.selenium = cls.getWebDriver()
 
-        cls.selenium = WebDriver(capabilities=capabilities)
         cls.display = Display(visible=0, size=(800, 600))
         cls.display.start()
         super(SeleniumTestCase, cls).setUpClass()
@@ -135,7 +140,6 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
         logout_url = '%s%s' % (self.live_server_url, reverse('logout'))
         self.selenium.get(logout_url)
 
-
     def assertLogin(self, next_path = '', user='default'):
         '''Assert that we are at the login page, perform login, and assert success.'''
         self._doLogin(next_path, user)
@@ -166,6 +170,25 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
         self.selenium.find_element_by_id('id_username').send_keys(self.get_username(user))
         self.selenium.find_element_by_id('id_password').send_keys(self.get_password(user))
         self.selenium.find_element_by_tag_name('button').click()
+
+
+class HTML5SeleniumTestCase(SeleniumTestCase):
+    """Run live server integration tests using the specified firefox binary,
+       which supports our required HTML5 functionality.
+
+       At time of writing, the RedHat-distributed firefox binary was v24, which
+       does not support the iframe srcdoc attribute.
+
+        HTML5 ref:
+       https://html5test.com/compare/feature/security-srcdoc/security-sandbox.html
+    """
+
+    firefox_path = '/opt/ff/firefox-34.0/firefox'
+
+    @classmethod
+    def getWebDriver(cls, **kwargs):
+        firefox_binary = FirefoxBinary(firefox_path=cls.firefox_path)
+        return super(HTML5SeleniumTestCase, cls).getWebDriver(firefox_binary=firefox_binary)
 
 
 @contextmanager
