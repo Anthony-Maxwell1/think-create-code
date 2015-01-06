@@ -117,14 +117,19 @@ class ArtworkViewRenderTests(UserSetUp, TestCase):
         client = Client()
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
         response = client.get(reverse('artwork-render', kwargs={'pk':artwork.id}))
-        self.assertEquals(response.context['object'].title, artwork.title)
-        self.assertEquals(response.context['object'].code, artwork.code)
+
+        # Template view contains no object data
+        self.assertFalse('object' in response.context)
+
+        # iframing allowed only by same origin
+        self.assertEqual(response['X-Frame-Options'], 'SAMEORIGIN')
 
     def test_artwork_render_404(self):
         
         client = Client()
         response = client.get(reverse('artwork-render', kwargs={'pk':1}))
-        self.assertEquals(response.status_code, 404)
+        # Template view doesn't care if the object doesn't exist
+        self.assertEquals(response.status_code, 200)
 
 
 

@@ -8,26 +8,59 @@ function inIframe () {
     }
 }
 
-docReady(function() {
-    // If this page was loaded in an iframe, it's ok to run the processingjs code
-    if (inIframe()) {
-
-        // Show the rendered div
-        var safe = document.getElementById('artwork-rendered');
-        safe.style.display = "block";
-
-        // Set the script contents                
-        var script = document.getElementById('script-preview');
-        script.innerHTML = scriptCode; // defined by including page
-
-        // Run processingJS
-        Processing.reload();
+function getCookies() {
+    try {
+        return document.cookies;
+    } catch (e) {
+        console.warn(e);
+        return null;
     }
-    // Otherwise, just show the code, and a warning message.
+}
+
+$(document).ready(function() {
+
+    // If this page was loaded in an iframe,
+    // and we're not exposing any cookies, 
+    // it's ok to try to load the code.
+    if (inIframe() && !getCookies() ) {
+
+        var loadCode = function(evt) {
+
+            if (evt && evt.data && evt.data.code) {
+
+                // Show the rendered div
+                $('#artwork-rendered').show();
+
+                // Set the script contents, decoding escaped html as text
+                var tmp = $('<div/>', { 'html' : evt.data.code });
+                $('#script-preview').html(tmp.text());
+
+                // Listen for canvas resize, and send new size to parent
+                $('#canvas-preview').resize(function() {
+                    var $this = $(this);
+                    var data = {
+                        'width': $this.width(),
+                        'height': $this.height()
+                    };
+                    parent.postMessage({'resize': data}, '*');
+                });
+
+                // Run processingJS
+                Processing.reload();
+            } else {
+                console.error(evt);
+            }
+        };
+
+        if (window.addEventListener){
+            addEventListener("message", loadCode, false);
+        } else {
+            attachEvent("onmessage", loadCode);
+        }
+    }
+
+    // Otherwise, we just show the warning message.
     else {
-        // Show the inlined code and warning message
-        var unsafe = document.getElementById('artwork-not-rendered');
-        unsafe.style.display = "block";
+        $('#artwork-not-rendered').show();
     }
 });
-

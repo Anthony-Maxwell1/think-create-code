@@ -8,23 +8,21 @@
     <link rel="stylesheet" type="text/css" href="{% static "css/render.css" %}">
     {% endblock css %}
     {% block js %}
-    <script type="text/javascript" src="{% static "js/docready.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/vendor/jquery.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/jquery.ba-resize.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/processing.min.js" %}"></script>
-    <script type="text/javascript">
-        var scriptCode = "{% filter escapejs %}{% autoescape off %}{{ object.code }}{% endautoescape %}{% endfilter %}";
-    </script>
     <script type="text/javascript" src="{% static "js/render.js" %}"></script>
     {% endblock js %}
 </head>
 <body>
 {% block content %}
-<div id="artwork-rendered" style="display: none;">
+<div id="artwork-rendered">
 <canvas id="canvas-preview"></canvas>
 <script id="script-preview" data-processing-target="canvas-preview" type="text/processing"></script>
 </div>
-<div id="artwork-not-rendered" style="display: none;">
+<div id="artwork-not-rendered">
 <h1>Security Warning</h1>
-<p>For security reasons, please view this artwork from within an <a href="{% url 'artwork-view' pk=object.id %}">HTML5-secured iframe</a>.
+<p>For security reasons, please view this artwork from within an <a href="{% url 'artwork-view' pk=pk %}">HTML5-secured iframe</a>.
 </div>
 {% endblock %}
 </body>

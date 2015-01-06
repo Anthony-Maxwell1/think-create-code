@@ -1,6 +1,8 @@
-from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, TemplateView
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
+from django.utils.decorators import method_decorator
+from csp.decorators import csp_replace
 import os
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin
@@ -13,6 +15,27 @@ class ArtworkView(TemplatePathMixin):
     model = Artwork
     form_class = ArtworkForm
     template_dir = 'artwork'
+
+
+class UnsafeMediaMixin(object):
+    '''These views must be heavily protected, by HTML5 iframe attributes and parent authentication,
+       to make them ok to allow inline and eval'd Javascript provided by students.
+       We also disallow everything else, so that the rendered artwork can't include them.
+    '''
+    @method_decorator(csp_replace(
+        # processingjs requires unsafe-inline and unsafe-eval for scripts, css, and fonts
+        SCRIPT_SRC = "http://*.adelaide.edu.au:* https://*.adelaide.edu.au:* 'unsafe-inline' 'unsafe-eval'",
+        STYLE_SRC =  "http://*.adelaide.edu.au:* https://*.adelaide.edu.au:* 'unsafe-inline'",
+        FONT_SRC = "data:",
+        # no (non-self) images, objects, media, frames, or XHR requests allowed during render.
+        IMG_SRC = "'self'",
+        OBJECT_SRC = "'none'",
+        MEDIA_SRC = "'none'",
+        FRAME_SRC = "'none'",
+        CONNECT_SRC="'none'",
+    ))
+    def dispatch(self, *args, **kwargs):
+        return super(UnsafeMediaMixin, self).dispatch(*args, **kwargs)
 
 
 class ShowArtworkView(ArtworkView, DetailView):
@@ -55,8 +78,16 @@ class ShowArtworkCodeView(ArtworkView, DetailView):
     content_type = 'application/javascript; charset=utf-8'
 
 
-class RenderArtworkView(ArtworkView, DetailView):
+class RenderArtworkView(UnsafeMediaMixin, TemplateView):
     template_name = ArtworkView.prepend_template_path('render.html')
+
+    def render_to_response(self, context, **response_kwargs):
+        '''
+        Ensure this page can only iframed by us.
+        '''
+        response = super(RenderArtworkView, self).render_to_response(context, **response_kwargs)
+        response['X-Frame-Options'] = 'SAMEORIGIN';
+        return response
 
 
 class ListArtworkView(ArtworkView, ListView):
@@ -90,7 +121,7 @@ class ListArtworkView(ArtworkView, ListView):
         return context
 
 
-class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):
+class CreateArtworkView(UnsafeMediaMixin, LoggedInMixin, ArtworkView, CreateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')
 
@@ -106,7 +137,7 @@ class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):
         return context
 
 
-class UpdateArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, UpdateView):
+class UpdateArtworkView(UnsafeMediaMixin, LoggedInMixin, ObjectHasPermMixin, ArtworkView, UpdateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')
     user_perm = 'can_edit'

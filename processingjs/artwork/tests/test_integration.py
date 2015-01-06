@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 import time
 
 from artwork.models import Artwork
-from uofa.test import SeleniumTestCase, HTML5SeleniumTestCase, wait_for_page_load
+from uofa.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_load
 
 
 class ArtworkListIntegrationTests(SeleniumTestCase):
@@ -178,16 +178,11 @@ class ArtworkRenderViewIntegrationTests(SeleniumTestCase):
         # Render page must be iframed to actually render code
 
         # Should show not-rendered div
-        self.assertEqual(
-            self.selenium.find_element_by_css_selector('#artwork-not-rendered').get_attribute('style'),
-            'display: block;'
-        )
+        self.assertEqual(self.get_style_property('artwork-not-rendered', 'display'), 'block')
 
         # .. instead of the rendered div
-        self.assertEqual(
-            self.selenium.find_element_by_css_selector('#artwork-rendered').get_attribute('style'),
-            'display: none;'
-        )
+        self.assertEqual(self.get_style_property('artwork-rendered', 'display'), 'none')
+
         script_code = self.selenium.find_element_by_id('script-preview').get_attribute('innerHTML');
         self.assertEqual(
             script_code, ''
@@ -388,8 +383,8 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, view_url)
 
 
-class ArtworkRender_NoHTML5Iframe_IntegrationTests(SeleniumTestCase):
-    '''Tests the artwork rendering in a browser that does not support HTML5 iframe srcdoc/sandbox'''
+class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
+    '''Tests the artwork rendering in a browser that does not support HTML5 iframe sandbox'''
 
     def test_artwork_render_compile_error(self):
 
@@ -400,16 +395,11 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(SeleniumTestCase):
 
         # Render page must be iframed to do its job
         # Should show not-rendered div
-        self.assertEqual(
-            self.selenium.find_element_by_css_selector('#artwork-not-rendered').get_attribute('style'),
-            'display: block;'
-        )
+        self.assertEqual(self.get_style_property('artwork-not-rendered', 'display'), 'block')
 
         # .. instead of the rendered div
-        self.assertEqual(
-            self.selenium.find_element_by_css_selector('#artwork-rendered').get_attribute('style'),
-            'display: none;'
-        )
+        self.assertEqual(self.get_style_property('artwork-rendered', 'display'), 'none')
+
         script_code = self.selenium.find_element_by_id('script-preview').get_attribute('innerHTML');
         self.assertEqual(
             script_code, ''
@@ -485,8 +475,8 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(SeleniumTestCase):
         self.assertEqual(len(errors), 0)
 
 
-class ArtworkRender_HTML5Iframe_IntegrationTests(HTML5SeleniumTestCase):
-    '''Tests the artwork rendering in a browser that does support HTML5 iframe srcdoc/sandbox'''
+class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
+    '''Tests the artwork rendering in a browser that does support HTML5 iframe sandbox'''
 
     def test_artwork_render_compile_error(self):
 
@@ -497,16 +487,11 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(HTML5SeleniumTestCase):
 
         # Render page must be iframed to do its job
         # Should show not-rendered div
-        self.assertEqual(
-            self.selenium.find_element_by_css_selector('#artwork-not-rendered').get_attribute('style'),
-            'display: block;'
-        )
+        self.assertEqual(self.get_style_property('artwork-not-rendered', 'display'), 'block')
 
         # .. instead of the rendered div
-        self.assertEqual(
-            self.selenium.find_element_by_css_selector('#artwork-rendered').get_attribute('style'),
-            'display: none;'
-        )
+        self.assertEqual(self.get_style_property('artwork-rendered', 'display'), 'none')
+
         script_code = self.selenium.find_element_by_id('script-preview').get_attribute('innerHTML');
         self.assertEqual(
             script_code, ''
@@ -525,7 +510,6 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(HTML5SeleniumTestCase):
 
         # HTML5 attributes should be detectable via javascript
         self.assertTrue(self.selenium.execute_script('return Modernizr.sandbox'))
-        self.assertTrue(self.selenium.execute_script('return Modernizr.srcdoc'))
 
         # We should get 1 error in the logs
         errors = self.get_browser_log(level=u'SEVERE')

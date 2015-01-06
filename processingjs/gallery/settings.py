@@ -114,6 +114,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django_auth_lti.middleware.LTIAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'csp.middleware.CSPMiddleware',
 )
 
 ROOT_URLCONF = 'gallery.urls'
@@ -164,6 +165,19 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
+)
+
+# Content Security Policy
+CSP_DEFAULT_SRC = (
+    "'self'",
+)
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'unsafe-inline'", # artwork/_render.html
+)
+CSP_STYLE_SRC = (
+    "'self'",
+    "'unsafe-inline'", # modernizr.js
 )
 
 

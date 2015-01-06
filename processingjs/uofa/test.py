@@ -127,6 +127,17 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
                 entries.append(entry)
         return entries
 
+    def get_style_property(self, id, propName):
+        '''Return the requested style property for the given element.'''
+        return self.selenium.execute_script(
+            "var elem = document.getElementById('%s');"
+            "if (elem) {"
+            "   var style = window.getComputedStyle(elem);"
+            "   return style.getPropertyValue('%s');"
+            "} else { return null; }"
+            % (id, propName)
+        )
+
     def performLogin(self, user='default'):
         '''Go to the login page, and assert login'''
 
@@ -172,23 +183,20 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
         self.selenium.find_element_by_tag_name('button').click()
 
 
-class HTML5SeleniumTestCase(SeleniumTestCase):
+class NoHTML5SeleniumTestCase(SeleniumTestCase):
     """Run live server integration tests using the specified firefox binary,
-       which supports our required HTML5 functionality.
-
-       At time of writing, the RedHat-distributed firefox binary was v24, which
-       does not support the iframe srcdoc attribute.
+       which does not support our required HTML5 functionality.
 
         HTML5 ref:
-       https://html5test.com/compare/feature/security-srcdoc/security-sandbox.html
+       https://html5test.com/compare/feature/security-sandbox.html
     """
 
-    firefox_path = '/opt/ff/firefox-34.0/firefox'
+    firefox_path = '/opt/ff/firefox-16.0/firefox'
 
     @classmethod
     def getWebDriver(cls, **kwargs):
         firefox_binary = FirefoxBinary(firefox_path=cls.firefox_path)
-        return super(HTML5SeleniumTestCase, cls).getWebDriver(firefox_binary=firefox_binary)
+        return super(NoHTML5SeleniumTestCase, cls).getWebDriver(firefox_binary=firefox_binary)
 
 
 @contextmanager

@@ -6,7 +6,7 @@ from artwork.models import Artwork
 from exhibitions.models import Exhibition
 from submissions.models import Submission
 from votes.models import Vote
-from uofa.test import SeleniumTestCase, HTML5SeleniumTestCase, wait_for_page_load
+from uofa.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_load
 
 
 class SubmissionListIntegrationTests(SeleniumTestCase):
@@ -907,7 +907,7 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         submission_votes = Vote.objects.filter(submission=self.submission)
         self.assertEqual(submission_votes.count(), 2)
 
-class SubmissionList_NoHTML5Iframe_IntegrationTests(SeleniumTestCase):
+class SubmissionList_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
 
     '''Tests the artwork rendering in a browser that does not support HTML5 iframe srcdoc/sandbox'''
 
@@ -948,7 +948,7 @@ class SubmissionList_NoHTML5Iframe_IntegrationTests(SeleniumTestCase):
         )
 
 
-class SubmissionList_HTML5Iframe_IntegrationTests(HTML5SeleniumTestCase):
+class SubmissionList_HTML5Iframe_IntegrationTests(SeleniumTestCase):
 
     '''Tests the artwork rendering in a browser that does support HTML5 iframe srcdoc/sandbox'''
 

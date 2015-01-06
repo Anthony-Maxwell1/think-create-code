@@ -8,3 +8,7 @@ canvas {
     border: 0;
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
 }
+#artwork-rendered,
+#artwork-not-rendered {
+    display: none;
+}

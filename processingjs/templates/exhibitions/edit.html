@@ -1,16 +1,10 @@
 {% extends "base.html" %}
-{% load staticfiles %}
 
 {% block extras %}
+{% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static "css/jquery.datetimepicker.min.css" %}">
-<script lang="text/javascript" src="{% static "js/jquery.datetimepicker.min.js" %}"></script>
-<script>
-$(document).ready(function() {
-    $('#id_released_at').datetimepicker({
-        format:'Y-m-d H:i'
-    });
-});
-</script>
+<script type="text/javascript" src="{% static "js/jquery.datetimepicker.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/exhibition-edit.js" %}"></script>
 {% endblock extras %}
 
 {% block content %}

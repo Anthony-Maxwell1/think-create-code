@@ -1,20 +1,48 @@
 <div class="artwork-iframe" id="iframe-{{ object.id }}">
 <h4>Please upgrade your browser</h4>
-<p>Your browser does not support HTML5 iframe settings, so for your safety, we
+<p>Your browser does not support HTML5 iframe sandboxing, so for your safety, we
    are hiding this untrusted content for more information.</p>
-<p><a href="http://msdn.microsoft.com/en-us/hh563496.aspx">Read more about iframe security risks.</a></p>
+<ul>
+<li><a href="https://html5test.com/compare/feature/security-sandbox.html">View list of compliant browsers</a>.</li>
+<li><a href="http://msdn.microsoft.com/en-us/hh563496.aspx">Read more about iframe security risks</a>.</li>
+</ul>
 </div>
 <script>
-// If we can sandbox the iframe, create it.
-if ( Modernizr.sandbox && Modernizr.srcdoc ) {
-    $('#iframe-{{ object.id }}').html(
-        $('<iframe>', { 
-            'sandbox': 'allow-scripts',
-            'srcdoc': "{% filter escapejs %}{% include 'artwork/render.html' %}{% endfilter %}",
-            'width': '100%',
-            'height': '100%',
-            'scrolling': 'no'
-        })
-    );
-}
+    // If we can sandbox the iframe, create it.
+    if ( Modernizr.sandbox ) {
+
+        {% if autosize %}
+        function resizeIframe(evt) {
+            if (evt && evt.data && evt.data.resize) {
+                var resize = evt.data.resize;
+                $('#iframe-{{ object.id }}').css('width', resize.width);
+                $('#iframe-{{ object.id }}').css('height', resize.height);
+            }
+        }
+
+        // Listen for resize messages from the iframe
+        if (window.addEventListener){
+            addEventListener("message", resizeIframe, false);
+        } else {
+            attachEvent("onmessage", resizeIframe);
+        }
+        {% endif %}
+
+        $('#iframe-{{ object.id }}').html(
+            $('<iframe>', { 
+                'sandbox': 'allow-scripts',
+                'src': "{% url 'artwork-render' pk=object.id %}",
+                'load': function() {
+                    // Send the code as a message to the iframe
+                    this.contentWindow.postMessage(
+                        {'code': "{% filter escapejs %}{{ object.code }}{% endfilter %}"},
+                        '*'
+                    );
+                },
+                'width': '100%',
+                'height': '100%',
+                'scrolling': 'no'
+            })
+        );
+    }
 </script>
