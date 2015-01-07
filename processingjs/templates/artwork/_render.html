@@ -12,7 +12,7 @@
     if ( Modernizr.sandbox ) {
 
         {% if autosize %}
-        function resizeIframe(evt) {
+        function resizeIframe{{ object.id }}(evt) {
             if (evt && evt.data && evt.data.resize) {
                 var resize = evt.data.resize;
                 $('#iframe-{{ object.id }}').css('width', resize.width);
@@ -22,9 +22,9 @@
 
         // Listen for resize messages from the iframe
         if (window.addEventListener){
-            addEventListener("message", resizeIframe, false);
+            addEventListener("message", resizeIframe{{ object.id }}, false);
         } else {
-            attachEvent("onmessage", resizeIframe);
+            attachEvent("onmessage", resizeIframe{{ object.id }});
         }
         {% endif %}
 
