@@ -35,8 +35,8 @@ class CreateSubmissionView(PostOnlyMixin, LoggedInMixin, SubmissionView, CreateV
 
         context = super(CreateSubmissionView, self).get_context_data(**kwargs)
 
-        # Restrict list of artwork the current user can submit to
-        context['form'].fields['artwork'].queryset = Artwork.can_submit_queryset( 
+        # Restrict list of artwork the current user can submit
+        context['form'].fields['artwork'].queryset = Artwork.can_save_queryset( 
             context['form'].fields['artwork'].queryset,
             self.request.user)
 

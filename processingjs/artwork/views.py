@@ -1,4 +1,4 @@
-from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, TemplateView
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, TemplateView, RedirectView
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
@@ -38,9 +38,10 @@ class UnsafeMediaMixin(object):
         return super(UnsafeMediaMixin, self).dispatch(*args, **kwargs)
 
 
-class ShowArtworkView(ArtworkView, DetailView):
+class ShowArtworkView(ObjectHasPermMixin, ArtworkView, DetailView):
 
     template_name = ArtworkView.prepend_template_path('view.html')
+    user_perm = 'can_see'
 
     def get_context_data(self, **kwargs):
         context = super(ShowArtworkView, self).get_context_data(**kwargs)
@@ -73,9 +74,10 @@ class ShowArtworkView(ArtworkView, DetailView):
         return context
 
 
-class ShowArtworkCodeView(ArtworkView, DetailView):
+class ShowArtworkCodeView(ObjectHasPermMixin, ArtworkView, DetailView):
     template_name = ArtworkView.prepend_template_path('code.pde')
     content_type = 'application/javascript; charset=utf-8'
+    user_perm = 'can_see'
 
 
 class RenderArtworkView(UnsafeMediaMixin, TemplateView):
@@ -90,23 +92,47 @@ class RenderArtworkView(UnsafeMediaMixin, TemplateView):
         return response
 
 
+class StudioArtworkView(RedirectView):
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        user = self.request.user
+        if (user.is_authenticated()):
+            return reverse('artwork-author-list', kwargs={'author': user.id, 'shared': 0})
+        else:
+            return '%s?next=%s' % ( reverse('login'), reverse('artwork-studio') )
+
+
 class ListArtworkView(ArtworkView, ListView):
 
     template_name = ArtworkView.prepend_template_path('list.html')
 
     def _get_author_id(self):
-        author_id = self.kwargs.get('author')
-        if not author_id and self.request.user.is_authenticated():
-            author_id = self.request.user.id
-        return author_id
+        return self.kwargs.get('author')
+
+    def _get_shared(self):
+        shared = self.kwargs.get('shared', None)
+        if shared == '0':
+            shared = False
+        elif shared == None:
+            shared = True
+        return shared
 
     def get_queryset(self):
         '''Show artwork authored by the given, or current, user'''
-        qs = super(ListArtworkView, self).get_queryset()
+        qs = Artwork.can_see_queryset(user=self.request.user)
+
+        # Show a single author's work?
         author_id = self._get_author_id()
         if author_id:
-            qs = qs.filter(author__exact=author_id).order_by('-modified_at')
-        return qs
+            qs = qs.filter(author__exact=author_id)
+
+        # Show shared work only?
+        if self._get_shared():
+            qs = qs.filter(shared__gt=0)
+
+        # Show most recently modified first
+        return qs.order_by('-modified_at')
 
     def get_context_data(self, **kwargs):
 
@@ -118,6 +144,8 @@ class ListArtworkView(ArtworkView, ListView):
         except user_model.DoesNotExist:
             author = None
         context['author'] = author
+
+        context['shared'] = self._get_shared()
         return context
 
 
@@ -140,7 +168,7 @@ class CreateArtworkView(UnsafeMediaMixin, LoggedInMixin, ArtworkView, CreateView
 class UpdateArtworkView(UnsafeMediaMixin, LoggedInMixin, ObjectHasPermMixin, ArtworkView, UpdateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')
-    user_perm = 'can_edit'
+    user_perm = 'can_save'
 
     def get_error_url(self):
         return reverse('artwork-view', kwargs={'pk': self.get_object().id})
@@ -156,7 +184,7 @@ class UpdateArtworkView(UnsafeMediaMixin, LoggedInMixin, ObjectHasPermMixin, Art
 class DeleteArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, DeleteView):
 
     template_name = ArtworkView.prepend_template_path('delete.html')
-    user_perm = 'can_delete'
+    user_perm = 'can_save'
 
     def get_error_url(self):
         return reverse('artwork-view', kwargs={'pk': self.get_object().id})

@@ -1,15 +1,10 @@
 {% if object %}
 {% load rulez_perms %}
-{% rulez_perms can_edit object as USER_CAN_EDIT %}
-{% rulez_perms can_delete object as USER_CAN_DELETE %}
-{% rulez_perms can_submit object as USER_CAN_SUBMIT %}
-{% if USER_CAN_EDIT or USER_CAN_DELETE or USER_CAN_SUBMIT %}
+{% rulez_perms can_save object as USER_CAN_SAVE %}
+{% if USER_CAN_SAVE %}
 <div class="row">
 <ul class="breadcrumbs">
-    {% if USER_CAN_EDIT %}
     <li><a href="{% url 'artwork-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
-    {% endif %}
-    {% if USER_CAN_SUBMIT %}
     {% if exhibitions_submitted|length or exhibitions_to_submit|length %}
     <li><a href="{% url 'artwork-submit' artwork=object.id %}" 
           title="Submit {{ object.title }} to an exhibition" 
@@ -20,10 +15,7 @@
         </div>
     </li>
     {% endif %}
-    {% endif %}
-    {% if USER_CAN_DELETE %}
     <li><a href="{% url 'artwork-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
-    {% endif %}
 </ul>
 </div>
 {% endif %}

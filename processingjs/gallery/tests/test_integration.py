@@ -53,10 +53,10 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
 
         # My Studio
         link = self.selenium.find_element_by_link_text('My Studio')
-        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('home'))
+        studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
         self.assertEqual(
             link.get_attribute('href'),
-            login_url
+            studio_url
         )
 
         # Exhibitions
@@ -86,10 +86,10 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
 
         # My Studio
         link = self.selenium.find_element_by_link_text('My Studio')
-        home_url = '%s%s' % (self.live_server_url, reverse('home'))
+        studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
         self.assertEqual(
             link.get_attribute('href'),
-            home_url
+            studio_url
         )
 
         # Exhibitions
@@ -134,10 +134,10 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
 
         # My Studio
         link = self.selenium.find_element_by_link_text('My Studio')
-        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('home'))
+        studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
         self.assertEqual(
             link.get_attribute('href'),
-            login_url
+            studio_url
         )
 
         # Exhibitions
@@ -146,6 +146,14 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(
             link.get_attribute('href'),
             exhibitions_url
+        )
+
+        # Artwork
+        link = self.selenium.find_element_by_link_text('Artwork')
+        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
+        self.assertEqual(
+            link.get_attribute('href'),
+            artwork_url
         )
 
         # Sign in
@@ -167,10 +175,10 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
 
         # My Studio
         link = self.selenium.find_element_by_link_text('My Studio')
-        home_url = '%s%s' % (self.live_server_url, reverse('home'))
+        studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
         self.assertEqual(
             link.get_attribute('href'),
-            home_url
+            studio_url
         )
 
         # Exhibitions
@@ -179,6 +187,14 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(
             link.get_attribute('href'),
             exhibitions_url
+        )
+
+        # Artwork
+        link = self.selenium.find_element_by_link_text('Artwork')
+        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
+        self.assertEqual(
+            link.get_attribute('href'),
+            artwork_url
         )
 
         # No sign out

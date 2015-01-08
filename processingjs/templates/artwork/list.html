@@ -2,7 +2,7 @@
 {% block content %}
 <div id="artwork-list-content">
 {% if author %}
-<h1>Artwork by {{ author }}</h1>
+<h1>Artwork {% if shared %}shared{% endif %} by {{ author }}</h1>
 {% endif %}
 
 {% if user.is_anonymous or author == user %}

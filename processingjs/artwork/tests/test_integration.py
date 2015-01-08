@@ -1,4 +1,5 @@
 from django.core.urlresolvers import reverse
+from selenium.common.exceptions import NoSuchElementException
 from django.contrib.auth import get_user_model
 import time
 
@@ -8,13 +9,43 @@ from uofa.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_l
 
 class ArtworkListIntegrationTests(SeleniumTestCase):
 
-    def test_public_artwork_listed(self):
+    def test_private_artwork_listed(self):
 
         artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
         artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
         artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
 
+        # Public can't see any artworks
         list_path = reverse('artwork-list')
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+
+        # Can login to see my artwork, but no one else's
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork1.title
+        )
+
+    def test_shared_artwork_listed(self):
+
+        list_path = reverse('artwork-list')
+
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', shared=1, author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', shared=4, author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', shared=78, author=self.super_user)
+
+        # Shared artwork is visible to the public
         with wait_for_page_load(self.selenium):
             self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
@@ -24,7 +55,7 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         titles = self.selenium.find_elements_by_css_selector('.artwork-title')
         self.assertEqual(
             titles[0].text,
-            artwork1.title
+            artwork3.title
         )
         self.assertEqual(
             titles[1].text,
@@ -32,18 +63,77 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         )
         self.assertEqual(
             titles[2].text,
-            artwork3.title
+            artwork1.title
         )
 
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-add')
         )
 
-    def test_user_artwork_listed(self):
+        # Shared artwork + own private artwork is visible to logged-in users
+        artwork4 = Artwork.objects.create(title='Artwork 4', code='// code goes here', shared=1, author=self.user)
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            4
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            titles[0].text,
+            artwork4.title
+        )
+        self.assertEqual(
+            titles[1].text,
+            artwork3.title
+        )
+        self.assertEqual(
+            titles[2].text,
+            artwork2.title
+        )
+        self.assertEqual(
+            titles[3].text,
+            artwork1.title
+        )
 
+    def test_private_user_artwork_listed(self):
+
+        # private artwork is not visible to public
         artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
         artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
         artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.user.id})
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.staff_user.id})
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+
+        list_path = reverse('artwork-author-list', kwargs={'author': self.super_user.id})
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+
+    def test_shared_user_artwork_listed(self):
+
+        # Shared artwork is visible to public
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', shared=1, author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', shared=1, author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', shared=1, author=self.super_user)
 
         list_path = reverse('artwork-author-list', kwargs={'author': self.user.id})
         with wait_for_page_load(self.selenium):
@@ -81,15 +171,86 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             artwork3.title
         )
 
+    def test_studio_artwork_listed(self):
+
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+
+        # My Studio URL redirects to login page for unauthenticated users
+        studio_path = reverse('artwork-studio')
+        studio_url = '%s%s' % (self.live_server_url, studio_path)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(studio_url)
+        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), studio_path)
+        self.assertEqual(self.selenium.current_url, login_url)
+
+        # My Studio URL redirects to author list for authenticated users
+        
+        # Student login
+        self.performLogin(user='student')
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(studio_url)
+        list_path = reverse('artwork-author-list', kwargs={'author': self.user.id, 'shared': 0})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork1.title
+        )
+
+        # Staff login
+        self.performLogin(user='staff')
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(studio_url)
+        list_path = reverse('artwork-author-list', kwargs={'author': self.staff_user.id, 'shared': 0})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork2.title
+        )
+
+        # Super login
+        self.performLogin(user='super')
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(studio_url)
+        list_path = reverse('artwork-author-list', kwargs={'author': self.super_user.id, 'shared': 0})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            artwork3.title
+        )
+
     def test_my_artwork_listed(self):
 
         artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
         artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
         artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
 
-        list_url = '%s%s' % (self.live_server_url, reverse('artwork-list'))
+        # Author list shows only shared artwork
+        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs={'author':self.user.id}))
 
+        # Student user
         self.performLogin(user="student")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        artwork1.shared = 1
+        artwork1.save()
         with wait_for_page_load(self.selenium):
             self.selenium.get(list_url)
         self.assertEqual(
@@ -101,7 +262,17 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             artwork1.title
         )
 
+        # Staff user
         self.performLogin(user="staff")
+        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs={'author':self.staff_user.id}))
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        artwork2.shared = 1
+        artwork2.save()
         with wait_for_page_load(self.selenium):
             self.selenium.get(list_url)
         self.assertEqual(
@@ -113,8 +284,18 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             artwork2.title
         )
 
+        # Super user
         self.performLogout()
         self.performLogin(user="super")
+        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs={'author':self.super_user.id}))
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        artwork3.shared = 1
+        artwork3.save()
         with wait_for_page_load(self.selenium):
             self.selenium.get(list_url)
         self.assertEqual(
@@ -134,33 +315,364 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('artwork-add')
         )
 
-
 class ArtworkViewIntegrationTests(SeleniumTestCase):
 
-    def test_artwork_view(self):
+    def test_own_artwork_view(self):
 
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        view_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': artwork.id}))
 
-        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
-        self.selenium.get('%s%s' % (self.live_server_url, view_path))
+        # Public cannot see unshared artwork
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+        # Owner can see it
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
         )
 
+        # Staff cannot
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+        # Super cannot
+        self.performLogout()
+        self.performLogin(user="super")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+    def test_shared_artwork_view(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
+        view_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': artwork.id}))
+
+        # Public can see shared artwork
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+
+        # Owner can see it
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+
+        # Staff can see it
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+
+        # Super can see it
+        self.performLogout()
+        self.performLogin(user="super")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+
+    def test_private_artwork_links(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+
+        # Public can't see artwork
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        # and no edit links
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('EDIT')
+        )
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('DELETE')
+        )
+
+        # Owner can see it
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        # and edit links
+        self.assertIsNotNone(
+            self.selenium.find_element_by_link_text, ('EDIT')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_link_text, ('DELETE')
+        )
+        # and clicking on them redirects to expected page
+        self.selenium.find_element_by_link_text('EDIT').click()
+        self.assertEqual(self.selenium.current_url, 
+            '%s%s' % (self.live_server_url, reverse('artwork-edit', kwargs={'pk': artwork.id})))
+        
+        self.selenium.get(view_url)
+        self.selenium.find_element_by_link_text('DELETE').click()
+        self.assertEqual(self.selenium.current_url, 
+            '%s%s' % (self.live_server_url, reverse('artwork-delete', kwargs={'pk': artwork.id})))
+
+
+        # Staff can't see it
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        # and no edit links
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('EDIT')
+        )
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('DELETE')
+        )
+
+        # Super can't see it
+        self.performLogout()
+        self.performLogin(user="super")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        # and no edit links
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('EDIT')
+        )
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('DELETE')
+        )
+
+    def test_shared_artwork_links(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
+
+        # Public can see shared artwork
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        # but no edit links
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('EDIT')
+        )
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('DELETE')
+        )
+
+        # Owner can see it
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        # and edit links
+        self.assertIsNotNone(
+            self.selenium.find_element_by_link_text, ('EDIT')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_link_text, ('DELETE')
+        )
+        # and clicking on them redirects to expected page
+        self.selenium.find_element_by_link_text('EDIT').click()
+        self.assertEqual(self.selenium.current_url, 
+            '%s%s' % (self.live_server_url, reverse('artwork-edit', kwargs={'pk': artwork.id})))
+        
+        self.selenium.get(view_url)
+        self.selenium.find_element_by_link_text('DELETE').click()
+        self.assertEqual(self.selenium.current_url, 
+            '%s%s' % (self.live_server_url, reverse('artwork-delete', kwargs={'pk': artwork.id})))
+
+
+        # Staff can see it
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        # but no edit links
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('EDIT')
+        )
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('DELETE')
+        )
+
+        # Super can see it
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('EDIT')
+        )
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('DELETE')
+        )
+
 
 class ArtworkCodeViewIntegrationTests(SeleniumTestCase):
 
-    def test_artwork_code(self):
+    def test_own_artwork_code(self):
 
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
 
         code_path = reverse('artwork-code', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, code_path))
 
+        # Public cannot see unshared code
+        code_path = reverse('artwork-code', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, code_path))
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+        # Owner can see it
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, code_path))
         # Selenium wraps the text/plain result in an HTML page for some reason 
         pre_code = self.selenium.find_element_by_tag_name('pre')
+        self.assertEqual(
+            pre_code.text, artwork.code
+        )
 
+        # Staff cannot
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, code_path))
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+        # Super cannot
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, code_path))
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+    def test_shared_artwork_code(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=42, author=self.user)
+
+        code_path = reverse('artwork-code', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, code_path))
+
+        # Public can see shared code
+        code_path = reverse('artwork-code', kwargs={'pk': artwork.id})
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, code_path))
+        pre_code = self.selenium.find_element_by_tag_name('pre')
+        self.assertEqual(
+            pre_code.text, artwork.code
+        )
+
+        # Owner can see it
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, code_path))
+        pre_code = self.selenium.find_element_by_tag_name('pre')
+        self.assertEqual(
+            pre_code.text, artwork.code
+        )
+
+        # Staff can
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, code_path))
+        pre_code = self.selenium.find_element_by_tag_name('pre')
+        self.assertEqual(
+            pre_code.text, artwork.code
+        )
+
+        # Super can
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, code_path))
+        pre_code = self.selenium.find_element_by_tag_name('pre')
         self.assertEqual(
             pre_code.text, artwork.code
         )
@@ -361,7 +873,8 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
-            1
+            1,
+            self.selenium.page_source
         )
 
     def test_not_author_delete(self):
@@ -388,7 +901,7 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
 
     def test_artwork_render_compile_error(self):
 
-        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
 
         render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, render_path))
@@ -411,7 +924,7 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
 
     def test_view_artwork_compile_error(self):
 
-        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
 
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, view_path))
@@ -429,9 +942,9 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
 
     def test_artwork_list_compile_error(self):
 
-        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
-        Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
-        Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
+        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+        Artwork.objects.create(title='Good test code1', code='// good code!', shared=1, author=self.user)
+        Artwork.objects.create(title='Bad test code2', code='still bad code!', shared=1, author=self.user)
 
         list_path = reverse('artwork-list')
         with wait_for_page_load(self.selenium):
@@ -480,7 +993,7 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
 
     def test_artwork_render_compile_error(self):
 
-        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
 
         render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, render_path))
@@ -503,10 +1016,11 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
 
     def test_artwork_view_compile_error(self):
 
-        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
 
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
-        self.selenium.get('%s%s' % (self.live_server_url, view_path))
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, view_path))
 
         # HTML5 attributes should be detectable via javascript
         self.assertTrue(self.selenium.execute_script('return Modernizr.sandbox'))
@@ -518,9 +1032,9 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
 
     def test_artwork_list_compile_error(self):
 
-        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', author=self.user)
-        Artwork.objects.create(title='Good test code1', code='// good code!', author=self.user)
-        Artwork.objects.create(title='Bad test code2', code='still bad code!', author=self.user)
+        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+        Artwork.objects.create(title='Good test code1', code='// good code!', shared=1, author=self.user)
+        Artwork.objects.create(title='Bad test code2', code='still bad code!', shared=1, author=self.user)
 
         list_path = reverse('artwork-list')
         with wait_for_page_load(self.selenium):

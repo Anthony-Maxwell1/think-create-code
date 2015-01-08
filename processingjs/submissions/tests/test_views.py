@@ -70,7 +70,6 @@ class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
         self.assertRegexpMatches(response.content, r'2 votes')
         self.assertRegexpMatches(response.content, r'Sign in to vote')
 
-
     def test_vote_like(self):
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
         submission = Submission.objects.create(artwork=artwork, exhibition=self.exhibition, submitted_by=self.user)
@@ -132,7 +131,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         self.assertRegexpMatches(response.content, r'Artwork:.*Sorry, no choices available')
         self.assertRegexpMatches(response.content, r'Exhibition:.*Sorry, no choices available')
 
-    def test_student_submit_own_artwork(self):
+    def test_submit_own_artwork(self):
         client = Client()
 
         student_artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
@@ -207,7 +206,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         self.assertEquals(len(response.context['form'].fields['exhibition'].queryset.all()), 2)
 
 
-    def test_staff_submit_any_artwork(self):
+    def test_submit_unowned_artwork(self):
         client = Client()
 
         student_artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
@@ -221,23 +220,16 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         create_url = reverse('artwork-submit', kwargs={'artwork': student_artwork.id})
         self.assertLogin(client, create_url, user='staff')
 
-        # Staff can submit student artwork
+        # Cannot submit others' artwork
         post_data = {
             'artwork': student_artwork.id,
             'exhibition': exhibition.id,
         }
         response = client.post(create_url, post_data)
         view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+        self.assertEqual(response.status_code, 403)
 
-        # Ensure submission is in the exhibition view list
-        response = client.get(view_url)
-        self.assertEquals(response.context['object'].id, exhibition.id)
-        submissions = response.context['object'].submission_set.all()
-        self.assertEquals(submissions.count(), 1)
-        self.assertEquals(submissions[0].id, student_artwork.id)
-
-        # Staff can submit own artwork
+        # Can submit own artwork
         post_data = {
             'artwork': staff_artwork.id,
             'exhibition': exhibition.id,
@@ -247,15 +239,14 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
-        # Ensure both submissions are in the exhibition view list
+        # Ensure one submission is in the exhibition view list
         response = client.get(view_url)
         self.assertEquals(response.context['object'].id, exhibition.id)
         submissions = response.context['object'].submission_set.all()
-        self.assertEquals(submissions.count(), 2)
+        self.assertEquals(submissions.count(), 1)
         self.assertEquals(submissions[0].id, student_artwork.id)
-        self.assertEquals(submissions[1].id, staff_artwork.id)
 
-    def test_super_submit_any_artwork(self):
+    def test_super_cant_submit_any_artwork(self):
         client = Client()
 
         student_artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
@@ -269,23 +260,22 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         create_url = reverse('artwork-submit', kwargs={'artwork': student_artwork.id})
         self.assertLogin(client, create_url, user='super')
 
-        # Staff can submit student artwork
+        # Cant's submit others' artwork
         post_data = {
             'artwork': student_artwork.id,
             'exhibition': exhibition.id,
         }
         response = client.post(create_url, post_data)
-        view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+        self.assertEqual(response.status_code, 403)
 
-        # Ensure submission is in the exhibition view list
+        # Ensure no submissions in the exhibition view list
+        view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
         response = client.get(view_url)
         self.assertEquals(response.context['object'].id, exhibition.id)
         submissions = response.context['object'].submission_set.all()
-        self.assertEquals(submissions.count(), 1)
-        self.assertEquals(submissions[0].id, student_artwork.id)
+        self.assertEquals(submissions.count(), 0)
 
-        # Staff can submit own artwork
+        # Can submit own artwork
         post_data = {
             'artwork': super_artwork.id,
             'exhibition': exhibition.id,
@@ -295,13 +285,12 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
-        # Ensure both submissions are in the exhibition view list
+        # Ensure one submissions in the exhibition view list
         response = client.get(view_url)
         self.assertEquals(response.context['object'].id, exhibition.id)
         submissions = response.context['object'].submission_set.all()
-        self.assertEquals(submissions.count(), 2)
+        self.assertEquals(submissions.count(), 1)
         self.assertEquals(submissions[0].id, student_artwork.id)
-        self.assertEquals(submissions[1].id, super_artwork.id)
 
     def test_submit_to_unreleased_exhibition(self):
         client = Client()
@@ -336,7 +325,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         }
         response = client.post(create_url, post_data)
         view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+        self.assertEquals(response.status_code, 403)
 
     def test_no_submit_twice(self):
         client = Client()
@@ -351,7 +340,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         create_url = reverse('artwork-submit', kwargs={'artwork': student_artwork.id})
         self.assertLogin(client, create_url)
 
-        # Student cannot submit to unreleased exhibition
+        # Post submission
         post_data = {
             'artwork': student_artwork.id,
             'exhibition': exhibition.id,
@@ -363,6 +352,52 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         # Submit same thing again
         response = client.post(create_url, post_data)
         self.assertRegexpMatches(response.content, r'Submission with this Exhibition and Artwork already exists.')
+
+    def test_submit_shares_artwork(self):
+        client = Client()
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        exhibition1 = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+        exhibition2 = Exhibition.objects.create(
+            title='Another Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+
+        self.assertEqual(artwork.shared, 0)
+
+        create_url = reverse('artwork-submit', kwargs={'artwork': artwork.id})
+        self.assertLogin(client, create_url)
+
+        # Post first submission
+        post_data = {
+            'artwork': artwork.id,
+            'exhibition': exhibition1.id,
+        }
+        client.post(create_url, post_data)
+
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 1)
+
+        # Post second submission
+        post_data = {
+            'artwork': artwork.id,
+            'exhibition': exhibition2.id,
+        }
+        client.post(create_url, post_data)
+
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 2)
+
+        # Duplicate submissions don't count
+        client.post(create_url, post_data)
+
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 2)
 
 
 class SubmissionDeleteViewTest(UserSetUp, TestCase):
@@ -435,18 +470,15 @@ class SubmissionDeleteViewTest(UserSetUp, TestCase):
             exhibition=exhibition,
             submitted_by=self.user)
 
+        # staff can't submit student artworks
         client = Client()
         delete_url = reverse('submission-delete', kwargs={'pk': submission.id})
         response = self.assertLogin(client, delete_url, user="staff")
+        self.assertEquals(response.status_code, 403)
 
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.context['object'].artwork, artwork)
-        self.assertEquals(response.context['object'].exhibition, exhibition)
-
-        # post redirects to artwork view
+        # post is also permission denied
         response = client.post(delete_url)
-        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+        self.assertEquals(response.status_code, 403)
 
     def test_super_delete_student_submission(self):
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
@@ -460,18 +492,15 @@ class SubmissionDeleteViewTest(UserSetUp, TestCase):
             exhibition=exhibition,
             submitted_by=self.user)
 
+        # even super users can't delete student submissions
         client = Client()
         delete_url = reverse('submission-delete', kwargs={'pk': submission.id})
         response = self.assertLogin(client, delete_url, user="super")
+        self.assertEquals(response.status_code, 403)
 
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.context['object'].artwork, artwork)
-        self.assertEquals(response.context['object'].exhibition, exhibition)
-
-        # post redirects to artwork view
+        # post is also permission denied
         response = client.post(delete_url)
-        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+        self.assertEquals(response.status_code, 403)
 
     def test_post_delete_votes(self):
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
@@ -539,4 +568,54 @@ class SubmissionDeleteViewTest(UserSetUp, TestCase):
 
         self.assertEqual(Vote.objects.filter(submission=submission).count(), 2)
 
+    def test_unsubmit_unshares_artwork(self):
+        client = Client()
 
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        exhibition1 = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+        exhibition2 = Exhibition.objects.create(
+            title='Another Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+
+        self.assertEqual(artwork.shared, 0)
+
+        submission1 = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition1,
+            submitted_by=self.user)
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 1)
+
+        submission2 = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition2,
+            submitted_by=self.user)
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 2)
+
+        
+        # Post first un-submission
+        delete_url = reverse('submission-delete', kwargs={'pk': submission1.id})
+        self.assertLogin(client, delete_url)
+        client.post(delete_url, {})
+
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 1)
+
+        # Post second un-submission
+        delete_url = reverse('submission-delete', kwargs={'pk': submission2.id})
+        client.post(delete_url, {})
+
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 0)
+
+        # Re-deletes don't work
+        client.post(delete_url, {})
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 0)

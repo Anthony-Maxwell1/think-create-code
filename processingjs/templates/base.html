@@ -26,15 +26,12 @@
     <nav class="top-bar" data-topbar role="navigation">
         <section class="top-bar-section">
         <ul class="title-area">
-            {% if user.is_anonymous %}
             <li>
-                <a href="{% url "login" %}?next={% url 'home' %}" title="view my artworks">My Studio</a>
+                <a href="{% url "artwork-studio" %}" title="view my artwork">My Studio</a>
             </li>
-            {% else %}
             <li>
-                <a href="{% url "home" %}" id="nav-title" title="view my artworks">My Studio</a>
+                <a href="{% url "artwork-shared" %}" id="nav-list" title="view shared artwork">Artwork</a>
             </li>
-            {% endif %}
             <li>
                 <a href="{% url "exhibition-list" %}" id="nav-list" title="view exhibitions">Exhibitions</a>
             </li>

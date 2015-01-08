@@ -16,82 +16,85 @@ class ArtworkTests(UserSetUp, TestCase):
             'Empty code'
         )
 
-    def test_can_edit(self):
+    def test_can_see_private(self):
         student = Artwork(
             author=self.user,
             title='Empty code',
             code='// code goes here')
-        self.assertTrue(student.can_edit(self.user))
-        self.assertFalse(student.can_edit(self.staff_user))
-        self.assertFalse(student.can_edit(self.super_user))
+        self.assertTrue(student.can_see(self.user))
+        self.assertFalse(student.can_see(self.staff_user))
+        self.assertFalse(student.can_see(self.super_user))
 
         staff = Artwork(
             author=self.staff_user,
             title='Empty code',
             code='// code goes here')
-        self.assertFalse(staff.can_edit(self.user))
-        self.assertTrue(staff.can_edit(self.staff_user))
-        self.assertFalse(staff.can_edit(self.super_user))
+        self.assertFalse(staff.can_see(self.user))
+        self.assertTrue(staff.can_see(self.staff_user))
+        self.assertFalse(staff.can_see(self.super_user))
 
         superuser = Artwork(
             author=self.super_user,
             title='Empty code',
             code='// code goes here')
-        self.assertFalse(superuser.can_edit(self.user))
-        self.assertFalse(superuser.can_edit(self.staff_user))
-        self.assertTrue(superuser.can_edit(self.super_user))
+        self.assertFalse(superuser.can_see(self.user))
+        self.assertFalse(superuser.can_see(self.staff_user))
+        self.assertTrue(superuser.can_see(self.super_user))
 
-    def test_can_delete(self):
+    def test_can_see_shared(self):
+        student = Artwork(
+            author=self.user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        self.assertTrue(student.can_see(self.user))
+        self.assertTrue(student.can_see(self.staff_user))
+        self.assertTrue(student.can_see(self.super_user))
+
+        staff = Artwork(
+            author=self.staff_user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        self.assertTrue(staff.can_see(self.user))
+        self.assertTrue(staff.can_see(self.staff_user))
+        self.assertTrue(staff.can_see(self.super_user))
+
+        superuser = Artwork(
+            author=self.super_user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        self.assertTrue(superuser.can_see(self.user))
+        self.assertTrue(superuser.can_see(self.staff_user))
+        self.assertTrue(superuser.can_see(self.super_user))
+
+    def test_can_save(self):
         student = Artwork(
             author=self.user,
             title='Empty code',
             code='// code goes here')
-        self.assertTrue(student.can_delete(self.user))
-        self.assertTrue(student.can_delete(self.staff_user))
-        self.assertTrue(student.can_delete(self.super_user))
+        self.assertTrue(student.can_save(self.user))
+        self.assertFalse(student.can_save(self.staff_user))
+        self.assertFalse(student.can_save(self.super_user))
 
         staff = Artwork(
             author=self.staff_user,
             title='Empty code',
             code='// code goes here')
-        self.assertFalse(staff.can_delete(self.user))
-        self.assertTrue(staff.can_delete(self.staff_user))
-        self.assertTrue(staff.can_delete(self.super_user))
+        self.assertFalse(staff.can_save(self.user))
+        self.assertTrue(staff.can_save(self.staff_user))
+        self.assertFalse(staff.can_save(self.super_user))
 
         superuser = Artwork(
             author=self.super_user,
             title='Empty code',
             code='// code goes here')
-        self.assertFalse(superuser.can_delete(self.user))
-        self.assertTrue(superuser.can_delete(self.staff_user))
-        self.assertTrue(superuser.can_delete(self.super_user))
+        self.assertFalse(superuser.can_save(self.user))
+        self.assertFalse(superuser.can_save(self.staff_user))
+        self.assertTrue(superuser.can_save(self.super_user))
 
-    def test_can_submit(self):
-        student = Artwork(
-            author=self.user,
-            title='Empty code',
-            code='// code goes here')
-        self.assertTrue(student.can_submit(self.user))
-        self.assertTrue(student.can_submit(self.staff_user))
-        self.assertTrue(student.can_submit(self.super_user))
-
-        staff = Artwork(
-            author=self.staff_user,
-            title='Empty code',
-            code='// code goes here')
-        self.assertFalse(staff.can_submit(self.user))
-        self.assertTrue(staff.can_submit(self.staff_user))
-        self.assertTrue(staff.can_submit(self.super_user))
-
-        superuser = Artwork(
-            author=self.super_user,
-            title='Empty code',
-            code='// code goes here')
-        self.assertFalse(superuser.can_submit(self.user))
-        self.assertTrue(superuser.can_submit(self.staff_user))
-        self.assertTrue(superuser.can_submit(self.super_user))
-
-    def test_can_submit_queryset(self):
+    def test_can_see_private_queryset(self):
         student = Artwork(
             author=self.user,
             title='Empty code',
@@ -110,24 +113,97 @@ class ArtworkTests(UserSetUp, TestCase):
             code='// code goes here')
         superuser.save()
 
-        public_qs = Artwork.can_submit_queryset(Artwork.objects)
+        public_qs = Artwork.can_see_queryset(Artwork.objects)
         self.assertEqual(len(public_qs.all()), 0)
 
-        student_qs = Artwork.can_submit_queryset(Artwork.objects, self.user)
+        student_qs = Artwork.can_see_queryset(Artwork.objects, self.user)
         self.assertEqual(len(student_qs.all()), 1)
         self.assertEqual(student_qs.all()[0].id, student.id)
 
-        staff_qs = Artwork.can_submit_queryset(Artwork.objects, self.staff_user)
-        self.assertEqual(len(staff_qs.all()), 3)
-        self.assertEqual(staff_qs.all()[0].id, student.id)
-        self.assertEqual(staff_qs.all()[1].id, staff.id)
-        self.assertEqual(staff_qs.all()[2].id, superuser.id)
+        staff_qs = Artwork.can_see_queryset(Artwork.objects, self.staff_user)
+        self.assertEqual(len(staff_qs.all()), 1)
+        self.assertEqual(staff_qs.all()[0].id, staff.id)
 
-        super_qs = Artwork.can_submit_queryset(Artwork.objects, self.super_user)
+        super_qs = Artwork.can_see_queryset(Artwork.objects, self.super_user)
+        self.assertEqual(len(super_qs.all()), 1)
+        self.assertEqual(super_qs.all()[0].id, superuser.id)
+
+    def test_can_see_shared_queryset(self):
+        student = Artwork(
+            author=self.user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        student.save()
+
+        staff = Artwork(
+            author=self.staff_user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        staff.save()
+
+        superuser = Artwork(
+            author=self.super_user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        superuser.save()
+
+        public_qs = Artwork.can_see_queryset(Artwork.objects)
+        self.assertEqual(len(public_qs.all()), 3)
+
+        student_qs = Artwork.can_see_queryset(Artwork.objects, self.user)
+        self.assertEqual(len(student_qs.all()), 3)
+        self.assertEqual(student_qs.all()[0].id, student.id)
+        self.assertEqual(student_qs.all()[1].id, staff.id)
+        self.assertEqual(student_qs.all()[2].id, superuser.id)
+
+        staff_qs = Artwork.can_see_queryset(Artwork.objects, self.staff_user)
+        self.assertEqual(len(staff_qs.all()), 3)
+        self.assertEqual(student_qs.all()[0].id, student.id)
+        self.assertEqual(student_qs.all()[1].id, staff.id)
+        self.assertEqual(student_qs.all()[2].id, superuser.id)
+
+        super_qs = Artwork.can_see_queryset(Artwork.objects, self.super_user)
         self.assertEqual(len(super_qs.all()), 3)
-        self.assertEqual(super_qs.all()[0].id, student.id)
-        self.assertEqual(super_qs.all()[1].id, staff.id)
-        self.assertEqual(super_qs.all()[2].id, superuser.id)
+        self.assertEqual(student_qs.all()[0].id, student.id)
+        self.assertEqual(student_qs.all()[1].id, staff.id)
+        self.assertEqual(student_qs.all()[2].id, superuser.id)
+
+    def test_can_save_queryset(self):
+        student = Artwork(
+            author=self.user,
+            title='Empty code',
+            code='// code goes here')
+        student.save()
+
+        staff = Artwork(
+            author=self.staff_user,
+            title='Empty code',
+            code='// code goes here')
+        staff.save()
+
+        superuser = Artwork(
+            author=self.super_user,
+            title='Empty code',
+            code='// code goes here')
+        superuser.save()
+
+        public_qs = Artwork.can_save_queryset(Artwork.objects)
+        self.assertEqual(len(public_qs.all()), 0)
+
+        student_qs = Artwork.can_save_queryset(Artwork.objects, self.user)
+        self.assertEqual(len(student_qs.all()), 1)
+        self.assertEqual(student_qs.all()[0].id, student.id)
+
+        staff_qs = Artwork.can_save_queryset(Artwork.objects, self.staff_user)
+        self.assertEqual(len(staff_qs.all()), 1)
+        self.assertEqual(staff_qs.all()[0].id, staff.id)
+
+        super_qs = Artwork.can_save_queryset(Artwork.objects, self.super_user)
+        self.assertEqual(len(super_qs.all()), 1)
+        self.assertEqual(super_qs.all()[0].id, superuser.id)
 
 
 class ArtworkModelFormTests(UserSetUp, TestCase):

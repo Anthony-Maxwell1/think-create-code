@@ -33,17 +33,16 @@ class SubmissionTests(UserSetUp, TestCase):
         student_artwork = Artwork(title='New Artwork', code='// code goes here', author=self.user)
         staff_artwork = Artwork(title='New Artwork', code='// code goes here', author=self.staff_user)
 
-        # student can submit own artwork, staff can submit anything
+        # only authors can submit artwork
         submission = Submission(exhibition=exhibition, artwork=student_artwork)
         self.assertTrue(submission.can_save(self.user))
-        self.assertTrue(submission.can_save(self.staff_user))
-        self.assertTrue(submission.can_save(self.super_user))
+        self.assertFalse(submission.can_save(self.staff_user))
+        self.assertFalse(submission.can_save(self.super_user))
 
-        # students cannot submit other's artwork, but staff can
         submission = Submission(exhibition=exhibition, artwork=staff_artwork)
         self.assertFalse(submission.can_save(self.user))
         self.assertTrue(submission.can_save(self.staff_user))
-        self.assertTrue(submission.can_save(self.super_user))
+        self.assertFalse(submission.can_save(self.super_user))
 
     def test_can_save_unreleased_exhibition(self):
 
@@ -56,17 +55,17 @@ class SubmissionTests(UserSetUp, TestCase):
         student_artwork = Artwork(title='New Artwork', code='// code goes here', author=self.user)
         staff_artwork = Artwork(title='New Artwork', code='// code goes here', author=self.staff_user)
 
-        # student cannot submit to unreleased exhibitions, staff can submit anything
+        # students cannot submit to unreleased exhibitions
         submission = Submission(exhibition=exhibition, artwork=student_artwork)
         self.assertFalse(submission.can_save(self.user))
-        self.assertTrue(submission.can_save(self.staff_user))
-        self.assertTrue(submission.can_save(self.super_user))
+        self.assertFalse(submission.can_save(self.staff_user))
+        self.assertFalse(submission.can_save(self.super_user))
 
-        # students cannot submit other's artwork either, but staff can
+        # but staff can
         submission = Submission(exhibition=exhibition, artwork=staff_artwork)
         self.assertFalse(submission.can_save(self.user))
         self.assertTrue(submission.can_save(self.staff_user))
-        self.assertTrue(submission.can_save(self.super_user))
+        self.assertFalse(submission.can_save(self.super_user))
 
     def test_save_unique(self):
 
@@ -87,6 +86,60 @@ class SubmissionTests(UserSetUp, TestCase):
             IntegrityError,
             'columns exhibition_id, artwork_id are not unique',
             submission2.save)
+
+    def test_save_shares_artwork(self):
+        exhibition1 = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at=timezone.now(),
+            author=self.user)
+        artwork = Artwork.objects.create(title='New Artwork', code='// code goes here', author=self.user)
+        self.assertEqual(artwork.shared, 0)
+
+        # Artwork must be submitted to be shared
+        submission1 = Submission.objects.create(exhibition=exhibition1, artwork=artwork, submitted_by=self.user)
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 1)
+
+        # Submitting artwork to more than one exhibition increments the shared counter
+        exhibition2 = Exhibition.objects.create(
+            title='Another Exhibition',
+            description='description goes here',
+            released_at=timezone.now(),
+            author=self.user)
+        submission2 = Submission.objects.create(exhibition=exhibition2, artwork=artwork, submitted_by=self.user)
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 2)
+
+    def test_delete_unshares_artwork(self):
+        exhibition1 = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at=timezone.now(),
+            author=self.user)
+        artwork = Artwork.objects.create(title='New Artwork', code='// code goes here', author=self.user)
+        self.assertEqual(artwork.shared, 0)
+
+        submission1 = Submission.objects.create(exhibition=exhibition1, artwork=artwork, submitted_by=self.user)
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 1)
+
+        exhibition2 = Exhibition.objects.create(
+            title='Another Exhibition',
+            description='description goes here',
+            released_at=timezone.now(),
+            author=self.user)
+        submission2 = Submission.objects.create(exhibition=exhibition2, artwork=artwork, submitted_by=self.user)
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 2)
+
+        submission1.delete()
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 1)
+
+        submission2.delete()
+        artwork = Artwork.objects.get(id=artwork.id)
+        self.assertEqual(artwork.shared, 0)
 
     def test_can_vote(self):
         exhibition = Exhibition.objects.create(
