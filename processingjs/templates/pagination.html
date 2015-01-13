@@ -1,0 +1,38 @@
+{% if num_pages > 1 %}
+<div class="pagination-centered">
+<ul class="pagination" role="menubar" aria-label="Pagination">
+
+<li{% if page.has_previous %}><a href="?page={{ page.previous_page_number }}" title="previous page"
+{% else %} class="unavailable" aria-disabled="true"><a
+{% endif %}><i class="fa fa-chevron-left"></i> Previous</a></li>
+
+{% for pnum in begin %}
+<li {% ifequal page.number pnum %}class="current"><a href=""
+{% else %}><a href="?page={{ pnum }}"
+{% endifequal %}>{{ pnum }}</a></li>
+{% endfor %}
+
+{% if middle %}
+<li class="unavailable" aria-disabled="true">&hellip;</li>
+{% for pnum in middle %}
+<li {% ifequal page.number pnum %}class="current"><a href=""
+{% else %}><a href="?page={{ pnum }}"
+{% endifequal %}>{{ pnum }}</a></li>
+{% endfor %}
+{% endif %}
+
+{% if end %}
+<li class="unavailable" aria-disabled="true">&hellip;</li>
+{% for pnum in end %}
+<li {% ifequal page.number pnum %}class="current"><a href=""
+{% else %}><a href="?page={{ pnum }}"
+{% endifequal %}>{{ pnum }}</a></li>
+{% endfor %}
+{% endif %}
+
+<li{% if page.has_next %}><a href="?page={{ page.next_page_number }}" title="next page"
+{% else %} class="unavailable" aria-disabled="true"><a
+{% endif %}>Next <i class="fa fa-chevron-right"></i></a></li>
+</ul>
+</div>
+{% endif %}

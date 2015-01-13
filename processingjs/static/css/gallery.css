@@ -101,3 +101,8 @@ ul.edit_fields .helptext {
 .artwork-score {
     display: inline-block;
 }
+
+.pagination .fa {
+    position: relative;
+    top: 1px;
+}

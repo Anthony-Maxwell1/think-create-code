@@ -1,7 +1,13 @@
 {% extends "base.html" %}
+{% block extras %}
+{% load staticfiles %}
+<script type="text/javascript" src="{% static "js/vote.js" %}"></script>
+{% endblock extras %}
 {% block content %}
 <div id="exhibition-view-content">
 {% include 'exhibitions/_view.html' %}
-{% include 'submissions/_list.html' with object_list=object.submission_set.all %}
+<div id="exhibition-submissions">
+{% include 'submissions/_list.html' with object_list=submissions.object_list votes=submissions.votes page_obj=submissions.page_obj %}
+</div>
 </div>
 {% endblock content %}

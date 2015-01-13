@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% load pagination %}
 <div id="artwork-list-content">
 {% if author %}
 <h1>Artwork {% if shared %}shared{% endif %} by {{ author }}</h1>
@@ -27,6 +28,6 @@
     </li>
     {% endfor %}
 </ul>
-
 </div>
+{% pagination page_obj %}
 {% endblock content %}

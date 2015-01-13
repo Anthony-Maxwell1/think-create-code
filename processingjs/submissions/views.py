@@ -1,5 +1,5 @@
 import os
-from django.views.generic import CreateView, DeleteView
+from django.views.generic import ListView, CreateView, DeleteView
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
@@ -7,6 +7,7 @@ from uofa.views import TemplatePathMixin, PostOnlyMixin, LoggedInMixin, ObjectHa
 from submissions.models import Submission, SubmissionForm
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
+from votes.models import Vote
 
 
 class SubmissionView(TemplatePathMixin):
@@ -16,6 +17,37 @@ class SubmissionView(TemplatePathMixin):
 
     def get_success_url(self):
         return reverse('exhibition-view', kwargs={'pk': self.object.exhibition.id})
+
+
+class ListSubmissionView(SubmissionView, ListView):
+    '''Rendered by ShowExhibitionView'''
+    template_name = SubmissionView.prepend_template_path('_list.html')
+    paginate_by = 10
+    paginate_orphans = 4
+
+    def _get_exhibition_id(self):
+        return self.kwargs.get('pk')
+
+    def get_queryset(self):
+        '''Show submissions to the given exhibition.'''
+        qs = Submission.objects
+
+        exhibition = self._get_exhibition_id()
+        if exhibition:
+            qs = qs.filter(exhibition_id=exhibition)
+
+        # Show most recently submitted first
+        return qs.order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super(ListSubmissionView, self).get_context_data(**kwargs)
+
+        # Include in the current user's votes for this exhibition
+        # as a dict of submission.id:vote
+        exhibition = self._get_exhibition_id()
+        votes = Vote.can_delete_queryset(user=self.request.user, exhibition=exhibition).all()
+        context['votes'] = { v.submission_id:v for v in votes }
+        return context
 
 
 class CreateSubmissionView(PostOnlyMixin, LoggedInMixin, SubmissionView, CreateView):

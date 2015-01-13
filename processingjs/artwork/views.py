@@ -106,6 +106,8 @@ class StudioArtworkView(RedirectView):
 class ListArtworkView(ArtworkView, ListView):
 
     template_name = ArtworkView.prepend_template_path('list.html')
+    paginate_by = 10
+    paginate_orphans = 4
 
     def _get_author_id(self):
         return self.kwargs.get('author')
