@@ -2,7 +2,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DetailView, D
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
-from csp.decorators import csp_replace
+from csp.decorators import csp_update
 import os
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin
@@ -22,17 +22,18 @@ class UnsafeMediaMixin(object):
        to make them ok to allow inline and eval'd Javascript provided by students.
        We also disallow everything else, so that the rendered artwork can't include them.
     '''
-    @method_decorator(csp_replace(
-        # processingjs requires unsafe-inline and unsafe-eval for scripts, css, and fonts
-        SCRIPT_SRC = "http://*.adelaide.edu.au:* https://*.adelaide.edu.au:* 'unsafe-inline' 'unsafe-eval'",
-        STYLE_SRC =  "http://*.adelaide.edu.au:* https://*.adelaide.edu.au:* 'unsafe-inline'",
-        FONT_SRC = "data:",
-        # no (non-self) images, objects, media, frames, or XHR requests allowed during render.
-        IMG_SRC = "'self'",
-        OBJECT_SRC = "'none'",
-        MEDIA_SRC = "'none'",
-        FRAME_SRC = "'none'",
-        CONNECT_SRC="'none'",
+    @method_decorator(csp_update(
+        # processingjs requires *.adelaide and unsafe-eval for scripts, css, and fonts
+        # (have to specify *.adelaide because of iframe security)
+        SCRIPT_SRC = ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*", "'unsafe-eval'",),
+        STYLE_SRC =  ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*",),
+        FONT_SRC = ("data:",),
+        # no objects, media, frames, or XHR requests allowed during render.
+        # (IMG_SRC covered by default policy)
+        OBJECT_SRC = ("'none'",),
+        MEDIA_SRC = ("'none'",),
+        FRAME_SRC = ("'none'",),
+        CONNECT_SRC=("'none'",),
     ))
     def dispatch(self, *args, **kwargs):
         return super(UnsafeMediaMixin, self).dispatch(*args, **kwargs)
