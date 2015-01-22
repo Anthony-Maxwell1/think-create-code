@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load dict_filters %}
 {% block content %}
 <h1>Welcome!</h1>
 
@@ -23,6 +24,7 @@ your username in edX.</em></p>
             <button id="save_user" type="submit" class="postfix button">Save</button>
         </div>
     </div>
+    <input type="hidden" name="custom_next" value="{{ request.POST|get:'custom_next' }}" />
 </form>
 
 {% endblock content %}
