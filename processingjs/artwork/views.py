@@ -84,14 +84,6 @@ class ShowArtworkCodeView(ObjectHasPermMixin, ArtworkView, DetailView):
 class RenderArtworkView(UnsafeMediaMixin, TemplateView):
     template_name = ArtworkView.prepend_template_path('render.html')
 
-    def render_to_response(self, context, **response_kwargs):
-        '''
-        Ensure this page can only iframed by us.
-        '''
-        response = super(RenderArtworkView, self).render_to_response(context, **response_kwargs)
-        response['X-Frame-Options'] = 'SAMEORIGIN';
-        return response
-
 
 class StudioArtworkView(RedirectView):
     permanent = False

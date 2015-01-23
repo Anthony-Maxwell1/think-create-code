@@ -263,9 +263,6 @@ class ArtworkViewRenderTests(UserSetUp, TestCase):
         # Template view contains no object data
         self.assertFalse('object' in response.context)
 
-        # iframing allowed only by same origin
-        self.assertEqual(response['X-Frame-Options'], 'SAMEORIGIN')
-
     def test_artwork_render_404(self):
         
         client = Client()
