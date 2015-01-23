@@ -8,11 +8,18 @@
 
 {% block content %}
 <div id="artwork-edit-content">
-{% if artwork.id %}
-<h1>Edit Artwork</h1>
-{% else %}
-<h1>Add Artwork</h1>
-{% endif %}
+<div class="row">
+    <div class="small-6 columns">
+        {% if artwork.id %}
+        <h1>Edit Artwork</h1>
+        {% else %}
+        <h1>Add Artwork</h1>
+        {% endif %}
+    </div>
+    <div class="small-6 columns help-link">
+        <a href="{% url 'help' %}">Help</a>
+    </div>
+</div>
 <div data-equalizer>
 <div class="small-12 medium-6 columns" data-equalizer-watch>
     <form method="post" action="{{ action }}" enctype="multipart/form-data">

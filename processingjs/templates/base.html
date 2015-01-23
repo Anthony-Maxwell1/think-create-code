@@ -52,16 +52,16 @@
             </li>
         </ul>
         </section>
+        {% if user.is_anonymous %}
         <section class="top-bar-section">
         <ul id="nav-usermenu" class="right">
-        {% if user.is_anonymous %}
         <li>
             <a href="{% url "login" %}?next={{ request.get_full_path|urlencode }}" id="nav-signin" title="sign in">Sign in
             <i class="fa fa-sign-in"></i></a>
         </li>
-        {% endif %}
         </ul>
         </section>
+        {% endif %}
     </nav>
 
     <div class="small-10 small-centered columns">

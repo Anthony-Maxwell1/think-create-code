@@ -84,6 +84,9 @@ ul.edit_fields .helptext {
     border: 1px dashed lightgrey;
     padding: 0.5em;
 }
+.help-link {
+    text-align: right;
+}
 /* Highlight exhibitions that haven't been released yet */
 .not-available {
     font-weight: bold;
