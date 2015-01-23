@@ -13,27 +13,34 @@
 {% else %}
 <h1>Add Artwork</h1>
 {% endif %}
-<form method="post" action="{{ action }}" enctype="multipart/form-data">
-    {% csrf_token %}
-    <ul class="edit_fields">
-    {{ form.as_ul }}
-    </ul>
-    <div class="row">
-        <div class="small-6 columns">
-            <button id="save_artwork" type="submit" class="postfix button">Save</button>
+<div data-equalizer>
+<div class="small-12 medium-6 columns" data-equalizer-watch>
+    <form method="post" action="{{ action }}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <ul class="edit_fields">
+        {{ form.as_ul }}
+        </ul>
+        <div class="row">
+            <div class="small-6 columns">
+                <button id="draw" class="postfix button">Preview</button>
+            </div>
+            <div class="small-6 columns">
+                <button id="save_artwork" type="submit" title="Save to My Studio" class="postfix button">Save</button>
+            </div>
         </div>
-        <div class="small-6 columns">
-            <button id="draw" class="postfix button">Draw</button>
-        </div>
-    </div>
-</form>
+    </form>
+{% if artwork.id %}
 <a id="save_cancel" href="{% url "artwork-list" %}">back to list</a>
-<div id="error"></div>
-<canvas id="canvas-preview"></canvas>
-<script id="script-preview" type="text/processing" data-processing-target="canvas-preview">
-    {% autoescape off %}
-    {{ artwork.code }}
-    {% endautoescape %}
-</script>
+{% endif %}
+</div>
+<div class="small-12 medium-6 columns preview" data-equalizer-watch>
+    <div><span id="error" class="alert label"></span></div>
+    <canvas id="canvas-preview"></canvas>
+    <script id="script-preview" type="text/processing" data-processing-target="canvas-preview">
+        {% autoescape off %}
+        {{ artwork.code }}
+        {% endautoescape %}
+    </script>
+    </div>
 </div>
 {% endblock content %}

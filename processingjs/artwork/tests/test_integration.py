@@ -738,11 +738,15 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_id('id_title').send_keys('do not submit')
         self.selenium.find_element_by_id('id_code').send_keys('// code goes here')
 
-        with wait_for_page_load(self.selenium):
-            self.selenium.find_element_by_id('save_cancel').click()
+        # No more 'cancel' link on Add Artwork page
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('save_cancel')
+        )
 
-        # cancel action redirects to list url
+        # But if we go to the list url, our artwork is not there.
         list_path = reverse('artwork-list')
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),

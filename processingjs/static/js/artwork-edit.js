@@ -6,8 +6,8 @@ $(document).ready(function() {
 
     $('#draw').on('click', function() {
 
-        // 1. Clear any previous errors
-        $error.html('');
+        // 1. Hide any previous errors
+        $error.hide();
 
         var code = $code.val();
         if (code) {
@@ -27,7 +27,9 @@ $(document).ready(function() {
             } catch(e) {
                 // 5. Show any errors
                 $error.html(e.message);
+                $error.show();
             }
+            $(document).foundation('equalizer', 'reflow');
         }
 
         return false;

@@ -11,4 +11,7 @@ $(document).ready(function(){
      // Replace small grip icon with large grip
        .removeClass('ui-icon-gripsmall-diagonal-se')
        .addClass('ui-icon-grip-diagonal-se');
+
+    // Syntax highlighting
+    hljs.initHighlightingOnLoad();
 });

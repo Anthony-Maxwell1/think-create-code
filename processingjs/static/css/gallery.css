@@ -72,10 +72,17 @@ ul.edit_fields .helptext {
     font-size: 0.85rem;
     font-style: italic;
 }
-/* Format code blocks */
-.code-block {
+/* Hide error text initially */
+#artwork-edit-content #error {
+    display: none;
+}
+/* Use monospace in code text area */
+#artwork-edit-content #id_code {
     font-family: monospace;
-    white-space: pre;
+}
+#artwork-edit-content .preview {
+    border: 1px dashed lightgrey;
+    padding: 0.5em;
 }
 /* Highlight exhibitions that haven't been released yet */
 .not-available {

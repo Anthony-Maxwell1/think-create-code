@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{% static "css/font-awesome.min.css" %}">
     <link rel="stylesheet" type="text/css" href="{% static "css/jquery.ui.resizable.min.css" %}">
     <link rel="stylesheet" type="text/css" href="{% static "css/gallery.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "css/highlight/default.css" %}">
     {% endblock css %}
     {% block js %}
     <script type="text/javascript" src="{% static "js/modernizr.min.js" %}"></script>
@@ -16,6 +17,7 @@
     <script type="text/javascript" src="{% static "js/foundation.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/jquery.ui.resizable.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/jquery.ui.touch-punch.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/highlight.pack.js" %}"></script>
     <script type="text/javascript" src="{% static "js/base.js" %}"></script>
     {% endblock js %}
     {% block extras %}
@@ -44,6 +46,9 @@
             </li>
             <li>
                 <a href="{% url "exhibition-list" %}" id="nav-list" title="view exhibitions">Exhibitions</a>
+            </li>
+            <li>
+                <a href="{% url "help" %}" id="nav-list" title="help links and resources">Help</a>
             </li>
         </ul>
         </section>

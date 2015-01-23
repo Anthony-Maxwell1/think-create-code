@@ -1,5 +1,5 @@
 import os.path
-from django.views.generic import UpdateView
+from django.views.generic import UpdateView, TemplateView
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse, resolve
 from django.utils.http import is_safe_url
@@ -8,6 +8,10 @@ from django.http import HttpResponseRedirect
 from django_auth_lti.mixins import LTIUtilityMixin, LTIRoleRestrictionMixin
 from uofa.models import UserForm
 from uofa.views import TemplatePathMixin, CSRFExemptMixin
+
+class HelpView(TemplatePathMixin, TemplateView):
+    TemplatePathMixin.template_dir = 'gallery'
+    template_name = TemplatePathMixin.prepend_template_path('help.html')
 
 
 class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateView):
