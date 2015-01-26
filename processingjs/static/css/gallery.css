@@ -116,3 +116,25 @@ ul.edit_fields .helptext {
     position: relative;
     top: 1px;
 }
+.order_by {
+    text-align: right;
+}
+.order_by:before {
+    content: "Sort by: ";
+    font-size: 85%;
+}
+.order_by ul {
+    list-style-type: none;
+    display: inline;
+    margin: 0;
+    font-size: 85%;
+}
+.order_by ul li {
+    display: inline;
+}
+.order_by ul li:before {
+    content: ' | ';
+}
+.order_by ul li:first-child:before {
+    content: '';
+}

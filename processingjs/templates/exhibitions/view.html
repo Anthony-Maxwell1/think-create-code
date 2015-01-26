@@ -7,7 +7,7 @@
 <div id="exhibition-view-content">
 {% include 'exhibitions/_view.html' %}
 <div id="exhibition-submissions">
-{% include 'submissions/_list.html' with object_list=submissions.object_list votes=submissions.votes page_obj=submissions.page_obj %}
+{% include 'submissions/_list.html' with object_list=submissions.object_list votes=submissions.votes page_obj=submissions.page_obj exhibition_id=exhibition.id order=submissions.order %}
 </div>
 </div>
 {% endblock content %}

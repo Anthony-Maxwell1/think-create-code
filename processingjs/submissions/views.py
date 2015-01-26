@@ -28,6 +28,9 @@ class ListSubmissionView(SubmissionView, ListView):
     def _get_exhibition_id(self):
         return self.kwargs.get('pk')
 
+    def _get_order_by(self):
+        return self.kwargs.get('order', '')
+
     def get_queryset(self):
         '''Show submissions to the given exhibition.'''
         qs = Submission.objects
@@ -37,10 +40,16 @@ class ListSubmissionView(SubmissionView, ListView):
             qs = qs.filter(exhibition_id=exhibition)
 
         # Show most recently submitted first
-        return qs.order_by('-created_at')
+        order = self._get_order_by()
+        if order == 'score':
+            qs = qs.order_by('-score')
+        else:
+            qs = qs.order_by('-created_at')
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super(ListSubmissionView, self).get_context_data(**kwargs)
+        context['order'] = self._get_order_by()
 
         # Include in the current user's votes for this exhibition
         # as a dict of submission.id:vote

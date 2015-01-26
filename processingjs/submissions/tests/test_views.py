@@ -32,7 +32,9 @@ class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
 
         response = client.get(self.view_url)
         self.assertEquals(response.context['object'].id, self.exhibition.id)
-        self.assertEquals(response.context['object'].submission_set.count(), 0)
+        self.assertEquals(response.context['submissions']['object_list'].count(), 0)
+        self.assertEquals(response.context['order'], 'recent')
+        self.assertEquals(response.context['votes'], {})
 
         # Submit an artwork to the exhibition to see it in the list
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
@@ -40,9 +42,50 @@ class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
 
         response = client.get(self.view_url)
         self.assertEquals(response.context['object'].id, self.exhibition.id)
-        submissions = response.context['object'].submission_set.all()
+        submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(submissions.count(), 1)
         self.assertEquals(submissions[0].id, submission.id)
+
+    def test_sort_submissions(self):
+
+        client = Client()
+
+        # New exhibitions contain no submissions
+
+        response = client.get(self.view_url)
+        self.assertEquals(response.context['object'].id, self.exhibition.id)
+        self.assertEquals(response.context['submissions']['object_list'].count(), 0)
+        self.assertEquals(response.context['order'], 'recent')
+        self.assertEquals(response.context['votes'], {})
+
+        # Submit three artwork to the exhibition to see them in the list
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        submission1 = Submission.objects.create(artwork=artwork1, exhibition=self.exhibition, submitted_by=self.user, score=10)
+
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.user)
+        submission2 = Submission.objects.create(artwork=artwork2, exhibition=self.exhibition, submitted_by=self.user, score=0)
+
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.user)
+        submission3 = Submission.objects.create(artwork=artwork3, exhibition=self.exhibition, submitted_by=self.user, score=5)
+
+        response = client.get(self.view_url)
+        self.assertEquals(response.context['object'].id, self.exhibition.id)
+        submissions = response.context['submissions']['object_list']
+        self.assertEquals(response.context['order'], 'recent')
+        self.assertEquals(submissions.count(), 3)
+        self.assertEquals(submissions[0].id, submission3.id)
+        self.assertEquals(submissions[1].id, submission2.id)
+        self.assertEquals(submissions[2].id, submission1.id)
+
+        view_score_url = reverse('exhibition-view-score', kwargs={'pk': self.exhibition.id})
+        response = client.get(view_score_url)
+        self.assertEquals(response.context['object'].id, self.exhibition.id)
+        submissions = response.context['submissions']['object_list']
+        self.assertEquals(response.context['order'], 'score')
+        self.assertEquals(submissions.count(), 3)
+        self.assertEquals(submissions[0].id, submission1.id)
+        self.assertEquals(submissions[1].id, submission3.id)
+        self.assertEquals(submissions[2].id, submission2.id)
 
     def test_votes_public(self):
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
@@ -52,21 +95,21 @@ class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
 
         # No votes, no vote text shown
         response = client.get(self.view_url)
-        self.assertEquals(response.context['object'].submission_set.count(), 1)
+        self.assertEquals(response.context['submissions']['object_list'].count(), 1)
         self.assertNotRegexpMatches(response.content, r'0 votes')
         self.assertRegexpMatches(response.content, r'Sign in to vote')
 
         # Add a vote, ensure it's shown correctly
         student_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.user)
         response = client.get(self.view_url)
-        self.assertEquals(response.context['object'].submission_set.count(), 1)
+        self.assertEquals(response.context['submissions']['object_list'].count(), 1)
         self.assertRegexpMatches(response.content, r'1 vote')
         self.assertRegexpMatches(response.content, r'Sign in to vote')
 
         # Add a second vote, ensure it's shown correctly
         staff_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
         response = client.get(self.view_url)
-        self.assertEquals(response.context['object'].submission_set.count(), 1)
+        self.assertEquals(response.context['submissions']['object_list'].count(), 1)
         self.assertRegexpMatches(response.content, r'2 votes')
         self.assertRegexpMatches(response.content, r'Sign in to vote')
 
@@ -78,14 +121,14 @@ class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
 
         # Login as student
         response = self.assertLogin(client, self.view_url)
-        self.assertEquals(response.context['object'].submission_set.count(), 1)
+        self.assertEquals(response.context['submissions']['object_list'].count(), 1)
         self.assertNotRegexpMatches(response.content, r'title="unlike"')
         self.assertRegexpMatches(response.content, r'title="like"')
 
         # Add a vote, ensure it's shown correctly
         student_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.user)
         response = client.get(self.view_url)
-        submissions = response.context['object'].submission_set.all()
+        submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(len(submissions), 1)
         self.assertEquals(submissions[0].score, 1)
         self.assertNotRegexpMatches(response.content, r'title="like"')
@@ -94,7 +137,7 @@ class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
         # Add a staff vote, ensure it doesn't affect the like/unlike button
         staff_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
         response = client.get(self.view_url)
-        submissions = response.context['object'].submission_set.all()
+        submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(len(submissions), 1)
         self.assertEquals(submissions[0].score, 2)
         self.assertNotRegexpMatches(response.content, r'title="like"')
@@ -157,7 +200,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         # Ensure submission is in the exhibition view list
         response = client.get(view_url)
         self.assertEquals(response.context['object'].id, exhibition.id)
-        submissions = response.context['object'].submission_set.all()
+        submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(submissions.count(), 1)
         self.assertEquals(submissions[0].id, student_artwork.id)
 
@@ -242,7 +285,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         # Ensure one submission is in the exhibition view list
         response = client.get(view_url)
         self.assertEquals(response.context['object'].id, exhibition.id)
-        submissions = response.context['object'].submission_set.all()
+        submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(submissions.count(), 1)
         self.assertEquals(submissions[0].id, student_artwork.id)
 
@@ -272,7 +315,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
         response = client.get(view_url)
         self.assertEquals(response.context['object'].id, exhibition.id)
-        submissions = response.context['object'].submission_set.all()
+        submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(submissions.count(), 0)
 
         # Can submit own artwork
@@ -288,7 +331,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         # Ensure one submissions in the exhibition view list
         response = client.get(view_url)
         self.assertEquals(response.context['object'].id, exhibition.id)
-        submissions = response.context['object'].submission_set.all()
+        submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(submissions.count(), 1)
         self.assertEquals(submissions[0].id, student_artwork.id)
 

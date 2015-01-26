@@ -30,6 +30,10 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
+            0
+        )
 
     def test_empty_list_student(self):
 
@@ -42,6 +46,10 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         )
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
             0
         )
 
@@ -57,6 +65,10 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
+            0
+        )
 
     def test_empty_list_super(self):
 
@@ -68,6 +80,10 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         )
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
             0
         )
 
@@ -86,6 +102,10 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
+            0
+        )
 
     def test_list_one_student(self):
 
@@ -102,6 +122,10 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         self.assertEqual(
             len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
+            0
         )
 
     def test_list_one_staff(self):
@@ -120,6 +144,10 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
+            0
+        )
 
     def test_list_one_super(self):
 
@@ -136,6 +164,134 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         self.assertEqual(
             len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
             1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
+            0
+        )
+
+    def test_list_two_public(self):
+
+        # Submit artwork to the exhibition
+        submission1 = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork Two', code='// code goes here', author=self.user)
+        submission2 = Submission.objects.create(artwork=artwork2, exhibition=self.exhibition, submitted_by=self.user)
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            2
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('artwork-%s' % self.artwork.id)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('artwork-%s' % artwork2.id)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
+            1
+        )
+
+    def test_list_order_by(self):
+
+        # Submit artwork to the exhibition
+        artwork1 = self.artwork
+        submission1 = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
+
+        artwork2 = Artwork.objects.create(title='Artwork Two', code='// code goes here', author=self.user)
+        submission2 = Submission.objects.create(artwork=artwork2, exhibition=self.exhibition, submitted_by=self.user, score=10)
+
+        artwork3 = Artwork.objects.create(title='Artwork Three', code='// code goes here', author=self.user)
+        submission3 = Submission.objects.create(artwork=artwork3, exhibition=self.exhibition, submitted_by=self.user, score=5)
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.exhibition_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.order_by')),
+            1
+        )
+        artworks = self.selenium.find_elements_by_css_selector('.artwork')
+        self.assertEqual(
+            len(artworks),
+            3
+        )
+
+        # Artworks default sorted by created at
+        self.assertEqual(
+            artworks[0].get_attribute('id'),
+            'artwork-%s' % artwork3.id
+        )
+        self.assertEqual(
+            artworks[1].get_attribute('id'),
+            'artwork-%s' % artwork2.id
+        )
+        self.assertEqual(
+            artworks[2].get_attribute('id'),
+            'artwork-%s' % artwork1.id
+        )
+
+        # Sort by score
+        order_by_score = self.selenium.find_element_by_link_text('Most Votes')
+        self.assertIsNotNone(order_by_score)
+        with wait_for_page_load(self.selenium):
+            order_by_score.click()
+
+        artworks = self.selenium.find_elements_by_css_selector('.artwork')
+        self.assertEqual(
+            len(artworks),
+            3
+        )
+
+        # Artworks sorted by score
+        self.assertEqual(
+            artworks[0].get_attribute('id'),
+            'artwork-%s' % artwork2.id
+        )
+        self.assertEqual(
+            artworks[1].get_attribute('id'),
+            'artwork-%s' % artwork3.id
+        )
+        self.assertEqual(
+            artworks[2].get_attribute('id'),
+            'artwork-%s' % artwork1.id
+        )
+
+        # Sort by most recent (back to default order)
+        order_by_score = self.selenium.find_element_by_link_text('Most Recent')
+        self.assertIsNotNone(order_by_score)
+        with wait_for_page_load(self.selenium):
+            order_by_score.click()
+
+        artworks = self.selenium.find_elements_by_css_selector('.artwork')
+        self.assertEqual(
+            len(artworks),
+            3
+        )
+
+        # Artworks sorted by score
+        self.assertEqual(
+            artworks[0].get_attribute('id'),
+            'artwork-%s' % artwork3.id
+        )
+        self.assertEqual(
+            artworks[1].get_attribute('id'),
+            'artwork-%s' % artwork2.id
+        )
+        self.assertEqual(
+            artworks[2].get_attribute('id'),
+            'artwork-%s' % artwork1.id
         )
 
     def test_list_one_delete(self):
