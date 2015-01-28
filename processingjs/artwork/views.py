@@ -27,7 +27,7 @@ class UnsafeMediaMixin(object):
         # (have to specify *.adelaide because of iframe security)
         SCRIPT_SRC = ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*", "'unsafe-eval'",),
         STYLE_SRC =  ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*",),
-        FONT_SRC = ("data:",),
+        FONT_SRC = ("'self'", "data:",),
         # no objects, media, frames, or XHR requests allowed during render.
         # (IMG_SRC covered by default policy)
         OBJECT_SRC = ("'none'",),
