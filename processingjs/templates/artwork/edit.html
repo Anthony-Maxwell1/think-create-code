@@ -4,6 +4,7 @@
 {% load staticfiles %}
 <script type="text/javascript" src="{% static "js/processing.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/artwork-edit.js" %}"></script>
+{{ form.media }}
 {% endblock %}
 
 {% block content %}
@@ -27,18 +28,25 @@
         <ul class="edit_fields">
         {{ form.as_ul }}
         </ul>
+        <div class="row"><div class="small-1 columns">&nbsp;</div></div>
         <div class="row">
-            <div class="small-6 columns">
-                <button id="draw" class="postfix button">Preview</button>
-            </div>
+            <input type="checkbox" id="autoupdate" value="1" checked="checked" /> 
+            <label for="autoupdate">Auto-update drawing</label>
+        </div>
+        <div class="row">
+            {% if artwork.id %}
             <div class="small-6 columns">
                 <button id="save_artwork" type="submit" title="Save to My Studio" class="postfix button">Save</button>
             </div>
+            <div class="small-6 columns">
+                <button id="save_cancel" type="button" title="Return to viewing Artwork" class="postfix button" 
+                    onclick="document.location = '{% url 'artwork-view' object.id %}';">Cancel</button>
+            </div>
+            {% else %}
+            <button id="save_artwork" type="submit" title="Save to My Studio" class="postfix button">Save</button>
+            {% endif %}
         </div>
     </form>
-{% if artwork.id %}
-<a id="save_cancel" href="{% url "artwork-list" %}">back to list</a>
-{% endif %}
 </div>
 <div class="small-12 medium-6 columns preview" data-equalizer-watch>
     <div><span id="error" class="alert label"></span></div>

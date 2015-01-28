@@ -76,9 +76,27 @@ ul.edit_fields .helptext {
 #artwork-edit-content #error {
     display: none;
 }
-/* Use monospace in code text area */
-#artwork-edit-content #id_code {
+/* Code displays pre-formatted monospace */
+code {
     font-family: monospace;
+    white-space: pre-wrap;
+}
+.code-block {
+    position: relative;
+    min-height: 35ex;
+}
+.code-block code,
+.code-block pre {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+div.ui-resizable {
+    min-height: 35ex;
+    min-width: 100%;
+    max-width: 100%;
 }
 #artwork-edit-content .preview {
     border: 1px dashed lightgrey;

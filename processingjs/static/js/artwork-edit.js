@@ -2,9 +2,15 @@ $(document).ready(function() {
 
     var $script = $('#script-preview');
     var $code = $('#id_code');
+    var $autoupdate = $('#autoupdate');
     var $error = $('#error');
 
-    $('#draw').on('click', function() {
+    function updateDrawing() {
+
+        // Do nothing unless autoupdate is checked.
+        if (!$autoupdate.is(':checked')) {
+            return true;
+        }
 
         // 1. Hide any previous errors
         $error.hide();
@@ -29,9 +35,14 @@ $(document).ready(function() {
                 $error.html(e.message);
                 $error.show();
             }
+
+            // 5. Resize the drawing area
             $(document).foundation('equalizer', 'reflow');
         }
 
-        return false;
-    });
+        return true;
+    }
+
+    $code.on('change', updateDrawing);
+    $autoupdate.on('change', updateDrawing);
 });

@@ -178,6 +178,7 @@ CSP_SCRIPT_SRC = (
 )
 CSP_IMG_SRC = (
     "'self'",
+    "data:",
     "https://www.google-analytics.com",
 )
 CSP_STYLE_SRC = (

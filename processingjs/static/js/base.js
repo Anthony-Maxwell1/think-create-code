@@ -1,6 +1,6 @@
 $(document).ready(function(){ 
     $(document).foundation();
-    $('.artwork.preview').resizable({
+    $('.artwork.preview, .code-block, .uofa-code-editor-widget').resizable({
          start: function(event, ui) {
              $(this).css('pointer-events','none');
          },
@@ -11,7 +11,4 @@ $(document).ready(function(){
      // Replace small grip icon with large grip
        .removeClass('ui-icon-gripsmall-diagonal-se')
        .addClass('ui-icon-grip-diagonal-se');
-
-    // Syntax highlighting
-    hljs.initHighlightingOnLoad();
 });

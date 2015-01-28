@@ -5,6 +5,7 @@ from django import forms
 from django.core.urlresolvers import reverse
 from rulez import registry
 
+from uofa.widgets import CodeEditorWidget
 
 class Artwork(models.Model):
     class Meta:
@@ -76,3 +77,6 @@ class ArtworkForm(forms.ModelForm):
     class Meta:
         model = Artwork
         fields = ['title', 'code']
+        widgets = {
+            'code': CodeEditorWidget(),
+        }

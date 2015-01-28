@@ -4,15 +4,11 @@ from django import forms
 from django.db.models.signals import pre_save, pre_delete
 from django.db.models import F
 from django.dispatch import receiver
-from django.utils.html import format_html
-from django.utils.safestring import mark_safe
-from django.utils.encoding import force_text
-from django.forms.widgets import Select
-from itertools import chain
 from rulez import registry
 
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
+from uofa.widgets import SelectOneOrNoneWidget
 
 
 class Submission(models.Model):
@@ -73,36 +69,6 @@ def pre_delete(sender, instance=None, **kwargs):
 
         from votes.models import Vote
         Vote.can_delete_queryset(submission=instance).delete()
-
-
-class SelectOneOrNoneWidget(Select):
-    '''Select Widget that checks the number of choices available before
-       rendering the input element.
-       If 0 choices, shows error.
-       If 1 choice, shows just that choice.'''
-
-    def render(self, name, value, attrs=None, choices=()):
-
-        num_choices = len(self.choices.queryset)
-        if num_choices > 1:
-            return super(SelectOneOrNoneWidget, self).render(name, value, attrs, choices)
-
-        output = []
-        # If there's no choices, show error
-        if num_choices == 0:
-            output.append('<div>Sorry, no choices available.</div>')
-
-        else:
-            for option_value, option_label in chain(self.choices, choices):
-                # skip field.empty_label
-                if option_value:
-                    output.append(format_html('<input type="{0}" name="{1}" value="{2}" id="{1}-{2}" />{3}',
-                        'hidden',
-                        name,
-                        option_value,
-                        force_text(option_label)))
-
-        return mark_safe('\n'.join(output))
 
 
 class SubmissionForm(forms.ModelForm):

@@ -1,5 +1,6 @@
 from django.core.urlresolvers import reverse
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.keys import Keys
 from django.contrib.auth import get_user_model
 import time
 
@@ -713,7 +714,7 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
 
         # login form redirects to add form
         self.selenium.find_element_by_id('id_title').send_keys('test submission')
-        self.selenium.find_element_by_id('id_code').send_keys('// code goes here')
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys('// code goes here')
 
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
@@ -736,7 +737,7 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
 
         # login form redirects to add form
         self.selenium.find_element_by_id('id_title').send_keys('do not submit')
-        self.selenium.find_element_by_id('id_code').send_keys('// code goes here')
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys('// code goes here')
 
         # No more 'cancel' link on Add Artwork page
         self.assertRaises(
@@ -806,9 +807,9 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_cancel').click()
 
-        # Cancel returns us to the list page
-        list_path = reverse('artwork-list')
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
+        # Cancel returns us to the view page
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
 
         # edit was canceled
         artwork = Artwork.objects.get(pk=artwork.id)
@@ -834,6 +835,59 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         # 4. Ensure we're redirected back to view
         view_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': artwork.id}))
         self.assertEqual(self.selenium.current_url, view_url)
+
+    def test_edit_artwork_code(self):
+
+        '''Ensure that the code editor widget communicates changes ok.'''
+
+        title = 'Title bar'
+        code = '// code goes here'
+        artwork = Artwork.objects.create(title=title, code=code, author=self.user)
+
+        edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, edit_path))
+
+        # edit redirects to login form
+        self.assertLogin(edit_path)
+
+        # Update the title text 
+        new_code = ['''void setup() { size(640, 360); }\n''',
+                    '''void draw() { background(0); }''',]
+
+        textarea = self.selenium.find_element_by_css_selector('.ace_text-input')
+        textarea.click()
+        textarea.send_keys(Keys.CONTROL, 'a') # select all
+        textarea.send_keys(Keys.CONTROL, 'x') # delete
+
+        # Wait for editor to load
+        #time.sleep(5)
+
+        # Editor will handle indenting and ending braces
+        textarea.send_keys(new_code[0])
+        textarea.send_keys(new_code[1])
+
+        # form POSTs replace newlines with CRLF, so we need to too.
+        new_code = ''.join(new_code)
+        new_code = new_code.replace('\n', '\r\n')
+
+        # Click Save
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_artwork').click()
+
+        # save returns us to the view page
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+
+        # ensure edit was saved
+        artwork = Artwork.objects.get(pk=artwork.id)
+        self.assertEqual(
+            artwork.title,
+            title
+        )
+        self.assertEqual(
+            artwork.code,
+            new_code
+        )
 
 
 class ArtworkDeleteIntegrationTests(SeleniumTestCase):
@@ -978,16 +1032,17 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
         # add redirects to login form
         self.assertLogin(add_path)
 
-        # login form redirects to add form
-        self.selenium.find_element_by_id('id_title').send_keys('bad submission')
-        self.selenium.find_element_by_id('id_code').send_keys('bad code!')
+        # Automatic redraw enabled
+        self.assertTrue(self.selenium.find_element_by_id('autoupdate').is_selected())
 
-        # Draw button catches error, which shows on screen, not in the console
-        self.selenium.find_element_by_id('draw').click()
+        self.selenium.find_element_by_id('id_title').send_keys('bad submission')
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys('bad code makes jack something something;')
+
         self.assertEqual(
             self.selenium.find_element_by_id('error').text,
             'missing ; before statement'
         )
+
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
@@ -1067,12 +1122,12 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
         # add redirects to login form
         self.assertLogin(add_path)
 
-        # login form redirects to add form
-        self.selenium.find_element_by_id('id_title').send_keys('bad submission')
-        self.selenium.find_element_by_id('id_code').send_keys('bad code!')
+        # Automatic redraw enabled
+        self.assertTrue(self.selenium.find_element_by_id('autoupdate').is_selected())
 
-        # Draw button catches error, which shows on screen, not in the console
-        self.selenium.find_element_by_id('draw').click()
+        self.selenium.find_element_by_id('id_title').send_keys('bad submission')
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys('bad code!')
+
         self.assertEqual(
             self.selenium.find_element_by_id('error').text,
             'missing ; before statement'
