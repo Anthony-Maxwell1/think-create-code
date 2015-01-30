@@ -3,8 +3,8 @@
 {% block extras %}
 {% load staticfiles %}
 <script type="text/javascript" src="{% static "js/processing.min.js" %}"></script>
+<script type="text/javascript" src="{% static "js/ace/ace.js" %}"></script>
 <script type="text/javascript" src="{% static "js/artwork-edit.js" %}"></script>
-{{ form.media }}
 {% endblock %}
 
 {% block content %}
@@ -28,6 +28,7 @@
         <ul class="edit_fields">
         {{ form.as_ul }}
         </ul>
+        <div class="code-block"><code contenteditable="true">{{ object.code }}</code></div>
         <div class="row"><div class="small-1 columns">&nbsp;</div></div>
         <div class="row">
             <input type="checkbox" id="autoupdate" value="1" checked="checked" /> 

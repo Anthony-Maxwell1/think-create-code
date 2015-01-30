@@ -1,7 +1,26 @@
 $(document).ready(function() {
 
+    // Attach the Ace editor
+    var $code = $('code');
+    var $input = $('#id_code');
+
+    var editor = ace.edit($code.get(0));
+    editor.setShowFoldWidgets(false);
+
+    var session = editor.getSession();
+    session.setMode("ace/mode/javascript");
+    session.setUseWorker(false);
+    session.setUseSoftTabs(true);
+    session.setTabSize(4);
+
+    // Communicate code changes to the input field
+    // (have to manually trigger changes to hidden fields)
+    editor.on("change", function() {
+        $input.val(editor.getValue())
+              .trigger('change');
+    });
+
     var $script = $('#script-preview');
-    var $code = $('#id_code');
     var $autoupdate = $('#autoupdate');
     var $error = $('#error');
 
@@ -15,7 +34,7 @@ $(document).ready(function() {
         // 1. Hide any previous errors
         $error.hide();
 
-        var code = $code.val();
+        var code = $input.val();
         if (code) {
 
             // 2. Recreate the exisiting canvases
@@ -43,6 +62,6 @@ $(document).ready(function() {
         return true;
     }
 
-    $code.on('change', updateDrawing);
+    $input.on('change', updateDrawing);
     $autoupdate.on('change', updateDrawing);
 });

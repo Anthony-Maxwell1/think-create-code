@@ -1,11 +1,11 @@
 from django.db import models
 from django.db.models import Q
+from django.forms import HiddenInput
 from django.conf import settings
 from django import forms
 from django.core.urlresolvers import reverse
 from rulez import registry
 
-from uofa.widgets import CodeEditorWidget
 
 class Artwork(models.Model):
     class Meta:
@@ -78,5 +78,5 @@ class ArtworkForm(forms.ModelForm):
         model = Artwork
         fields = ['title', 'code']
         widgets = {
-            'code': CodeEditorWidget(),
+            'code': HiddenInput
         }
