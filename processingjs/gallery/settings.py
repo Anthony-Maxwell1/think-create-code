@@ -173,7 +173,7 @@ CSP_DEFAULT_SRC = (
 )
 CSP_SCRIPT_SRC = (
     "'self'",
-    "'unsafe-inline'", # artwork/_render.html
+    "'unsafe-inline'", # artwork/_render.html, artwork/edit.html
     "https://www.google-analytics.com",
 )
 CSP_IMG_SRC = (

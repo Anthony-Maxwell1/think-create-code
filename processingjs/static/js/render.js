@@ -26,27 +26,46 @@ $(document).ready(function() {
 
         var loadCode = function(evt) {
 
-            if (evt && evt.data && evt.data.code) {
+            // 0. Verify the pk
+            var $rendered = $('#artwork-rendered');
+            var pk = $rendered.attr('pk') || '';
 
-                // Show the rendered div
-                $('#artwork-rendered').show();
+            if (evt && evt.data && evt.data.pk == pk) {
+            
+                if ('code' in evt.data) {
 
-                // Set the script contents, decoding escaped html as text
-                var tmp = $('<div/>', { 'html' : evt.data.code });
-                $('#script-preview').html(tmp.text());
+                    // 1. Show the rendered div
+                    $rendered.show();
 
-                // Listen for canvas resize, and send new size to parent
-                $('#canvas-preview').resize(function() {
-                    var $this = $(this);
-                    var data = {
-                        'width': $this.width(),
-                        'height': $this.height()
-                    };
-                    parent.postMessage({'resize': data}, '*');
-                });
+                    // 2. Recreate the exisiting canvas
+                    $('canvas').each(function(idx, item) {
+                        var $canvas = $(item);
+                        $canvas.replaceWith($('<canvas>', {'id': $canvas.attr('id')}));
+                    });
 
-                // Run processingJS
-                Processing.reload();
+                    // 2. Set the script contents, decoding escaped html as text
+                    var tmp = $('<div/>', { 'html' : evt.data.code });
+                    $('#script-preview').html(tmp.text());
+
+                    // 3. Listen for canvas resize, and send new size to parent
+                    $('#canvas-preview').resize(function() {
+                        var $this = $(this);
+                        var data = {
+                            'width': $this.width(),
+                            'height': $this.height()
+                        };
+                        parent.postMessage({'resize': data, 'pk': pk}, '*');
+                    });
+
+                    // 4. Try running the script, sending any errors to parent
+                    try {
+                        Processing.reload();
+                    } catch(e) {
+                        parent.postMessage({'error': e.message, 'pk': pk}, '*');
+                        // have to re-throw the error, to pass integration tests 
+                        throw e;
+                    }
+                }
             } else {
                 console.error(evt);
             }

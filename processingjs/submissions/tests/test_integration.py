@@ -716,6 +716,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
             self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)
         )
 
+class TempTestClass(SubmissionCreateIntegrationTests): # XXX
     def test_submit_artwork_already_submitted(self):
 
         self.exhibition.save()
@@ -735,27 +736,41 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_link_text('SUBMIT').click()
         time.sleep(3)
 
-        # Should be a crsf hidden, two radio inputs, and one hidden artwork input
+        # There's actually two forms on this page: submit artwork, and edit artwork
         inputs = self.selenium.find_elements_by_tag_name('input')
-        self.assertEqual(4, len(inputs))
+        self.assertEqual(8, len(inputs))
         self.assertEqual('hidden', inputs[0].get_attribute('type'))
         self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
 
-        self.assertEqual('hidden', inputs[1].get_attribute('type'))
-        self.assertEqual('artwork', inputs[1].get_attribute('name'))
-        self.assertEqual(self.student_artwork.id, long(inputs[1].get_attribute('value')))
+        self.assertEqual('text', inputs[1].get_attribute('type'))
+        self.assertEqual('title', inputs[1].get_attribute('name'))
+        self.assertEqual(self.student_artwork.title, inputs[1].get_attribute('value'))
 
-        self.assertEqual('radio', inputs[2].get_attribute('type'))
-        self.assertEqual('exhibition', inputs[2].get_attribute('name'))
-        self.assertEqual(exhibition2.id, long(inputs[2].get_attribute('value')))
+        self.assertEqual('hidden', inputs[2].get_attribute('type'))
+        self.assertEqual('code', inputs[2].get_attribute('name'))
+        self.assertEqual(self.student_artwork.code, inputs[2].get_attribute('value'))
 
-        self.assertEqual('radio', inputs[3].get_attribute('type'))
-        self.assertEqual('exhibition', inputs[3].get_attribute('name'))
-        self.assertEqual(self.exhibition.id, long(inputs[3].get_attribute('value')))
+        self.assertEqual('checkbox', inputs[3].get_attribute('type'))
+        self.assertEqual('', inputs[3].get_attribute('name'))
+        self.assertEqual('autoupdate', inputs[3].get_attribute('value'))
 
+        self.assertEqual('hidden', inputs[4].get_attribute('type'))
+        self.assertEqual('csrfmiddlewaretoken', inputs[4].get_attribute('name'))
+
+        self.assertEqual('hidden', inputs[5].get_attribute('type'))
+        self.assertEqual('artwork', inputs[5].get_attribute('name'))
+        self.assertEqual(self.student_artwork.id, long(inputs[5].get_attribute('value')))
+
+        self.assertEqual('radio', inputs[6].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[6].get_attribute('name'))
+        self.assertEqual(exhibition2.id, long(inputs[6].get_attribute('value')))
+
+        self.assertEqual('radio', inputs[7].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[7].get_attribute('name'))
+        self.assertEqual(self.exhibition.id, long(inputs[7].get_attribute('value')))
 
         # submit the artwork to the first exhibition
-        inputs[3].click()
+        inputs[7].click()
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
@@ -776,19 +791,34 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_link_text('SUBMIT').click()
         time.sleep(3)
 
-        # Should be crsf hidden, only one radio inputs, and one hidden artwork input
+        # Should be one less radio button
         inputs = self.selenium.find_elements_by_tag_name('input')
-        self.assertEqual(3, len(inputs))
+        self.assertEqual(7, len(inputs))
         self.assertEqual('hidden', inputs[0].get_attribute('type'))
         self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
 
-        self.assertEqual('hidden', inputs[1].get_attribute('type'))
-        self.assertEqual('artwork', inputs[1].get_attribute('name'))
-        self.assertEqual(self.student_artwork.id, long(inputs[1].get_attribute('value')))
+        self.assertEqual('text', inputs[1].get_attribute('type'))
+        self.assertEqual('title', inputs[1].get_attribute('name'))
+        self.assertEqual(self.student_artwork.title, inputs[1].get_attribute('value'))
 
-        self.assertEqual('radio', inputs[2].get_attribute('type'))
-        self.assertEqual('exhibition', inputs[2].get_attribute('name'))
-        self.assertEqual(exhibition2.id, long(inputs[2].get_attribute('value')))
+        self.assertEqual('hidden', inputs[2].get_attribute('type'))
+        self.assertEqual('code', inputs[2].get_attribute('name'))
+        self.assertEqual(self.student_artwork.code, inputs[2].get_attribute('value'))
+
+        self.assertEqual('checkbox', inputs[3].get_attribute('type'))
+        self.assertEqual('', inputs[3].get_attribute('name'))
+        self.assertEqual('autoupdate', inputs[3].get_attribute('value'))
+
+        self.assertEqual('hidden', inputs[4].get_attribute('type'))
+        self.assertEqual('csrfmiddlewaretoken', inputs[4].get_attribute('name'))
+
+        self.assertEqual('hidden', inputs[5].get_attribute('type'))
+        self.assertEqual('artwork', inputs[5].get_attribute('name'))
+        self.assertEqual(self.student_artwork.id, long(inputs[5].get_attribute('value')))
+
+        self.assertEqual('radio', inputs[6].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[6].get_attribute('name'))
+        self.assertEqual(exhibition2.id, long(inputs[6].get_attribute('value')))
 
         # First exhibition is shown as submitted
         self.assertRegexpMatches(self.selenium.page_source, r'Submitted to ')
@@ -807,9 +837,17 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
 
         # Public can't see artwork until submitted/shared
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
+        artwork_path = reverse('artwork-view', kwargs={'pk': self.student_artwork.id})
+        artwork_url = '%s%s' % (self.live_server_url, artwork_path)
         with wait_for_page_load(self.selenium):
             self.selenium.get(artwork_url)
+
+        # Login required
+        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), artwork_path)
+        self.assertEqual(self.selenium.current_url, login_url)
+
+        # Login as non-author
+        self.assertLogin(user='staff', next_path=artwork_path)
         error_403 = self.selenium.find_element_by_tag_name('h1')
         self.assertEqual(
             error_403.text, '403 Forbidden'
@@ -867,9 +905,24 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_link_text('SUBMIT').click()
         time.sleep(3)
 
-        # Should be no input elements, form not shown if no exhibitions to submit ti
+        # Should only be the edit artwork input elements, no submit form
         inputs = self.selenium.find_elements_by_tag_name('input')
-        self.assertEqual(0, len(inputs))
+        self.assertEqual(4, len(inputs))
+        self.assertEqual('hidden', inputs[0].get_attribute('type'))
+        self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
+
+        self.assertEqual('text', inputs[1].get_attribute('type'))
+        self.assertEqual('title', inputs[1].get_attribute('name'))
+        self.assertEqual(self.student_artwork.title, inputs[1].get_attribute('value'))
+
+        self.assertEqual('hidden', inputs[2].get_attribute('type'))
+        self.assertEqual('code', inputs[2].get_attribute('name'))
+        self.assertEqual(self.student_artwork.code, inputs[2].get_attribute('value'))
+
+        self.assertEqual('checkbox', inputs[3].get_attribute('type'))
+        self.assertEqual('', inputs[3].get_attribute('name'))
+        self.assertEqual('autoupdate', inputs[3].get_attribute('value'))
+
 
         # First exhibition is shown as submitted
         self.assertRegexpMatches(self.selenium.page_source, r'Submitted to ')
@@ -1056,20 +1109,24 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         Submission.objects.filter(exhibition=self.exhibition, artwork=self.student_artwork).delete()
 
         # Public can't see artwork or code until submitted/shared
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
-        code_url = '%s%s' % (self.live_server_url, reverse('artwork-code', kwargs={'pk': self.student_artwork.id}))
+        artwork_path = reverse('artwork-view', kwargs={'pk': self.student_artwork.id})
+        artwork_url = '%s%s' % (self.live_server_url, artwork_path)
         with wait_for_page_load(self.selenium):
             self.selenium.get(artwork_url)
+
+        # Redirected to login page
+        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), artwork_path)
+        self.assertEqual(self.selenium.current_url, login_url)
+    
+        # Login as non-owner, and verify forbidden
+        self.assertLogin(user='staff', next_path=artwork_path)
         error_403 = self.selenium.find_element_by_tag_name('h1')
         self.assertEqual(
             error_403.text, '403 Forbidden'
         )
-        with wait_for_page_load(self.selenium):
-            self.selenium.get(code_url)
-        error_403 = self.selenium.find_element_by_tag_name('h1')
-        self.assertEqual(
-            error_403.text, '403 Forbidden'
-        )
+
+        # Logout again to go back to public view
+        self.performLogout()
 
         # Create submission
         submission = Submission.objects.create(artwork=self.student_artwork, exhibition=self.exhibition, submitted_by=self.user)
@@ -1081,11 +1138,6 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
-        with wait_for_page_load(self.selenium):
-            self.selenium.get(code_url)
-        self.assertEqual(
-            self.selenium.find_element_by_tag_name('pre').text, self.student_artwork.code
-        )
 
         # Delete submission
         submission.delete()
@@ -1093,13 +1145,13 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         # Artwork and code are now hidden
         with wait_for_page_load(self.selenium):
             self.selenium.get(artwork_url)
-        error_403 = self.selenium.find_element_by_tag_name('h1')
-        self.assertEqual(
-            error_403.text, '403 Forbidden'
-        )
 
-        with wait_for_page_load(self.selenium):
-            self.selenium.get(code_url)
+        # Redirected to login page
+        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), artwork_path)
+        self.assertEqual(self.selenium.current_url, login_url)
+    
+        # Login as non-owner, and verify forbidden
+        self.assertLogin(user='staff', next_path=artwork_path)
         error_403 = self.selenium.find_element_by_tag_name('h1')
         self.assertEqual(
             error_403.text, '403 Forbidden'

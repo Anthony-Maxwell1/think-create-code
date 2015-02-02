@@ -1,6 +1,6 @@
 $(document).ready(function(){ 
     $(document).foundation();
-    $('.artwork.preview, .code-block, .uofa-code-editor-widget').resizable({
+    $('.artwork.preview, .code-block').resizable({
          start: function(event, ui) {
              $(this).css('pointer-events','none');
          },

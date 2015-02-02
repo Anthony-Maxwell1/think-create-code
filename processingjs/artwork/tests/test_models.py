@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.db import IntegrityError
+from django.core.urlresolvers import reverse
 
 from artwork.models import Artwork, ArtworkForm
 from uofa.test import UserSetUp
@@ -113,18 +114,18 @@ class ArtworkTests(UserSetUp, TestCase):
             code='// code goes here')
         superuser.save()
 
-        public_qs = Artwork.can_see_queryset(Artwork.objects)
+        public_qs = Artwork.can_see_queryset()
         self.assertEqual(len(public_qs.all()), 0)
 
-        student_qs = Artwork.can_see_queryset(Artwork.objects, self.user)
+        student_qs = Artwork.can_see_queryset(user=self.user)
         self.assertEqual(len(student_qs.all()), 1)
         self.assertEqual(student_qs.all()[0].id, student.id)
 
-        staff_qs = Artwork.can_see_queryset(Artwork.objects, self.staff_user)
+        staff_qs = Artwork.can_see_queryset(user=self.staff_user)
         self.assertEqual(len(staff_qs.all()), 1)
         self.assertEqual(staff_qs.all()[0].id, staff.id)
 
-        super_qs = Artwork.can_see_queryset(Artwork.objects, self.super_user)
+        super_qs = Artwork.can_see_queryset(user=self.super_user)
         self.assertEqual(len(super_qs.all()), 1)
         self.assertEqual(super_qs.all()[0].id, superuser.id)
 
@@ -150,22 +151,22 @@ class ArtworkTests(UserSetUp, TestCase):
             code='// code goes here')
         superuser.save()
 
-        public_qs = Artwork.can_see_queryset(Artwork.objects)
+        public_qs = Artwork.can_see_queryset()
         self.assertEqual(len(public_qs.all()), 3)
 
-        student_qs = Artwork.can_see_queryset(Artwork.objects, self.user)
+        student_qs = Artwork.can_see_queryset(user=self.user)
         self.assertEqual(len(student_qs.all()), 3)
         self.assertEqual(student_qs.all()[0].id, student.id)
         self.assertEqual(student_qs.all()[1].id, staff.id)
         self.assertEqual(student_qs.all()[2].id, superuser.id)
 
-        staff_qs = Artwork.can_see_queryset(Artwork.objects, self.staff_user)
+        staff_qs = Artwork.can_see_queryset(user=self.staff_user)
         self.assertEqual(len(staff_qs.all()), 3)
         self.assertEqual(student_qs.all()[0].id, student.id)
         self.assertEqual(student_qs.all()[1].id, staff.id)
         self.assertEqual(student_qs.all()[2].id, superuser.id)
 
-        super_qs = Artwork.can_see_queryset(Artwork.objects, self.super_user)
+        super_qs = Artwork.can_see_queryset(user=self.super_user)
         self.assertEqual(len(super_qs.all()), 3)
         self.assertEqual(student_qs.all()[0].id, student.id)
         self.assertEqual(student_qs.all()[1].id, staff.id)
@@ -190,20 +191,26 @@ class ArtworkTests(UserSetUp, TestCase):
             code='// code goes here')
         superuser.save()
 
-        public_qs = Artwork.can_save_queryset(Artwork.objects)
+        public_qs = Artwork.can_save_queryset()
         self.assertEqual(len(public_qs.all()), 0)
 
-        student_qs = Artwork.can_save_queryset(Artwork.objects, self.user)
+        student_qs = Artwork.can_save_queryset(user=self.user)
         self.assertEqual(len(student_qs.all()), 1)
         self.assertEqual(student_qs.all()[0].id, student.id)
 
-        staff_qs = Artwork.can_save_queryset(Artwork.objects, self.staff_user)
+        staff_qs = Artwork.can_save_queryset(user=self.staff_user)
         self.assertEqual(len(staff_qs.all()), 1)
         self.assertEqual(staff_qs.all()[0].id, staff.id)
 
-        super_qs = Artwork.can_save_queryset(Artwork.objects, self.super_user)
+        super_qs = Artwork.can_save_queryset(user=self.super_user)
         self.assertEqual(len(super_qs.all()), 1)
         self.assertEqual(super_qs.all()[0].id, superuser.id)
+
+    def test_get_absolute_url(self):
+        artwork = Artwork.objects.create(title='Empty code', code='// code goes here', author=self.user)
+        view_url = reverse('artwork-view', kwargs={'pk': artwork.id})
+        abs_url = artwork.get_absolute_url()
+        self.assertEqual(view_url, abs_url)
 
 
 class ArtworkModelFormTests(UserSetUp, TestCase):

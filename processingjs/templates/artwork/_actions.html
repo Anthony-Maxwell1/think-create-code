@@ -1,10 +1,9 @@
-{% if object %}
+{% if object.id %}
 {% load rulez_perms %}
 {% rulez_perms can_save object as USER_CAN_SAVE %}
 {% if USER_CAN_SAVE %}
-<div class="row">
+<div class="artwork-actions columns">
 <ul class="breadcrumbs">
-    <li><a href="{% url 'artwork-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
     {% if exhibitions_submitted|length or exhibitions_to_submit|length %}
     <li><a href="{% url 'artwork-submit' artwork=object.id %}" 
           title="Submit {{ object.title }} to an exhibition" 

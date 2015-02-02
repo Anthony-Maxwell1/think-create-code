@@ -198,7 +198,8 @@ class ArtworkViewTests(UserSetUp, TestCase):
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
         artwork_url = reverse('artwork-view', kwargs={'pk':artwork.id})
         response = client.get(artwork_url)
-        self.assertEquals(response.status_code, 403)
+        login_url = '%s?next=%s' % (reverse('login'), artwork_url)
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
 
         # Must login to see it
         response = self.assertLogin(client, artwork_url)
@@ -220,34 +221,6 @@ class ArtworkViewTests(UserSetUp, TestCase):
         
         client = Client()
         response = client.get(reverse('artwork-view', kwargs={'pk':1}))
-        self.assertEquals(response.status_code, 404)
-
-
-class ArtworkViewCodeTests(UserSetUp, TestCase):
-    """Artwork view code tests."""
-
-    def test_private_artwork_code(self):
-        
-        client = Client()
-        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
-        code_path = reverse('artwork-code', kwargs={'pk':artwork.id})
-        response = client.get(code_path)
-        self.assertEquals(response.status_code, 403)
-
-        response = self.assertLogin(client, code_path)
-        self.assertEquals(response.content, "%s\n" % artwork.code)
-
-    def test_shared_artwork_code(self):
-        
-        client = Client()
-        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=self.user)
-        response = client.get(reverse('artwork-code', kwargs={'pk':artwork.id}))
-        self.assertEquals(response.content, "%s\n" % artwork.code)
-
-    def test_artwork_code_404(self):
-        
-        client = Client()
-        response = client.get(reverse('artwork-code', kwargs={'pk':1}))
         self.assertEquals(response.status_code, 404)
 
 
@@ -354,115 +327,188 @@ class ArtworkDeleteTests(UserSetUp, TestCase):
 class ArtworkEditTests(UserSetUp, TestCase):
     """Artwork edit view tests."""
 
-    def test_edit_artwork(self):
+    def test_author_edit_unshared_artwork(self):
         
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
 
         client = Client()
 
+        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
         edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
-        response = client.get(edit_url)
-
-        # edit requires login
         login_url = '%s?next=%s' % (reverse('login'), edit_url)
-        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
-        logged_in = client.login(username=self.get_username(), password=self.get_password())
-        self.assertTrue(logged_in)
 
+        # Edit view for unshared artwork redirects to login
         response = client.get(edit_url)
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+
+        # Post an update - unauthenticated redirects to login
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+
+        # Login as author
+        response = self.assertLogin(client, edit_url)
         self.assertEquals(response.context['object'].title, artwork.title)
         self.assertEquals(response.context['object'].code, artwork.code)
 
-        # Post an update
+        # Post an update - succeeds as author
         response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Ensure the change was saved
-        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
         response = client.get(view_url)
         self.assertEquals(response.context['object'].title, 'My overridden title')
 
-    def test_not_author_edit_shared_artwork(self):
+    def test_author_edit_shared_artwork(self):
         
-        # Create shared artwork owned by student user
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=self.user)
 
         client = Client()
 
-        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
-        response = client.get(edit_url)
-
-        # edit requires login, however, we can't edit the artwork
-        response = self.assertLogin(client, edit_url, user="staff")
         view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
-        response = client.get(edit_url)
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
+        login_url = '%s?next=%s' % (reverse('login'), edit_url)
 
-        # nor by post
+        # Edit view for shared artwork allowed
+        response = client.get(edit_url)
+        self.assertEquals(response.status_code, 200)
+
+        # Post an update - unauthenticated redirects to login
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+
+        # Login as author
+        response = self.assertLogin(client, edit_url)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.context['object'].title, artwork.title)
+        self.assertEquals(response.context['object'].code, artwork.code)
+
+        # Post an update - succeeds as author
         response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+
+        # Ensure the change was saved
+        response = client.get(view_url)
+        self.assertEquals(response.context['object'].title, 'My overridden title')
+
+    def test_non_author_edit_unshared_artwork(self):
+        
+        # Create unshared artwork owned by another student user
+        otherUser = get_user_model().objects.create(username='other')
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=otherUser)
+
+        client = Client()
+
+        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
+        login_url = '%s?next=%s' % (reverse('login'), edit_url)
+
+        # Edit view for unshared artwork redirects to login
+        response = client.get(edit_url)
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+
+        # Post an update - unauthenticated redirects to login
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+
+        # Login as student - forbidden by non-author
+        response = self.assertLogin(client, edit_url)
+        self.assertEquals(response.status_code, 403)
+
+        # Post an update - forbidden by non-authors
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertEquals(response.status_code, 403)
+
+    def test_not_author_cant_edit_shared_artwork(self):
+        
+        # Create shared artwork owned by another student user
+        otherUser = get_user_model().objects.create(username='other')
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=otherUser)
+
+        client = Client()
+
+        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
+        login_url = '%s?next=%s' % (reverse('login'), edit_url)
+
+        # Edit view for shared artwork allowed by anyone
+        response = client.get(edit_url)
+        self.assertEquals(response.context['object'].title, artwork.title)
+        self.assertEquals(response.context['object'].code, artwork.code)
+
+        # Post an update - unauthenticated redirects to login
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+
+        # login as non-author student
+        self.assertLogin(client, edit_url)
+
+        # Post an update - forbidden by non-authors
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertEquals(response.status_code, 403)
 
         # Ensure the change wasn't made
         response = client.get(view_url)
         self.assertEquals(response.context['object'].title, artwork.title)
 
-    def test_not_author_staff_cant_edit_artwork(self):
-       
-        # Because the artwork edit form embeds the processingJS directly,
-        # we don't want anyone but the author to see the edit form.
-        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+    def test_non_author_staff_cant_edit_shared_artwork(self):
+      
+        # Create a student artwork
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=self.user)
 
         client = Client()
 
-        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
-        response = client.get(edit_url)
-
-        # edit requires login
-        login_url = '%s?next=%s' % (reverse('login'), edit_url)
-        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
-        logged_in = client.login(username=self.get_username('staff'), password=self.get_password('staff'))
-        self.assertTrue(logged_in)
-
-        # however, staff can't edit the artwork
         view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
+        login_url = '%s?next=%s' % (reverse('login'), edit_url)
+
+        # Edit view for shared artwork allowed by anyone
         response = client.get(edit_url)
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=403)
+        self.assertEquals(response.context['object'].title, artwork.title)
+        self.assertEquals(response.context['object'].code, artwork.code)
 
-        # nor by post
+        # Post an update - unauthenticated redirects to login
         response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=403)
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
 
-        # Login as author to ensure the change wasn't made
-        client.logout();
-        response = self.assertLogin(client, view_url)
+        # login as non-author staff
+        self.assertLogin(client, edit_url, "staff")
+
+        # Post an update - forbidden by non-authors
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertEquals(response.status_code, 403)
+
+        # Ensure the change wasn't made
+        response = client.get(view_url)
         self.assertEquals(response.context['object'].title, artwork.title)
 
-    def test_not_author_super_cant_edit_artwork(self):
-       
-        # Because the artwork edit form embeds the processingJS directly,
-        # we don't want anyone but the author, even superusers, to see the edit form.
-        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+    def test_non_author_super_cant_edit_shared_artwork(self):
+      
+        # Create a student artwork
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=self.user)
 
         client = Client()
 
-        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
-        response = client.get(edit_url)
-
-        # edit requires login
-        login_url = '%s?next=%s' % (reverse('login'), edit_url)
-        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
-        logged_in = client.login(username=self.get_username('super'), password=self.get_password('super'))
-        self.assertTrue(logged_in)
-
-        # however, staff can't edit the artwork
         view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        edit_url = reverse('artwork-edit', kwargs={'pk':artwork.id})
+        login_url = '%s?next=%s' % (reverse('login'), edit_url)
+
+        # Edit view for shared artwork allowed by anyone
         response = client.get(edit_url)
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=403)
-
-        # nor by post
-        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=403)
-
-        # Login as author to ensure the change wasn't made
-        client.logout();
-        response = self.assertLogin(client, view_url)
         self.assertEquals(response.context['object'].title, artwork.title)
+        self.assertEquals(response.context['object'].code, artwork.code)
+
+        # Post an update - unauthenticated redirects to login
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+
+        # login as non-author super
+        self.assertLogin(client, edit_url, "super")
+
+        # Post an update - forbidden by non-authors
+        response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
+        self.assertEquals(response.status_code, 403)
+
+        # Ensure the change wasn't made
+        response = client.get(view_url)
+        self.assertEquals(response.context['object'].title, artwork.title)
+

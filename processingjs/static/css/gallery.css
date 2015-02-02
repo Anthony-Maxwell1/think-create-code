@@ -22,6 +22,9 @@ nav #nav-logged-in {
 nav #nav-logged-in:after {
     border-color: transparent transparent transparent !important;
 }
+.artwork-actions {
+    width: auto;
+}
 /* pad the object-actions */
 .object-actions {
     padding-top: 1.5ex;
@@ -72,10 +75,13 @@ ul.edit_fields .helptext {
     font-size: 0.85rem;
     font-style: italic;
 }
-/* Hide error text initially */
-#artwork-edit-content #error {
+/* Hide error text initially, and allow its content to wrap */
+#artwork-edit-content .alert {
     display: none;
+    white-space: normal;
+    margin-bottom: 0.9375rem;
 }
+
 /* Code displays pre-formatted monospace */
 code {
     font-family: monospace;
@@ -97,10 +103,6 @@ div.ui-resizable {
     min-height: 35ex;
     min-width: 100%;
     max-width: 100%;
-}
-#artwork-edit-content .preview {
-    border: 1px dashed lightgrey;
-    padding: 0.5em;
 }
 .help-link {
     text-align: right;

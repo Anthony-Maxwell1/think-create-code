@@ -63,11 +63,11 @@ class UserHasPermMixin(object):
     user_perm = None
     raise_exception = False
 
-    def user_has_perm(self, user):
-        return user.has_perm(user_perm)
+    def user_has_perm(self, user, perm):
+        return user.has_perm(perm)
 
     def dispatch(self, request, *args, **kwargs):
-        if self.user_has_perm(request.user):
+        if self.user_has_perm(request.user, self.user_perm):
             return super(UserHasPermMixin, self).dispatch(request, *args, **kwargs)
 
         if self.raise_exception or not hasattr(self, 'get_error_url'):
@@ -76,29 +76,65 @@ class UserHasPermMixin(object):
         return HttpResponseRedirect(self.get_error_url())
 
 
-class ObjectHasPermMixin(UserHasPermMixin, CachedSingleObjectMixin):
+class MethodUserPermMixin(UserHasPermMixin):
+
+    '''Require per-HTTP-method user permissions on the object when dispatching the single object mixed-in view.'''
+    method_user_perm = None # { 'METHOD' : 'user_perm' }
+
+    def request_has_perm(self, request):
+        allowed = False
+        if self.method_user_perm:
+            if request.method in self.method_user_perm:
+                perm = self.method_user_perm[request.method]
+                if perm:
+                    allowed = self.user_has_perm(request.user, perm)
+                else:
+                    allowed = False
+            else:
+                allowed = True
+        elif self.user_perm:
+            allowed = self.user_has_perm(request.user, self.user_perm)
+
+        return allowed
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.request_has_perm(request):
+            return super(UserHasPermMixin, self).dispatch(request, *args, **kwargs)
+
+        if self.raise_exception or not hasattr(self, 'get_error_url'):
+            raise PermissionDenied
+
+        return HttpResponseRedirect(self.get_error_url())
+
+
+class _ObjectPermMixin(object):
 
     '''Require user permissions on the object when dispatching the single object mixed-in view.'''
-    user_perm = None
-    raise_exception = False
-
-    def user_has_perm(self, user):
+    def user_has_perm(self, user, perm):
 
         obj = self.get_object()
-        perm_method = getattr(obj, self.user_perm)
+        perm_method = getattr(obj, perm)
         if perm_method(user):
             return True
         return False
+
+
+class ObjectHasPermMixin(_ObjectPermMixin, UserHasPermMixin, CachedSingleObjectMixin):
+    pass
+
+
+class MethodObjectHasPermMixin(_ObjectPermMixin, MethodUserPermMixin, CachedSingleObjectMixin):
+    pass
 
 
 class ModelHasPermMixin(UserHasPermMixin):
 
     """Require user permissions on the model when dispatching the mixed-in view."""
 
-    def user_has_perm(self, user):
+    def user_has_perm(self, user, perm):
 
         model = self.get_model()
-        perm_method = getattr(model, self.user_perm)
+        perm_method = getattr(model, perm)
         if perm_method(user):
             return True
         return False

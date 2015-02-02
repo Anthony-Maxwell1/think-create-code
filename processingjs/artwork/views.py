@@ -3,9 +3,10 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from csp.decorators import csp_update
+from django.core.exceptions import PermissionDenied
 import os
 
-from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin
+from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, MethodObjectHasPermMixin
 from artwork.models import Artwork, ArtworkForm
 
 from exhibitions.models import Exhibition
@@ -17,8 +18,10 @@ class ArtworkView(TemplatePathMixin):
     template_dir = 'artwork'
 
 
-class UnsafeMediaMixin(object):
-    '''These views must be heavily protected, by HTML5 iframe attributes and parent authentication,
+class RenderArtworkView(TemplateView):
+    template_name = ArtworkView.prepend_template_path('render.html')
+
+    '''This view must be heavily protected, by HTML5 iframe attributes and parent authentication,
        to make them ok to allow inline and eval'd Javascript provided by students.
        We also disallow everything else, so that the rendered artwork can't include them.
     '''
@@ -36,53 +39,7 @@ class UnsafeMediaMixin(object):
         CONNECT_SRC=("'none'",),
     ))
     def dispatch(self, *args, **kwargs):
-        return super(UnsafeMediaMixin, self).dispatch(*args, **kwargs)
-
-
-class ShowArtworkView(ObjectHasPermMixin, ArtworkView, DetailView):
-
-    template_name = ArtworkView.prepend_template_path('view.html')
-    user_perm = 'can_see'
-
-    def get_context_data(self, **kwargs):
-        context = super(ShowArtworkView, self).get_context_data(**kwargs)
-
-        artwork = context['object']
-        if artwork:
-            # TODO : make this an AJAX query, so we can fetch on demand
-            
-            submissions_qs = Submission.objects.filter(
-                artwork__exact=artwork.id).order_by('-created_at').all()
-            submissions = { int(x.exhibition_id) : x for x in submissions_qs }
-
-            exhibitions_qs = Exhibition.can_see_queryset(
-                Exhibition.objects,
-                self.request.user).order_by('-released_at')
-            exhibitions = exhibitions_qs.all()
-
-            # Collect the exhibitions we've already submitted this artwork to,
-            # and the ones that can still be submitted to
-            context['exhibitions_submitted'] = []
-            context['exhibitions_to_submit'] = []
-            for exh in exhibitions:
-                submission = submissions.get(exh.id)
-                if submission:
-                    exh.submitted = submission
-                    context['exhibitions_submitted'].append(exh)
-                else:
-                    context['exhibitions_to_submit'].append(exh)
-
-        return context
-
-
-class ShowArtworkCodeView(ObjectHasPermMixin, ArtworkView, DetailView):
-    template_name = ArtworkView.prepend_template_path('code.pde')
-    content_type = 'application/javascript; charset=utf-8'
-    user_perm = 'can_see'
-
-
-class RenderArtworkView(UnsafeMediaMixin, TemplateView):
-    template_name = ArtworkView.prepend_template_path('render.html')
+        return super(RenderArtworkView, self).dispatch(*args, **kwargs)
 
 
 class StudioArtworkView(RedirectView):
@@ -144,7 +101,7 @@ class ListArtworkView(ArtworkView, ListView):
         return context
 
 
-class CreateArtworkView(UnsafeMediaMixin, LoggedInMixin, ArtworkView, CreateView):
+class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')
 
@@ -157,23 +114,54 @@ class CreateArtworkView(UnsafeMediaMixin, LoggedInMixin, ArtworkView, CreateView
 
         context = super(CreateArtworkView, self).get_context_data(**kwargs)
         context['action'] = reverse('artwork-add')
+        context['USER_CAN_SAVE'] = True
         return context
 
 
-class UpdateArtworkView(UnsafeMediaMixin, LoggedInMixin, ObjectHasPermMixin, ArtworkView, UpdateView):
+class UpdateArtworkView(MethodObjectHasPermMixin, ArtworkView, UpdateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')
-    user_perm = 'can_save'
-
-    def get_error_url(self):
-        return reverse('artwork-view', kwargs={'pk': self.get_object().id})
+    method_user_perm = { 'GET': 'can_see', 'POST': 'can_save' }
 
     def get_context_data(self, **kwargs):
 
         context = super(UpdateArtworkView, self).get_context_data(**kwargs)
         context['action'] = reverse('artwork-edit',
                                     kwargs={'pk': self.get_object().id})
+
+        artwork = context['object']
+        if artwork:
+            # TODO : make this an AJAX query, so we can fetch on demand
+            
+            submissions_qs = Submission.objects.filter(
+                artwork__exact=artwork.id).order_by('-created_at').all()
+            submissions = { int(x.exhibition_id) : x for x in submissions_qs }
+
+            exhibitions_qs = Exhibition.can_see_queryset(
+                Exhibition.objects,
+                self.request.user).order_by('-released_at')
+            exhibitions = exhibitions_qs.all()
+
+            # Collect the exhibitions we've already submitted this artwork to,
+            # and the ones that can still be submitted to
+            context['exhibitions_submitted'] = []
+            context['exhibitions_to_submit'] = []
+            for exh in exhibitions:
+                submission = submissions.get(exh.id)
+                if submission:
+                    exh.submitted = submission
+                    context['exhibitions_submitted'].append(exh)
+                else:
+                    context['exhibitions_to_submit'].append(exh)
+
         return context
+
+    def get_error_url(self):
+        if self.request.user.is_authenticated():
+            raise PermissionDenied
+
+        # Redirect to login if not authenticated
+        return '%s?next=%s' % (reverse('login'), self.request.path)
 
 
 class DeleteArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, DeleteView):

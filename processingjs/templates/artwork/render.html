@@ -26,13 +26,14 @@
 </head>
 <body>
 {% block content %}
-<div id="artwork-rendered">
+<div id="artwork-rendered" pk="{{ pk }}">
 <canvas id="canvas-preview"></canvas>
 <script id="script-preview" data-processing-target="canvas-preview" type="text/processing"></script>
 </div>
 <div id="artwork-not-rendered">
 <h1>Security Warning</h1>
-<p>For security reasons, please view this artwork from within an <a href="{% url 'artwork-view' pk=pk %}">HTML5-secured iframe</a>.
+<p>For security reasons, please view this artwork from within an 
+    <a href="{% if pk %}{% url 'artwork-view' pk=pk %}{% else %}{% url 'artwork-add' %}{% endif %}">HTML5-secured iframe</a>.
 </div>
 {% endblock %}
 </body>

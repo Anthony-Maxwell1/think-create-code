@@ -4,11 +4,57 @@
 {% load staticfiles %}
 <script type="text/javascript" src="{% static "js/processing.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/ace/ace.js" %}"></script>
-<script type="text/javascript" src="{% static "js/artwork-edit.js" %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+
+    // Attach the Ace editor
+    var $code = $('code');
+    var $input = $('#id_code');
+
+    var editor = ace.edit($code.get(0));
+    editor.setShowFoldWidgets(false);
+
+    var session = editor.getSession();
+    session.setMode("ace/mode/javascript");
+    session.setUseWorker(false);
+    session.setUseSoftTabs(true);
+    session.setTabSize(4);
+
+    var $autoupdate = $('#autoupdate');
+    var $error = $('.alert');
+    function updateDrawing() {
+        // Hide any previous errors
+        $error.hide();
+
+        // Redraw the iframe if #autoupdate is checked.
+        if ($autoupdate.is(':checked')) {
+            var code = $input.val() || editor.getValue() || '';
+            drawIframe{{ artwork.id }}(code);
+        }
+    }
+
+    // Communicate code changes to the input field
+    editor.on("change", function() {
+        if ($input.length) {
+            $input.val(editor.getValue());
+        }
+        updateDrawing();
+    });
+
+    $autoupdate.on('change', updateDrawing);
+});
+</script>
 {% endblock %}
 
 {% block content %}
 <div id="artwork-edit-content">
+
+{% if artwork.id %}
+{% load rulez_perms %}
+{% rulez_perms can_save artwork as USER_CAN_SAVE %}
+{% endif %}
+
+{% if USER_CAN_SAVE %}
 <div class="row">
     <div class="small-6 columns">
         {% if artwork.id %}
@@ -21,42 +67,70 @@
         <a href="{% url 'help' %}">Help</a>
     </div>
 </div>
-<div data-equalizer>
-<div class="small-12 medium-6 columns" data-equalizer-watch>
-    <form method="post" action="{{ action }}" enctype="multipart/form-data">
-        {% csrf_token %}
+<form method="post" action="{{ action }}" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="row">
+    <div class="columns">
         <ul class="edit_fields">
         {{ form.as_ul }}
         </ul>
-        <div class="code-block"><code contenteditable="true">{{ object.code }}</code></div>
-        <div class="row"><div class="small-1 columns">&nbsp;</div></div>
-        <div class="row">
-            <input type="checkbox" id="autoupdate" value="1" checked="checked" /> 
-            <label for="autoupdate">Auto-update drawing</label>
-        </div>
-        <div class="row">
-            {% if artwork.id %}
-            <div class="small-6 columns">
-                <button id="save_artwork" type="submit" title="Save to My Studio" class="postfix button">Save</button>
-            </div>
-            <div class="small-6 columns">
-                <button id="save_cancel" type="button" title="Return to viewing Artwork" class="postfix button" 
-                    onclick="document.location = '{% url 'artwork-view' object.id %}';">Cancel</button>
-            </div>
-            {% else %}
-            <button id="save_artwork" type="submit" title="Save to My Studio" class="postfix button">Save</button>
-            {% endif %}
-        </div>
-    </form>
-</div>
-<div class="small-12 medium-6 columns preview" data-equalizer-watch>
-    <div><span id="error" class="alert label"></span></div>
-    <canvas id="canvas-preview"></canvas>
-    <script id="script-preview" type="text/processing" data-processing-target="canvas-preview">
-        {% autoescape off %}
-        {{ artwork.code }}
-        {% endautoescape %}
-    </script>
     </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="small-6 columns">
+        <h3 class="artwork-title">{{ object.title }}</h3>
+    </div>
+    <div class="small-6 columns help-link">
+        <a href="{% url 'help' %}">Help</a>
+    </div>
+</div>
+<div class="columns">
+    <p class="artwork-detail">by 
+        <a href="{% url 'artwork-author-list' object.author.id %}" 
+          title="view artwork by {{ object.author }}">{{ object.author }}</a>, 
+        updated <time>{{ object.modified_at|date }}</time>
+    </p>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="small-1 columns">&nbsp;</div>
+    <div class="small-10 columns"><div id="error-{{ artwork.id }}" class="alert label">&nbsp;</div></div>
+    <div class="small-1 columns">&nbsp;</div>
+</div>
+<div class="row" data-equalizer>
+    <div class="small-12 medium-6 columns" data-equalizer-watch>
+        <div class="code-block" style="height: 100%"><code contenteditable="true">{{ object.code }}</code></div>
+    </div>
+    <div class="small-12 medium-6 columns artwork" id="artwork-{{ artwork.id }}" data-equalizer-watch>
+        {% include 'artwork/_render.html' with object=artwork autosize=1 %}
+    </div>
+</div>
+
+<div class="row"><div class="small-1 columns">&nbsp;</div></div>
+<div class="row">
+    <div class="columns">
+        <input type="checkbox" id="autoupdate" value="autoupdate" checked="checked" /> 
+        <label for="autoupdate">Auto-update drawing</label>
+    </div>
+</div>
+
+{% if USER_CAN_SAVE %}
+<div class="row">
+    <div class="small-6 columns">
+        <button id="save_artwork" type="submit" title="Save to My Studio" class="postfix button">Save</button>
+    </div>
+    {% if artwork.id %}
+    <div class="small-6 columns">
+        <button id="save_cancel" type="button" title="Return to viewing Artwork" class="postfix button" 
+            onclick="document.location = '{% url 'artwork-view' artwork.id %}';">Cancel</button>
+    </div>
+    {% endif %}
+</div>
+</form>
+<!-- TODO : make these links into buttons -->
+<div class="row">{% include 'artwork/_actions.html' %}</div>
+{% endif %}
 </div>
 {% endblock content %}
