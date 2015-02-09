@@ -318,6 +318,15 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
 
 class ArtworkViewIntegrationTests(SeleniumTestCase):
 
+    def test_404_artwork_view(self):
+        view_path = reverse('artwork-view', kwargs={'pk': 1})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+        self.selenium.get(view_url)
+        error_404 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_404.text, 'Not Found'
+        )
+
     def test_own_artwork_view(self):
 
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)

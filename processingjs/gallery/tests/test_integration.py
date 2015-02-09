@@ -1,9 +1,12 @@
 import re
+import time
 from django.core.urlresolvers import reverse
 from selenium.common.exceptions import NoSuchElementException
 
 from uofa.test import SeleniumTestCase
 from selenium.common.exceptions import NoSuchElementException
+
+from gallery.views import ShareView
 
 
 class GalleryAuthIntegrationTests(SeleniumTestCase):
@@ -208,3 +211,84 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
             NoSuchElementException,
             self.selenium.find_element_by_id, ('nav-signin')
         )
+
+
+class ShareViewTest(SeleniumTestCase):
+    '''Test the Share view, used by the share links'''
+
+    def test_share_view(self):
+        share_path = reverse('share')
+        share_url = '%s%s' % (self.live_server_url, share_path)
+        home_path = reverse('home')
+        home_url = '%s%s' % (self.live_server_url, home_path)
+
+        # Ensure redirects to home
+        self.selenium.get(share_url)
+        time.sleep(1)
+        self.assertEqual(self.selenium.current_url, home_url)
+
+    def test_get_share_url(self):
+        share_path = ShareView.get_share_url()
+        share_url = '%s%s' % (self.live_server_url, share_path)
+        home_path = reverse('home')
+        home_url = '%s%s' % (self.live_server_url, home_path)
+
+        # Ensure redirects to home
+        self.selenium.get(share_url)
+        time.sleep(1)
+        self.assertEqual(self.selenium.current_url, home_url)
+
+    def test_get_share_url_home(self):
+        home_path = reverse('home')
+        share_path = ShareView.get_share_url(home_path)
+        share_url = '%s%s' % (self.live_server_url, share_path)
+        home_url = '%s%s' % (self.live_server_url, home_path)
+
+        # Ensure redirects to home
+        self.selenium.get(share_url)
+        time.sleep(1)
+        self.assertEqual(self.selenium.current_url, home_url)
+
+    def test_reverse_share_url(self):
+        share_path = ShareView.reverse_share_url()
+        share_url = '%s%s' % (self.live_server_url, share_path)
+        home_path = reverse('home')
+        home_url = '%s%s' % (self.live_server_url, home_path)
+
+        # Ensure redirects to home
+        self.selenium.get(share_url)
+        time.sleep(1)
+        self.assertEqual(self.selenium.current_url, home_url)
+
+    def test_reverse_share_url_home(self):
+        share_path = ShareView.reverse_share_url('home')
+        share_url = '%s%s' % (self.live_server_url, share_path)
+        home_path = reverse('home')
+        home_url = '%s%s' % (self.live_server_url, home_path)
+
+        # Ensure redirects to home
+        self.selenium.get(share_url)
+        time.sleep(1)
+        self.assertEqual(self.selenium.current_url, home_url)
+
+    def test_reverse_share_url_artwork_view(self):
+        share_path = ShareView.reverse_share_url('artwork-view', kwargs={'pk': 1})
+        share_url = '%s%s' % (self.live_server_url, share_path)
+        artwork_path = reverse('artwork-view', kwargs={'pk': 1})
+        artwork_url = '%s%s' % (self.live_server_url, artwork_path)
+
+        # Ensure redirects to artwork view
+        self.selenium.get(share_url)
+        time.sleep(1)
+        self.assertEqual(self.selenium.current_url, artwork_url)
+
+    def test_reverse_share_url_exhibition_view(self):
+        share_path = ShareView.reverse_share_url('exhibition-view', kwargs={'pk': 1})
+        share_url = '%s%s' % (self.live_server_url, share_path)
+        exhibition_path = reverse('exhibition-view', kwargs={'pk': 1})
+        exhibition_url = '%s%s' % (self.live_server_url, exhibition_path)
+
+        # Ensure redirects to exhibition view
+        self.selenium.get(share_url)
+        time.sleep(1)
+        self.assertEqual(self.selenium.current_url, exhibition_url)

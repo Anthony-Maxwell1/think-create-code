@@ -1,4 +1,5 @@
 import os.path
+import re
 from django.views.generic import UpdateView, TemplateView
 from django.shortcuts import get_object_or_404
 from django.core.urlresolvers import reverse, resolve
@@ -12,6 +13,31 @@ from uofa.views import TemplatePathMixin, CSRFExemptMixin
 class HelpView(TemplatePathMixin, TemplateView):
     TemplatePathMixin.template_dir = 'gallery'
     template_name = TemplatePathMixin.prepend_template_path('help.html')
+
+
+class ShareView(TemplatePathMixin, TemplateView):
+    TemplatePathMixin.template_dir = 'gallery'
+    template_name = TemplatePathMixin.prepend_template_path('share.html')
+
+    @classmethod
+    def get_share_url(cls, url=None):
+        '''Returns a URL suitable for sharing the given view'''
+        # TODO prepend bit.ly base URL if configured
+        share_url = reverse('share')
+        if url:
+            # Strip leading, trailing /
+            url = re.sub(r'^/', '', url)
+            url = re.sub(r'/$', '', url)
+            share_url = '%s?#%s' % (share_url, url)
+        return share_url
+
+    @classmethod
+    def reverse_share_url(cls, view=None, *args, **kwargs):
+        '''Reverses a URL suitable for sharing the given view'''
+        url = None
+        if view:
+            url = reverse(view, *args, **kwargs)
+        return cls.get_share_url(url)
 
 
 class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateView):

@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 
 from uofa.test import UserSetUp
+from gallery.views import ShareView
 
 class LTILoginViewTest(UserSetUp, TestCase):
     """LTI Login view tests."""
@@ -166,3 +167,49 @@ class LTILoginViewTest(UserSetUp, TestCase):
         # Ensure the updated user is still a student
         user = get_user_model().objects.get(username=self.user.username)
         self.assertFalse(user.is_staff)
+
+
+class ShareViewTest(TestCase):
+    '''Test the Share view, used by the share links'''
+
+    def test_share_view(self):
+        client = Client()
+        share_path = reverse('share')
+        response = client.get(share_path)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_share_url(self):
+        client = Client()
+        share_path = ShareView.get_share_url()
+        response = client.get(share_path)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_share_url_home(self):
+        client = Client()
+        share_path = ShareView.get_share_url(reverse('home'))
+        response = client.get(share_path)
+        self.assertEqual(response.status_code, 200)
+
+    def test_reverse_share_url(self):
+        client = Client()
+        share_path = ShareView.reverse_share_url()
+        response = client.get(share_path)
+        self.assertEqual(response.status_code, 200)
+
+    def test_reverse_share_url_home(self):
+        client = Client()
+        share_path = ShareView.reverse_share_url('home')
+        response = client.get(share_path)
+        self.assertEqual(response.status_code, 200)
+
+    def test_reverse_share_url_artwork_view(self):
+        client = Client()
+        share_path = ShareView.reverse_share_url('artwork-view', kwargs={'pk': 1})
+        response = client.get(share_path)
+        self.assertEqual(response.status_code, 200)
+
+    def test_reverse_share_url_exhibition_view(self):
+        client = Client()
+        share_path = ShareView.reverse_share_url('exhibition-view', kwargs={'pk': 1})
+        response = client.get(share_path)
+        self.assertEqual(response.status_code, 200)
