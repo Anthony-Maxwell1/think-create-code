@@ -1,21 +1,23 @@
 function get_grade() {} // placeholder for JS Input
 
 function get_state() {
-    var state = [];
+    var code = [];
     $('#sortable code').each(function(idx, line) {
-        state.push($(line).text());
+        code.push($(line).text());
     });
 
-    return JSON.stringify(state);
+    var state = {'code': code};
+    return JSON.stringify({'code': code});
 }
 
 // Called with the user's previous response to get_state()
 function set_state(json) {
     try {
         var state = JSON.parse(json);
-        if (state) {
+        if (state && 'code' in state) {
+            var code = state['code'];
             $('#sortable').empty();
-            $(state).each(function(idx, line) {
+            $(code).each(function(idx, line) {
                 $('#sortable')
                     .append($('<li>')
                         .append($('<pre>')
