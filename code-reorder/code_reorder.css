@@ -1,0 +1,15 @@
+body {
+    font-family: 'Open Sans', Verdana, Geneva, sans-serif, sans-serif;
+    height: 100px;
+}
+input {
+    margin-top: 1em;
+    padding: 0.5em;
+}
+#sortable { 
+    list-style-type: none; 
+}
+#sortable li { 
+    cursor: move;
+    padding-top: 0.25em;
+}
