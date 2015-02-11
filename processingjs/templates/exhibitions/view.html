@@ -4,10 +4,27 @@
 <script type="text/javascript" src="{% static "js/vote.js" %}"></script>
 {% endblock extras %}
 {% block content %}
+{% if object %}
+{% load rulez_perms %}
+{% rulez_perms can_save object as USER_CAN_SAVE %}
 <div id="exhibition-view-content">
 {% include 'exhibitions/_view.html' %}
+<div class="row">
+    <div class="object-actions columns">
+        <ul class="breadcrumbs">
+            {% if object.released_yet %}
+            <li><i class="fa fa-share-alt"></i> <span class="share-link">{{ share_url }}</span></li>
+            {% endif %}
+            {% if USER_CAN_SAVE %}
+            <li><a href="{% url 'exhibition-edit' pk=object.id %} " title="Edit {{ object.title }}">edit</a></li>
+            <li><a href="{% url 'exhibition-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
 <div id="exhibition-submissions">
 {% include 'submissions/_list.html' with object_list=submissions.object_list votes=submissions.votes page_obj=submissions.page_obj exhibition_id=exhibition.id order=submissions.order %}
 </div>
 </div>
+{% endif %}
 {% endblock content %}

@@ -79,7 +79,7 @@ $(document).ready(function() {
 {% else %}
 <div class="row">
     <div class="small-6 columns">
-        <h3 class="artwork-title">{{ object.title }}</h3>
+        <h3 class="artwork-title">{{ artwork.title }}</h3>
     </div>
     <div class="small-6 columns help-link">
         <a href="{% url 'help' %}">Help</a>
@@ -87,9 +87,9 @@ $(document).ready(function() {
 </div>
 <div class="columns">
     <p class="artwork-detail">by 
-        <a href="{% url 'artwork-author-list' object.author.id %}" 
-          title="view artwork by {{ object.author }}">{{ object.author }}</a>, 
-        updated <time>{{ object.modified_at|date }}</time>
+        <a href="{% url 'artwork-author-list' artwork.author.id %}" 
+          title="view artwork by {{ artwork.author }}">{{ artwork.author }}</a>, 
+        updated <time>{{ artwork.modified_at|date }}</time>
     </p>
 </div>
 {% endif %}
@@ -101,7 +101,7 @@ $(document).ready(function() {
 </div>
 <div class="row" data-equalizer>
     <div class="small-12 medium-6 columns" data-equalizer-watch>
-        <div class="code-block" style="height: 100%"><code contenteditable="true">{{ object.code }}</code></div>
+        <div class="code-block" style="height: 100%"><code contenteditable="true">{{ artwork.code }}</code></div>
     </div>
     <div class="small-12 medium-6 columns artwork" id="artwork-{{ artwork.id }}" data-equalizer-watch>
         {% include 'artwork/_render.html' with object=artwork autosize=1 %}
@@ -129,8 +129,31 @@ $(document).ready(function() {
     {% endif %}
 </div>
 </form>
-<!-- TODO : make these links into buttons -->
-<div class="row">{% include 'artwork/_actions.html' %}</div>
 {% endif %}
+
+{% if artwork.id %}
+<div class="row">
+    <div class="object-actions columns">
+        <ul class="breadcrumbs">
+            {% if artwork.shared %}
+            <li><i class="fa fa-share-alt"></i> <span class="share-link">{{ share_url }}</span></li>
+            {% endif %}
+            {% if USER_CAN_SAVE %}
+            {% if exhibitions_submitted|length or exhibitions_to_submit|length %}
+            <li><a href="{% url 'artwork-submit' artwork=artwork.id %}" 
+                  title="Share {{ artwork.title }}" 
+                  data-reveal-id="modal-submit" >share</a>
+                <div id="modal-submit" class="reveal-modal" data-reveal>
+                {% include 'artwork/_submit.html' %}
+                <a href="#" class="close-reveal-modal" id="submit-cancel">&#215;</a>
+                </div>
+            </li>
+            {% endif %}
+            <li><a href="{% url 'artwork-delete' pk=artwork.id %} " title="Delete {{ artwork.title }}">delete</a></li>
+            {% endif %}
+        </ul>
+    </div>
 </div>
+{% endif %}
+
 {% endblock content %}

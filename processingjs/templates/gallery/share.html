@@ -6,5 +6,17 @@
     <title>ProcessingJS :: Share</title>
 </head>
 <body><div>Redirecting..</div>
-<script type="text/javascript" src="{% static "js/share.js" %}"></script>
+<script type="text/javascript">
+// Redirect to requested path
+var share_link = '';
+try {
+    share_path = window.location.hash.substring(1);
+} catch(e) {
+    // pass
+}
+if (!share_path) share_path = '/';
+var link = document.createElement('a');
+link.href = '{{ script_prefix }} ' + share_path;
+window.location = link;
+</script>
 </body></html>

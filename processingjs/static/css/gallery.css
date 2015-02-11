@@ -22,12 +22,23 @@ nav #nav-logged-in {
 nav #nav-logged-in:after {
     border-color: transparent transparent transparent !important;
 }
-.artwork-actions {
-    width: auto;
-}
-/* pad the object-actions */
+/* object action links */
 .object-actions {
     padding-top: 1.5ex;
+    width: auto;
+}
+.object-actions .fa {
+    color: #007095;
+    font-size: 2em;
+    line-height: 0em;
+    position: relative;
+    top: 3px;
+    -webkit-text-stroke: 1px white;
+}
+.object-actions .share-link {
+    text-transform: none;
+    font-size: 1.5em;
+    font-weight: 200;
 }
 
 /* Preview the artwork in a smaller div */

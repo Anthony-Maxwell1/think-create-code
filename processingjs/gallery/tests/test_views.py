@@ -1,9 +1,13 @@
 from django.test import TestCase
 from django.test.client import Client
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+import urllib
+from urlparse import urlparse
+import os
 
-from uofa.test import UserSetUp
+from uofa.test import UserSetUp, SeleniumTestCase
 from gallery.views import ShareView
 
 class LTILoginViewTest(UserSetUp, TestCase):
@@ -169,8 +173,28 @@ class LTILoginViewTest(UserSetUp, TestCase):
         self.assertFalse(user.is_staff)
 
 
-class ShareViewTest(TestCase):
-    '''Test the Share view, used by the share links'''
+class ShareViewTest(SeleniumTestCase):
+    '''Test the Share view, used by the share links.
+       Have to use urllib to fetch the (bit.ly) external share urls,
+       and run the Selenium browser to perform the redirects.'''
+
+    def assertShareUrlRedirects(self, redirect_url):
+        parsed_redirect = urlparse(redirect_url)
+        response = urllib.urlopen(redirect_url)
+        target_url = response.geturl()
+        parsed_target = urlparse(target_url)
+
+        self.assertEqual(response.getcode(), 200)
+        self.assertEqual(parsed_redirect.netloc, urlparse(settings.SHARE_URL).netloc)
+        self.assertEqual(parsed_target.netloc, os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'])
+        self.assertEqual(parsed_target.path, reverse('share'))
+
+        self.assertEqual(parsed_redirect.scheme, parsed_target.scheme)
+        self.assertEqual(parsed_redirect.query,  parsed_target.query)
+        # I wish this worked.. since it's the meat of the share request.
+        # But since servers don't care about fragments, we can't see it in the target :(
+        # Have to rely on the integration tests instead.
+        #self.assertEqual(parsed_redirect.fragment, parsed_target.fragment)
 
     def test_share_view(self):
         client = Client()
@@ -179,37 +203,25 @@ class ShareViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_share_url(self):
-        client = Client()
-        share_path = ShareView.get_share_url()
-        response = client.get(share_path)
-        self.assertEqual(response.status_code, 200)
+        share_url = ShareView.get_share_url()
+        self.assertShareUrlRedirects(share_url)
 
     def test_get_share_url_home(self):
-        client = Client()
-        share_path = ShareView.get_share_url(reverse('home'))
-        response = client.get(share_path)
-        self.assertEqual(response.status_code, 200)
+        share_url = ShareView.get_share_url(reverse('home'))
+        self.assertShareUrlRedirects(share_url)
 
     def test_reverse_share_url(self):
-        client = Client()
-        share_path = ShareView.reverse_share_url()
-        response = client.get(share_path)
-        self.assertEqual(response.status_code, 200)
+        share_url = ShareView.reverse_share_url()
+        self.assertShareUrlRedirects(share_url)
 
     def test_reverse_share_url_home(self):
-        client = Client()
-        share_path = ShareView.reverse_share_url('home')
-        response = client.get(share_path)
-        self.assertEqual(response.status_code, 200)
+        share_url = ShareView.reverse_share_url('home')
+        self.assertShareUrlRedirects(share_url)
 
     def test_reverse_share_url_artwork_view(self):
-        client = Client()
-        share_path = ShareView.reverse_share_url('artwork-view', kwargs={'pk': 1})
-        response = client.get(share_path)
-        self.assertEqual(response.status_code, 200)
+        share_url = ShareView.reverse_share_url('artwork-view', kwargs={'pk': 1})
+        self.assertShareUrlRedirects(share_url)
 
     def test_reverse_share_url_exhibition_view(self):
-        client = Client()
-        share_path = ShareView.reverse_share_url('exhibition-view', kwargs={'pk': 1})
-        response = client.get(share_path)
-        self.assertEqual(response.status_code, 200)
+        share_url = ShareView.reverse_share_url('exhibition-view', kwargs={'pk': 1})
+        self.assertShareUrlRedirects(share_url)

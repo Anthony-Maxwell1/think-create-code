@@ -2,7 +2,7 @@ import os.path
 import re
 from django.views.generic import UpdateView, TemplateView
 from django.shortcuts import get_object_or_404
-from django.core.urlresolvers import reverse, resolve
+from django.core.urlresolvers import reverse, resolve, get_script_prefix
 from django.utils.http import is_safe_url
 from django.conf import settings
 from django.http import HttpResponseRedirect
@@ -21,12 +21,11 @@ class ShareView(TemplatePathMixin, TemplateView):
 
     @classmethod
     def get_share_url(cls, url=None):
-        '''Returns a URL suitable for sharing the given view'''
-        # TODO prepend bit.ly base URL if configured
-        share_url = reverse('share')
+        '''Returns an absolute URL suitable for sharing the given view'''
+        share_url = settings.SHARE_URL
         if url:
-            # Strip leading, trailing /
-            url = re.sub(r'^/', '', url)
+            # Strip leading script prefix, trailing /
+            url = re.sub(r'^%s' % get_script_prefix(), '', url)
             url = re.sub(r'/$', '', url)
             share_url = '%s?#%s' % (share_url, url)
         return share_url
@@ -38,6 +37,10 @@ class ShareView(TemplatePathMixin, TemplateView):
         if view:
             url = reverse(view, *args, **kwargs)
         return cls.get_share_url(url)
+
+    def get_context_data(self, **kwargs):
+        context = super(ShareView, self).get_context_data(**kwargs)
+        context['script_prefix'] = get_script_prefix()
 
 
 class LTILoginView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateView):

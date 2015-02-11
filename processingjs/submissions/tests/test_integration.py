@@ -403,7 +403,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_link_text, ('SUBMIT')
+            self.selenium.find_element_by_link_text, ('SHARE')
         )
 
     def test_no_submit_link_student(self):
@@ -419,7 +419,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         # no submit link for unowned artwork
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_link_text, ('SUBMIT')
+            self.selenium.find_element_by_link_text, ('SHARE')
         )
 
         # save the exhibition, and submit link still doesn't appear
@@ -428,7 +428,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
             self.selenium.get(artwork_url)
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_link_text, ('SUBMIT')
+            self.selenium.find_element_by_link_text, ('SHARE')
         )
 
     def test_owned_submit_link_student(self):
@@ -443,7 +443,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         # no submit link until exhibition available
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_link_text, ('SUBMIT')
+            self.selenium.find_element_by_link_text, ('SHARE')
         )
 
         # save the exhibition, and submit link appears
@@ -451,7 +451,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.get(artwork_url)
         self.assertIsNotNone(
-            self.selenium.find_element_by_link_text('SUBMIT')
+            self.selenium.find_element_by_link_text('SHARE')
         )
 
     def test_submit_link_staff(self):
@@ -467,7 +467,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         # no submit link for non-authors
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_link_text, ('SUBMIT')
+            self.selenium.find_element_by_link_text, ('SHARE')
         )
 
         # save the exhibition
@@ -478,7 +478,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         # submit link still not visible
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_link_text, ('SUBMIT')
+            self.selenium.find_element_by_link_text, ('SHARE')
         )
 
     def test_submit_artwork(self):
@@ -496,7 +496,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
 
         # Click submit link, and wait for modal to appear
-        self.selenium.find_element_by_link_text('SUBMIT').click()
+        self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
         # submit the artwork to the exhibition
@@ -504,10 +504,11 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
-        # Should redirect to exhibition view
-        self.assertEqual(self.selenium.current_url, exhibition_url)
+        # Should redirect to artwork view
+        self.assertEqual(self.selenium.current_url, artwork_url)
 
-        # And my submission should be in the list
+        # And my submission should be in the exhibition list
+        self.selenium.get(exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)
         )
@@ -527,7 +528,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
 
         # Click submit link to show the modal
-        self.selenium.find_element_by_link_text('SUBMIT').click()
+        self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
         # submit the artwork to the exhibition
@@ -558,7 +559,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
 
         # Click submit link to show the modal
-        self.selenium.find_element_by_link_text('SUBMIT').click()
+        self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
         # submit the artwork to the exhibition (without selecting an exhibition)
@@ -607,8 +608,11 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
-        # Show see the exhibition view page
-        self.assertEqual(self.selenium.current_url, exhibition_url)
+        # Should see the artwork view page
+        self.assertEqual(self.selenium.current_url, artwork_url)
+
+        # Exhibition view should show submission in list
+        self.selenium.get(exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)
         )
@@ -629,7 +633,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
 
         # Click submit link to show the modal
-        self.selenium.find_element_by_link_text('SUBMIT').click()
+        self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
         # submit the artwork to the exhibition (without selecting an exhibition)
@@ -670,7 +674,7 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
 
         # Click submit link to show the modal
-        self.selenium.find_element_by_link_text('SUBMIT').click()
+        self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
         # submit the artwork to the exhibition (without selecting an exhibition)
@@ -710,8 +714,11 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
-        # Show see the exhibition view page
-        self.assertEqual(self.selenium.current_url, exhibition2_url)
+        # Should see the artwork view page
+        self.assertEqual(self.selenium.current_url, artwork_url)
+
+        # Artwork shoul dbe present in the exhibition view
+        self.selenium.get(exhibition2_url)
         self.assertIsNotNone(
             self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)
         )
@@ -733,7 +740,7 @@ class TempTestClass(SubmissionCreateIntegrationTests): # XXX
         )
 
         # Click submit link to show the modal
-        self.selenium.find_element_by_link_text('SUBMIT').click()
+        self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
         # There's actually two forms on this page: submit artwork, and edit artwork
@@ -774,8 +781,11 @@ class TempTestClass(SubmissionCreateIntegrationTests): # XXX
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
-        # Show see the artwork on the exhibition view page
-        self.assertEqual(self.selenium.current_url, exhibition_url)
+        # Should redirect to the artwork view
+        self.assertEqual(self.selenium.current_url, artwork_url)
+         
+        # Should see the artwork on the exhibition view page
+        self.selenium.get(exhibition_url)
         self.assertIsNotNone(
             self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)
         )
@@ -788,7 +798,7 @@ class TempTestClass(SubmissionCreateIntegrationTests): # XXX
             1
         )
 
-        self.selenium.find_element_by_link_text('SUBMIT').click()
+        self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
         # Should be one less radio button
@@ -821,14 +831,14 @@ class TempTestClass(SubmissionCreateIntegrationTests): # XXX
         self.assertEqual(exhibition2.id, long(inputs[6].get_attribute('value')))
 
         # First exhibition is shown as submitted
-        self.assertRegexpMatches(self.selenium.page_source, r'Submitted to ')
+        self.assertRegexpMatches(self.selenium.page_source, r'Shared to ')
         self.assertEqual(
             self.selenium.find_element_by_link_text(self.exhibition.title).get_attribute('href'),
             exhibition_url
         )
         # with an unsubmit link
         self.assertIsNotNone(
-            self.selenium.find_element_by_link_text('unsubmit')
+            self.selenium.find_element_by_link_text('unshare')
         )
 
     def test_submit_shares_artwork(self):
@@ -902,7 +912,7 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         )
 
         # Click submit link to show the modal
-        self.selenium.find_element_by_link_text('SUBMIT').click()
+        self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
         # Should only be the edit artwork input elements, no submit form
@@ -925,14 +935,14 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
 
 
         # First exhibition is shown as submitted
-        self.assertRegexpMatches(self.selenium.page_source, r'Submitted to ')
+        self.assertRegexpMatches(self.selenium.page_source, r'Shared to ')
         self.assertEqual(
             self.selenium.find_element_by_link_text(self.exhibition.title).get_attribute('href'),
             self.exhibition_url
         )
 
         # with an unsubmit link
-        unsubmit = self.selenium.find_element_by_link_text('unsubmit')
+        unsubmit = self.selenium.find_element_by_link_text('unshare')
         self.assertEqual(self.delete_url, unsubmit.get_attribute('href'))
 
         # Click unsubmit

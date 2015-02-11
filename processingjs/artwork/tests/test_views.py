@@ -205,6 +205,7 @@ class ArtworkViewTests(UserSetUp, TestCase):
         response = self.assertLogin(client, artwork_url)
         self.assertEquals(response.context['object'].title, artwork.title)
         self.assertEquals(response.context['object'].code, artwork.code)
+        self.assertIsNotNone(response.context['share_url'])
 
     def test_shared_artwork(self):
         
@@ -216,6 +217,7 @@ class ArtworkViewTests(UserSetUp, TestCase):
         response = client.get(artwork_url)
         self.assertEquals(response.context['object'].title, artwork.title)
         self.assertEquals(response.context['object'].code, artwork.code)
+        self.assertIsNotNone(response.context['share_url'])
 
     def test_artwork_404(self):
         

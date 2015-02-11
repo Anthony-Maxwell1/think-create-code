@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied
 import os
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, MethodObjectHasPermMixin
+from gallery.views import ShareView
 from artwork.models import Artwork, ArtworkForm
 
 from exhibitions.models import Exhibition
@@ -131,6 +132,10 @@ class UpdateArtworkView(MethodObjectHasPermMixin, ArtworkView, UpdateView):
 
         artwork = context['object']
         if artwork:
+            context['share_url'] = ShareView.reverse_share_url(
+                'artwork-view',
+                kwargs={'pk': artwork.id})
+
             # TODO : make this an AJAX query, so we can fetch on demand
             
             submissions_qs = Submission.objects.filter(

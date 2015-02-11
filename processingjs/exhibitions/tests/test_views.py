@@ -178,6 +178,7 @@ class ExhibitionViewTests(UserSetUp, TestCase):
         self.assertEquals(response.context['object'].title, exhibition.title)
         self.assertEquals(response.context['object'].description, exhibition.description)
         self.assertFalse(response.context['object'].released_yet)
+        self.assertIsNotNone(response.context['share_url'])
 
     def test_super_view_before_release_date(self):
         
@@ -194,6 +195,7 @@ class ExhibitionViewTests(UserSetUp, TestCase):
         self.assertEquals(response.context['object'].title, exhibition.title)
         self.assertEquals(response.context['object'].description, exhibition.description)
         self.assertFalse(response.context['object'].released_yet)
+        self.assertIsNotNone(response.context['share_url'])
 
 
 class ExhibitionCreateTests(UserSetUp, TestCase):

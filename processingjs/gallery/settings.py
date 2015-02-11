@@ -51,6 +51,9 @@ if ENVIRONMENT == 'production':
     STATIC_URL = '/Think.Create.Code/static/'
     ALLOWED_HOSTS = ['*']
 
+    # https://lti-adx.adelaide.edu.au/think.create.code/gallery/share
+    SHARE_URL = 'http://bit.ly/1A3Kdoy'
+
 elif ENVIRONMENT == 'development':
 
     # Runs via ./manage.py runserver
@@ -67,6 +70,9 @@ elif ENVIRONMENT == 'development':
     STATIC_URL = '/static/'
     ALLOWED_HOSTS = []
 
+    # http://loco.services.adelaide.edu.au:8000/share
+    SHARE_URL = 'http://bit.ly/1A3JLXA'
+
 elif ENVIRONMENT == 'testing':
 
     # Runs via ./manage.py test
@@ -81,6 +87,9 @@ elif ENVIRONMENT == 'testing':
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
     ALLOWED_HOSTS = ['localhost']
+
+    # http://0.0.0.0:8080/share
+    SHARE_URL = 'http://bit.ly/1zMTDl8'
 
 
 # else - error: no database defined

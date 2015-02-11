@@ -16,7 +16,7 @@ class SubmissionView(TemplatePathMixin):
     template_dir = 'submissions'
 
     def get_success_url(self):
-        return reverse('exhibition-view', kwargs={'pk': self.object.exhibition.id})
+        return reverse('artwork-view', kwargs={'pk': self.object.artwork.id})
 
 
 class ListSubmissionView(SubmissionView, ListView):

@@ -3,6 +3,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.core.urlresolvers import reverse
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, ModelHasPermMixin
+from gallery.views import ShareView
 from exhibitions.models import Exhibition, ExhibitionForm
 
 from submissions.views import ListSubmissionView
@@ -25,6 +26,13 @@ class ExhibitionView(TemplatePathMixin):
     def get_context_data(self, **kwargs):
         context = super(ExhibitionView, self).get_context_data(**kwargs)
         context['model'] = self.get_model()
+
+        exhibition = context.get('object')
+        if exhibition:
+            context['share_url'] = ShareView.reverse_share_url(
+                'exhibition-view',
+                kwargs={'pk': exhibition.id})
+
         return context
 
 

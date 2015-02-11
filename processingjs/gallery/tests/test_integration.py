@@ -41,10 +41,11 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
         self.selenium.get(add_url)
         self.assertEqual(self.selenium.current_url, add_url)
 
-        # 3. logout, and check page
+        # 3. logout redirects to home
         logout_url = '%s%s' % (self.live_server_url, reverse('logout'))
+        home_url = '%s%s' % (self.live_server_url, reverse('home'))
         self.selenium.get(logout_url)
-        self.assertEqual(self.selenium.current_url, logout_url)
+        self.assertEqual(self.selenium.current_url, home_url)
 
         # 4. re-visit "add artwork", and ensure we got sent back to login
         self.selenium.get(add_url)
@@ -228,8 +229,7 @@ class ShareViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, home_url)
 
     def test_get_share_url(self):
-        share_path = ShareView.get_share_url()
-        share_url = '%s%s' % (self.live_server_url, share_path)
+        share_url = ShareView.get_share_url()
         home_path = reverse('home')
         home_url = '%s%s' % (self.live_server_url, home_path)
 
@@ -240,8 +240,7 @@ class ShareViewTest(SeleniumTestCase):
 
     def test_get_share_url_home(self):
         home_path = reverse('home')
-        share_path = ShareView.get_share_url(home_path)
-        share_url = '%s%s' % (self.live_server_url, share_path)
+        share_url = ShareView.get_share_url(home_path)
         home_url = '%s%s' % (self.live_server_url, home_path)
 
         # Ensure redirects to home
@@ -250,8 +249,7 @@ class ShareViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, home_url)
 
     def test_reverse_share_url(self):
-        share_path = ShareView.reverse_share_url()
-        share_url = '%s%s' % (self.live_server_url, share_path)
+        share_url = ShareView.reverse_share_url()
         home_path = reverse('home')
         home_url = '%s%s' % (self.live_server_url, home_path)
 
@@ -261,8 +259,7 @@ class ShareViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, home_url)
 
     def test_reverse_share_url_home(self):
-        share_path = ShareView.reverse_share_url('home')
-        share_url = '%s%s' % (self.live_server_url, share_path)
+        share_url = ShareView.reverse_share_url('home')
         home_path = reverse('home')
         home_url = '%s%s' % (self.live_server_url, home_path)
 
@@ -272,8 +269,7 @@ class ShareViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, home_url)
 
     def test_reverse_share_url_artwork_view(self):
-        share_path = ShareView.reverse_share_url('artwork-view', kwargs={'pk': 1})
-        share_url = '%s%s' % (self.live_server_url, share_path)
+        share_url = ShareView.reverse_share_url('artwork-view', kwargs={'pk': 1})
         artwork_path = reverse('artwork-view', kwargs={'pk': 1})
         artwork_url = '%s%s' % (self.live_server_url, artwork_path)
 
@@ -283,8 +279,7 @@ class ShareViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, artwork_url)
 
     def test_reverse_share_url_exhibition_view(self):
-        share_path = ShareView.reverse_share_url('exhibition-view', kwargs={'pk': 1})
-        share_url = '%s%s' % (self.live_server_url, share_path)
+        share_url = ShareView.reverse_share_url('exhibition-view', kwargs={'pk': 1})
         exhibition_path = reverse('exhibition-view', kwargs={'pk': 1})
         exhibition_url = '%s%s' % (self.live_server_url, exhibition_path)
 

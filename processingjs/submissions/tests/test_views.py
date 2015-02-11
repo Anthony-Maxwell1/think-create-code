@@ -194,11 +194,11 @@ class SubmissionCreateTests(UserSetUp, TestCase):
             'exhibition': exhibition.id,
         }
         response = client.post(create_url, post_data)
-        view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
+        view_url = reverse('artwork-view', kwargs={'pk':student_artwork.id})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Ensure submission is in the exhibition view list
-        response = client.get(view_url)
+        response = client.get(reverse('exhibition-view', kwargs={'pk':exhibition.id}))
         self.assertEquals(response.context['object'].id, exhibition.id)
         submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(submissions.count(), 1)
@@ -279,11 +279,11 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         }
         create_url = reverse('artwork-submit', kwargs={'artwork': staff_artwork.id})
         response = client.post(create_url, post_data)
-        view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
+        view_url = reverse('artwork-view', kwargs={'pk':staff_artwork.id})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Ensure one submission is in the exhibition view list
-        response = client.get(view_url)
+        response = client.get(reverse('exhibition-view', kwargs={'pk':exhibition.id}))
         self.assertEquals(response.context['object'].id, exhibition.id)
         submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(submissions.count(), 1)
@@ -325,11 +325,11 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         }
         create_url = reverse('artwork-submit', kwargs={'artwork': super_artwork.id})
         response = client.post(create_url, post_data)
-        view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
+        view_url = reverse('artwork-view', kwargs={'pk':super_artwork.id})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Ensure one submissions in the exhibition view list
-        response = client.get(view_url)
+        response = client.get(reverse('exhibition-view', kwargs={'pk':exhibition.id}))
         self.assertEquals(response.context['object'].id, exhibition.id)
         submissions = response.context['submissions']['object_list'].all()
         self.assertEquals(submissions.count(), 1)
@@ -389,7 +389,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
             'exhibition': exhibition.id,
         }
         response = client.post(create_url, post_data)
-        view_url = reverse('exhibition-view', kwargs={'pk':exhibition.id})
+        view_url = reverse('artwork-view', kwargs={'pk':student_artwork.id})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Submit same thing again

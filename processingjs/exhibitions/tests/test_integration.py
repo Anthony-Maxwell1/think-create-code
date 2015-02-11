@@ -236,7 +236,7 @@ class ExhibitionViewIntegrationTests(SeleniumTestCase):
         self.selenium.get('%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': 1})))
         self.assertEqual(
             self.selenium.find_element_by_css_selector('p').text,
-            'The requested URL /exhibitions/1/ was not found on this server.'
+            'The requested URL /e/1/ was not found on this server.'
         )
 
     def test_view(self):
@@ -402,6 +402,78 @@ class ExhibitionViewIntegrationTests(SeleniumTestCase):
         self.assertIsNotNone(
             self.selenium.find_element_by_css_selector('.not-available')
         )
+
+class ExhibitionViewShareLinkIntegrationTests(SeleniumTestCase):
+
+    def test_view_released(self):
+
+        exhibition = Exhibition.objects.create(title='New Exhibition', description='goes here', author=self.user)
+
+        self.selenium.get('%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': exhibition.id})))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('exhibition-view-content')),
+            1
+        )
+
+
+    def test_view_unreleased(self):
+        # Public cannot see unreleased exhibition
+        now = timezone.now()
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at = now + timedelta(hours=24),
+            author=self.user)
+
+        view_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': exhibition.id}))
+        self.selenium.get(view_url)
+        self.assertRegexpMatches(self.selenium.page_source, r'403 Forbidden')
+
+        # Staff can, but no share link is shown
+        self.performLogin(user='staff')
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('exhibition-view-content')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            0
+        )
+
+        # Logout, and release the exhibition to see the share link
+        self.performLogout()
+        exhibition.released_at = now
+        exhibition.save()
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('exhibition-view-content')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+
+        # Ensure that visiting the share_link redirects back to this view_url
+        share_link = self.selenium.find_element_by_css_selector('.share-link').text
+        self.selenium.get(share_link)
+        self.assertEqual(self.selenium.current_url, view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('exhibition-view-content')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+
+        # Move the release date back, logout, and ensure we can't see the exhibition anymore
+        exhibition.released_at = now + timedelta(hours=24)
+        exhibition.save()
+        self.selenium.get(share_link)
+        self.assertEqual(self.selenium.current_url, view_url)
+        self.assertRegexpMatches(self.selenium.page_source, r'403 Forbidden')
 
 
 class ExhibitionCreateIntegrationTests(SeleniumTestCase):

@@ -523,7 +523,6 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id, ('autoupdate')
         )
 
-
     def test_shared_artwork_links(self):
 
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
@@ -634,6 +633,101 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
         self.assertIsNotNone(
             self.selenium.find_element_by_id, ('autoupdate')
         )
+
+    def test_private_artwork_share_url(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+
+        # Public can't see shared artwork
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+
+        # Owner can, but no share link
+        self.assertLogin(view_path)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            0
+        )
+
+        # Make the artwork shared to see the share link
+        artwork.shared = 1
+        artwork.save()
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+
+        # Ensure that visiting the share_link redirects back to this view_url
+        share_link = self.selenium.find_element_by_css_selector('.share-link').text
+        self.selenium.get(share_link)
+        self.assertEqual(self.selenium.current_url, view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+
+        # Un-share the artwork, logout, and ensure and we're forced to login.
+        artwork.shared = 0
+        artwork.save()
+        self.performLogout()
+        self.selenium.get(share_link)
+        self.assertNotEqual(self.selenium.current_url, view_url)
+        self.assertLogin(view_path)
+
+    def test_public_artwork_share_url(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+
+        # Public can see shared artwork
+        self.selenium.get(view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+
+        # Ensure that visiting the share_link redirects back to this view_url
+        share_link = self.selenium.find_element_by_css_selector('.share-link').text
+        self.selenium.get(share_link)
+        self.assertEqual(self.selenium.current_url, view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+
+        # Un-share the artwork, and we're forced to login.
+        artwork.shared = 0
+        artwork.save()
+        self.selenium.get(share_link)
+        self.assertNotEqual(self.selenium.current_url, view_url)
+        self.assertLogin(view_path)
 
 
 class ArtworkRenderViewIntegrationTests(SeleniumTestCase):
