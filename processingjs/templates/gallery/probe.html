@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Code101x Gallery :: Content switch probe page</title>
+</head>
+<body>
+Hello world. 
+{% if user.is_anonymous %}
+<a href="{% url "login" %}">Sign in</a>
+{% endif %}
+</body>
+</html>

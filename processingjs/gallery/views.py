@@ -10,6 +10,12 @@ from django_auth_lti.mixins import LTIUtilityMixin, LTIRoleRestrictionMixin
 from uofa.models import UserForm
 from uofa.views import TemplatePathMixin, CSRFExemptMixin
 
+
+class ProbeView(TemplatePathMixin, TemplateView):
+    TemplatePathMixin.template_dir = 'gallery'
+    template_name = TemplatePathMixin.prepend_template_path('probe.html')
+
+
 class HelpView(TemplatePathMixin, TemplateView):
     TemplatePathMixin.template_dir = 'gallery'
     template_name = TemplatePathMixin.prepend_template_path('help.html')

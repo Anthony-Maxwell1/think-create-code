@@ -21,7 +21,11 @@ urlpatterns = patterns('',
         name='lti-login'),
     url(r'^share/?$', gallery.views.ShareView.as_view(),
         name='share'),
-    url(r'^help/$', gallery.views.HelpView.as_view(),
+    # N.B This /help url is used by the Nagios checks for this service.
+    # PLEAE DO NOT CHANGE!
+    url(r'^probe.html$', gallery.views.ProbeView.as_view(),
+        name='probe'),
+    url(r'^help/?$', gallery.views.HelpView.as_view(),
         name='help'),
     url(r'^artwork/studio/$', artwork.views.StudioArtworkView.as_view(),
         name='artwork-studio'),
