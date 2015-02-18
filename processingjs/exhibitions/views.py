@@ -44,7 +44,7 @@ class ListExhibitionView(ExhibitionView, ListView):
         '''Enforce model queryset restrictions, and sort by released_at desc'''
         qs = super(ExhibitionView, self).get_queryset()
         qs = self.get_model().can_see_queryset(qs, self.request.user)
-        return qs.order_by('-released_at')
+        return qs.order_by('-released_at', 'created_at')
 
 
 class ShowExhibitionView(ObjectHasPermMixin, ExhibitionView, DetailView):

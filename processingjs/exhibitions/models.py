@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django.utils import timezone
 from django import forms
@@ -17,7 +18,9 @@ class Exhibition(models.Model):
         help_text=_('Max file size 4MB.'),
     )
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
-    released_at = models.DateTimeField(verbose_name="release date", default=timezone.now)
+    released_at = models.DateTimeField(verbose_name="release date",
+        null=True, blank=True, default=None,
+        help_text=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     modified_at = models.DateTimeField(auto_now=True, editable=False)
 
@@ -28,7 +31,7 @@ class Exhibition(models.Model):
         return unicode(self).encode('utf-8')
 
     def _released_yet(self):
-        return (self.released_at <= timezone.now())
+        return (self.released_at is None) or (self.released_at <= timezone.now())
 
     released_yet = property(_released_yet)
 
@@ -48,7 +51,7 @@ class Exhibition(models.Model):
     def can_see_queryset(cls, qs, user=None):
         if cls.can_save(user):
             return qs
-        return qs.filter(released_at__lte=timezone.now())
+        return qs.filter(Q(released_at__isnull=True) | Q(released_at__lte=timezone.now()))
 
 
 registry.register('can_see', Exhibition)
