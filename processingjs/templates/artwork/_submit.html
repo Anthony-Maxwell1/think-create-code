@@ -19,7 +19,8 @@
     {% for exhibition in exhibitions_to_submit %}
     <div>
     <input type="radio" name="exhibition" value="{{ exhibition.id }}" id="exhibition-{{ exhibition.id }}" />
-    <label for="exhibition-{{ exhibition.id }}"><a href="{% url 'exhibition-view' exhibition.id %}">{{ exhibition }}</a></label>
+    <label for="exhibition-{{ exhibition.id }}">{{ exhibition }}</label>
+    </label>
     </div>
     {% endfor %}
     <div class="row">
