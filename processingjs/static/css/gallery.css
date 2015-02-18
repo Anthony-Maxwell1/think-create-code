@@ -4,7 +4,7 @@ nav a {
 }
 /* Add a bit of padding between the nav and the content */
 nav {
-    margin-bottom: 3em !important;
+    margin-bottom: 1em !important;
 }
 /* Make the title-area text bigger */
 nav .title-area li a {
@@ -23,9 +23,11 @@ nav #nav-logged-in:after {
     border-color: transparent transparent transparent !important;
 }
 /* object action links */
-.object-actions {
-    padding-top: 1.5ex;
+.auto-width {
     width: auto;
+}
+.object-actions {
+    padding-top: 1em;
 }
 .object-actions .fa {
     color: #007095;

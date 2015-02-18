@@ -54,45 +54,67 @@ $(document).ready(function() {
 {% rulez_perms can_save artwork as USER_CAN_SAVE %}
 {% endif %}
 
+<div class="row">
 {% if USER_CAN_SAVE %}
-<div class="row">
-    <div class="small-6 columns">
-        {% if artwork.id %}
-        <h1>Edit Artwork</h1>
-        {% else %}
-        <h1>Add Artwork</h1>
-        {% endif %}
-    </div>
-    <div class="small-6 columns help-link">
-        <a href="{% url 'help' %}">Help</a>
-    </div>
-</div>
-<form method="post" action="{{ action }}" enctype="multipart/form-data">
-{% csrf_token %}
-<div class="row">
-    <div class="columns">
-        <ul class="edit_fields">
-        {{ form.as_ul }}
-        </ul>
-    </div>
+<div class="columns auto-width">
+    {% if artwork.id %}
+    <h2>Edit Artwork</h2>
+    {% else %}
+    <h2>Add Artwork</h2>
+    {% endif %}
 </div>
 {% else %}
-<div class="row">
-    <div class="small-6 columns">
-        <h3 class="artwork-title">{{ artwork.title }}</h3>
-    </div>
-    <div class="small-6 columns help-link">
-        <a href="{% url 'help' %}">Help</a>
-    </div>
+<div class="columns auto-width">
+    <h2 class="artwork-title">{{ artwork.title }}</h2>
 </div>
-<div class="columns">
-    <p class="artwork-detail">by 
+{% endif %}
+
+{% if artwork.id %}
+<div class="object-actions auto-width columns end">
+    <ul class="breadcrumbs">
+        {% if artwork.shared %}
+        <li><i class="fa fa-share-alt"></i> <span class="share-link">{{ share_url }}</span></li>
+        {% endif %}
+        {% if USER_CAN_SAVE %}
+        {% if exhibitions_submitted|length or exhibitions_to_submit|length %}
+        <li><a href="{% url 'artwork-submit' artwork=artwork.id %}" 
+              title="Share {{ artwork.title }}" 
+              data-reveal-id="modal-submit" >share</a>
+            <div id="modal-submit" class="reveal-modal" data-reveal>
+            {% include 'artwork/_submit.html' %}
+            <a href="#" class="close-reveal-modal" id="submit-cancel">&#215;</a>
+            </div>
+        </li>
+        {% endif %}
+        <li><a href="{% url 'artwork-delete' pk=artwork.id %} " title="Delete {{ artwork.title }}">delete</a></li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}
+
+{% if USER_CAN_SAVE %}
+{% else %}
+<div class="columns small-12">
+    <div class="artwork-detail">by 
         <a href="{% url 'artwork-author-list' artwork.author.id %}" 
           title="view artwork by {{ artwork.author }}">{{ artwork.author }}</a>, 
         updated <time>{{ artwork.modified_at|date }}</time>
-    </p>
+    </div>
 </div>
 {% endif %}
+
+</div>
+
+{% if USER_CAN_SAVE %}
+<form method="post" action="{{ action }}" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="columns small-12">
+    <ul class="edit_fields">
+    {{ form.as_ul }}
+    </ul>
+</div>
+{% endif %}
+
 
 <div class="row">
     <div class="small-1 columns">&nbsp;</div>
@@ -110,9 +132,12 @@ $(document).ready(function() {
 
 <div class="row"><div class="small-1 columns">&nbsp;</div></div>
 <div class="row">
-    <div class="columns">
+    <div class="columns auto-width">
         <input type="checkbox" id="autoupdate" value="autoupdate" checked="checked" /> 
         <label for="autoupdate">Auto-update drawing</label>
+    </div>
+    <div class="columns auto-width end">
+        <a href="{% url 'help' %}">Help</a>
     </div>
 </div>
 
@@ -129,31 +154,6 @@ $(document).ready(function() {
     {% endif %}
 </div>
 </form>
-{% endif %}
-
-{% if artwork.id %}
-<div class="row">
-    <div class="object-actions columns">
-        <ul class="breadcrumbs">
-            {% if artwork.shared %}
-            <li><i class="fa fa-share-alt"></i> <span class="share-link">{{ share_url }}</span></li>
-            {% endif %}
-            {% if USER_CAN_SAVE %}
-            {% if exhibitions_submitted|length or exhibitions_to_submit|length %}
-            <li><a href="{% url 'artwork-submit' artwork=artwork.id %}" 
-                  title="Share {{ artwork.title }}" 
-                  data-reveal-id="modal-submit" >share</a>
-                <div id="modal-submit" class="reveal-modal" data-reveal>
-                {% include 'artwork/_submit.html' %}
-                <a href="#" class="close-reveal-modal" id="submit-cancel">&#215;</a>
-                </div>
-            </li>
-            {% endif %}
-            <li><a href="{% url 'artwork-delete' pk=artwork.id %} " title="Delete {{ artwork.title }}">delete</a></li>
-            {% endif %}
-        </ul>
-    </div>
-</div>
 {% endif %}
 
 {% endblock content %}
