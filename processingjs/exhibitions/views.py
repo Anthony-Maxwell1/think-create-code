@@ -1,6 +1,8 @@
 import os
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse
+from django.utils.decorators import method_decorator
+from csp.decorators import csp_update
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, ModelHasPermMixin
 from gallery.views import ShareView
@@ -66,8 +68,15 @@ class ShowExhibitionView(ObjectHasPermMixin, ExhibitionView, DetailView):
 
         return context
 
+class UnsafeJSEvalMixin(object):
+    @method_decorator(csp_update(
+        # jquery.datetimepicker.min.js requires javascript eval
+        SCRIPT_SRC = ("'unsafe-eval'",),
+    ))
+    def dispatch(self, *args, **kwargs):
+        return super(UnsafeJSEvalMixin, self).dispatch(*args, **kwargs)
 
-class CreateExhibitionView(LoggedInMixin, ModelHasPermMixin, ExhibitionView, CreateView):
+class CreateExhibitionView(UnsafeJSEvalMixin, LoggedInMixin, ModelHasPermMixin, ExhibitionView, CreateView):
 
     template_name = ExhibitionView.prepend_template_path('edit.html')
     user_perm = 'can_save'
@@ -84,7 +93,7 @@ class CreateExhibitionView(LoggedInMixin, ModelHasPermMixin, ExhibitionView, Cre
         return context
 
 
-class UpdateExhibitionView(LoggedInMixin, ModelHasPermMixin, ExhibitionView, UpdateView):
+class UpdateExhibitionView(UnsafeJSEvalMixin, LoggedInMixin, ModelHasPermMixin, ExhibitionView, UpdateView):
 
     template_name = ExhibitionView.prepend_template_path('edit.html')
     user_perm = 'can_save'
