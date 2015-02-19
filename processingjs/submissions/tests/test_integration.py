@@ -770,14 +770,14 @@ class TempTestClass(SubmissionCreateIntegrationTests): # XXX
 
         self.assertEqual('radio', inputs[6].get_attribute('type'))
         self.assertEqual('exhibition', inputs[6].get_attribute('name'))
-        self.assertEqual(exhibition2.id, long(inputs[6].get_attribute('value')))
+        self.assertEqual(self.exhibition.id, long(inputs[6].get_attribute('value')))
 
         self.assertEqual('radio', inputs[7].get_attribute('type'))
         self.assertEqual('exhibition', inputs[7].get_attribute('name'))
-        self.assertEqual(self.exhibition.id, long(inputs[7].get_attribute('value')))
+        self.assertEqual(exhibition2.id, long(inputs[7].get_attribute('value')))
 
         # submit the artwork to the first exhibition
-        inputs[7].click()
+        inputs[6].click()
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 

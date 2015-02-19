@@ -323,7 +323,6 @@ class ExhibitionEditTests(UserSetUp, TestCase):
         post_data = {
             'title': 'My overridden title',
             'description': exhibition.description,
-            'released_at': exhibition.released_at.strftime('%Y-%m-%d %H:%M:%S.%f'),
         }
         response = client.post(edit_url, post_data)
 
@@ -358,7 +357,6 @@ class ExhibitionEditTests(UserSetUp, TestCase):
         post_data = {
             'title': 'My overridden title',
             'description': exhibition.description,
-            'released_at': exhibition.released_at.strftime('%Y-%m-%d %H:%M:%S.%f'),
         }
         response = client.post(edit_url, post_data)
 
@@ -392,7 +390,6 @@ class ExhibitionEditTests(UserSetUp, TestCase):
         post_data = {
             'title': 'My overridden title',
             'description': exhibition.description,
-            'released_at': exhibition.released_at.strftime('%Y-%m-%d %H:%M:%S.%f'),
         }
         response = client.post(edit_url, post_data)
 
@@ -426,7 +423,6 @@ class ExhibitionEditTests(UserSetUp, TestCase):
         post_data = {
             'title': 'My overridden title',
             'description': exhibition.description,
-            'released_at': exhibition.released_at.strftime('%Y-%m-%d %H:%M:%S.%f'),
         }
         response = client.post(edit_url)
         self.assertRedirects(response, list_url, status_code=302, target_status_code=200)
