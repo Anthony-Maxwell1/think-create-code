@@ -54,6 +54,8 @@ if ENVIRONMENT == 'production':
     # https://lti-adx.adelaide.edu.au/think.create.code/gallery/share
     SHARE_URL = 'http://bit.ly/1A3Kdoy'
 
+    ALLOW_ANALYTICS = True
+
 elif ENVIRONMENT == 'development':
 
     # Runs via ./manage.py runserver
@@ -73,6 +75,8 @@ elif ENVIRONMENT == 'development':
     # http://loco.services.adelaide.edu.au:8000/share
     SHARE_URL = 'http://bit.ly/1A3JLXA'
 
+    ALLOW_ANALYTICS = False
+
 elif ENVIRONMENT == 'testing':
 
     # Runs via ./manage.py test
@@ -91,6 +95,7 @@ elif ENVIRONMENT == 'testing':
     # http://0.0.0.0:8080/share
     SHARE_URL = 'http://bit.ly/1zMTDl8'
 
+    ALLOW_ANALYTICS = False
 
 # else - error: no database defined
 
@@ -174,6 +179,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
+    'uofa.context_processors.analytics',
 )
 
 # Content Security Policy
