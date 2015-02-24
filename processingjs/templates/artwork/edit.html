@@ -111,14 +111,9 @@ $(document).ready(function() {
 </div>
 {% endif %}
 
-
-<div class="row">
-    <div class="small-1 columns">&nbsp;</div>
-    <div class="small-1 columns">&nbsp;</div>
-</div>
 <div class="row" data-equalizer>
     <div class="small-12 medium-6 columns" data-equalizer-watch>
-        <div class="code-block" style="height: 100%"><code contenteditable="true">{{ artwork.code }}</code></div>
+        <div class="code-block"><code contenteditable="true">{{ artwork.code }}</code></div>
 
         <div class="row"><div class="small-1 columns">&nbsp;</div></div>
         <div class="row">
@@ -151,12 +146,12 @@ $(document).ready(function() {
     </div>
     {% if artwork.id %}
     <div class="small-6 columns">
-        <button id="save_cancel" type="button" title="Return to viewing Artwork" class="postfix button" 
-            onclick="document.location = '{% url 'artwork-view' artwork.id %}';">Cancel</button>
+        <button id="save_cancel" type="button" title="Undo changes made since last Save" class="postfix button" 
+            onclick="document.location = '{% url 'artwork-view' artwork.id %}';">Reset</button>
     </div>
     {% endif %}
 </div>
 </form>
 {% endif %}
-
+</div>
 {% endblock content %}
