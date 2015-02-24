@@ -13,6 +13,7 @@ $(document).ready(function() {
 
     var editor = ace.edit($code.get(0));
     editor.setShowFoldWidgets(false);
+    editor.$blockScrolling = Infinity;
 
     var session = editor.getSession();
     session.setMode("ace/mode/javascript");
@@ -21,28 +22,21 @@ $(document).ready(function() {
     session.setTabSize(4);
 
     var $autoupdate = $('#autoupdate');
-    var $error = $('.alert');
     function updateDrawing() {
-        // Hide any previous errors
-        $error.hide();
+        var code = editor.getValue() || '';
+        if ($input.length) {
+            $input.val(code);
+        }
 
         // Redraw the iframe if #autoupdate is checked.
         if ($autoupdate.is(':checked')) {
-            var code = $input.val() || editor.getValue() || '';
             drawIframe{{ artwork.id }}(code);
         } else {
             animateIframe{{ artwork.id }}(false);
         }
     }
 
-    // Communicate code changes to the input field
-    editor.on("change", function() {
-        if ($input.length) {
-            $input.val(editor.getValue());
-        }
-        updateDrawing();
-    });
-
+    editor.on("change", updateDrawing);
     $autoupdate.on('change', updateDrawing);
 });
 </script>
@@ -120,7 +114,6 @@ $(document).ready(function() {
 
 <div class="row">
     <div class="small-1 columns">&nbsp;</div>
-    <div class="small-10 columns"><div id="error-{{ artwork.id }}" class="alert label">&nbsp;</div></div>
     <div class="small-1 columns">&nbsp;</div>
 </div>
 <div class="row" data-equalizer>

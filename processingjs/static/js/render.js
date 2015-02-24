@@ -24,7 +24,7 @@ $(document).ready(function() {
     // it's ok to try to load the code.
     if (inIframe() && !getCookies() ) {
 
-        var loadCode = function(evt) {
+        function onMessage (evt) {
 
             // 0. Verify the pk
             var $rendered = $('#artwork-rendered');
@@ -33,6 +33,7 @@ $(document).ready(function() {
 
             if (evt && evt.data && evt.data.pk == pk) {
             
+                var $error = $('#error-' + pk);
                 if ('code' in evt.data) {
 
                     // 1. Show the rendered div
@@ -43,11 +44,11 @@ $(document).ready(function() {
                     $canvas.replaceWith($newCanvas);
                     $canvas = $newCanvas;
 
-                    // 2. Set the script contents, decoding escaped html as text
+                    // 3. Set the script contents, decoding escaped html as text
                     var tmp = $('<div/>', { 'html' : evt.data.code });
                     $('#script-preview').html(tmp.text());
 
-                    // 3. Listen for canvas resize, and send new size to parent
+                    // 4. Listen for canvas resize, and send new size to parent
                     $canvas.resize(function() {
                         var $this = $(this);
                         var data = {
@@ -57,28 +58,24 @@ $(document).ready(function() {
                         parent.postMessage({'resize': data, 'pk': pk}, '*');
                     });
 
-                    // 4. Try running the script, sending any errors to parent
+                    // 5. Try running the script, reporting any errors to the user
                     try {
+                        $error.hide();
                         Processing.reload();
                     } catch(e) {
                         parent.postMessage({'error': e.message, 'pk': pk}, '*');
+                        $error.html(e.message).show();
                         // have to re-throw the error, to pass integration tests 
                         throw e;
                     }
                 }
                 else if ('animate' in evt.data) {
-                    // Try stopping the animation loop
-                    try {
-                        var instance = Processing.getInstanceById($canvas.attr('id'));
-                        if (evt.data['animate']) {
-                            instance.loop();
-                        } else {
-                            instance.noLoop();
-                        }
-                    } catch(e) {
-                        parent.postMessage({'error': e.message, 'pk': pk}, '*');
-                        // have to re-throw the error, to pass integration tests 
-                        throw e;
+                    // Stop or start the animation loop
+                    var instance = Processing.getInstanceById($canvas.attr('id'));
+                    if (evt.data['animate']) {
+                        instance.loop();
+                    } else {
+                        instance.noLoop();
                     }
                 }
             } else {
@@ -87,9 +84,9 @@ $(document).ready(function() {
         };
 
         if (window.addEventListener){
-            addEventListener("message", loadCode, false);
+            addEventListener("message", onMessage, false);
         } else {
-            attachEvent("onmessage", loadCode);
+            attachEvent("onmessage", onMessage);
         }
     }
 
