@@ -30,6 +30,8 @@ $(document).ready(function() {
         if ($autoupdate.is(':checked')) {
             var code = $input.val() || editor.getValue() || '';
             drawIframe{{ artwork.id }}(code);
+        } else {
+            animateIframe{{ artwork.id }}(false);
         }
     }
 

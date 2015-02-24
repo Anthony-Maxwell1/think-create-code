@@ -56,6 +56,13 @@
                 'pk': '{{ object.id|default:"" }}'
             }, '*');
         }
+        function animateIframe{{ object.id }}(animate) {
+            // Stop/start the animation loop for the given iframe
+            $iframe{{ object.id }}.get(0).contentWindow.postMessage({ 
+                'animate': animate?true:false,
+                'pk': '{{ object.id|default:"" }}'
+            }, '*');
+        }
 
         // On iframe load, send the js code to be drawn
         $iframe{{ object.id }}.on('load', function() {

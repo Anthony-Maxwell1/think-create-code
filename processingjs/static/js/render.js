@@ -29,6 +29,7 @@ $(document).ready(function() {
             // 0. Verify the pk
             var $rendered = $('#artwork-rendered');
             var pk = $rendered.attr('pk') || '';
+            var $canvas = $('canvas');
 
             if (evt && evt.data && evt.data.pk == pk) {
             
@@ -38,17 +39,16 @@ $(document).ready(function() {
                     $rendered.show();
 
                     // 2. Recreate the exisiting canvas
-                    $('canvas').each(function(idx, item) {
-                        var $canvas = $(item);
-                        $canvas.replaceWith($('<canvas>', {'id': $canvas.attr('id')}));
-                    });
+                    var $newCanvas = $('<canvas>', {'id': $canvas.attr('id')});
+                    $canvas.replaceWith($newCanvas);
+                    $canvas = $newCanvas;
 
                     // 2. Set the script contents, decoding escaped html as text
                     var tmp = $('<div/>', { 'html' : evt.data.code });
                     $('#script-preview').html(tmp.text());
 
                     // 3. Listen for canvas resize, and send new size to parent
-                    $('#canvas-preview').resize(function() {
+                    $canvas.resize(function() {
                         var $this = $(this);
                         var data = {
                             'width': $this.width(),
@@ -60,6 +60,21 @@ $(document).ready(function() {
                     // 4. Try running the script, sending any errors to parent
                     try {
                         Processing.reload();
+                    } catch(e) {
+                        parent.postMessage({'error': e.message, 'pk': pk}, '*');
+                        // have to re-throw the error, to pass integration tests 
+                        throw e;
+                    }
+                }
+                else if ('animate' in evt.data) {
+                    // Try stopping the animation loop
+                    try {
+                        var instance = Processing.getInstanceById($canvas.attr('id'));
+                        if (evt.data['animate']) {
+                            instance.loop();
+                        } else {
+                            instance.noLoop();
+                        }
                     } catch(e) {
                         parent.postMessage({'error': e.message, 'pk': pk}, '*');
                         // have to re-throw the error, to pass integration tests 

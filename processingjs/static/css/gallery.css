@@ -22,10 +22,13 @@ nav #nav-logged-in {
 nav #nav-logged-in:after {
     border-color: transparent transparent transparent !important;
 }
-/* object action links */
 .auto-width {
     width: auto;
 }
+.align-right {
+    text-align: right;
+}
+/* object action links */
 .object-actions {
     padding-top: 1em;
 }
