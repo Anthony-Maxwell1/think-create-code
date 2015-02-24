@@ -1,13 +1,4 @@
 {% extends "base.html" %}
 {% block content %}
-<div id="help-content">
-<h1>Resources</h1>
-<ul>
-<li><a href="http://processingjs.org">Processing.js</a> :: Javascript
-    implementation of the Processing visual proggramming language</li>
-<li><a href="http://processingjs.org/reference/">Processing.js function reference</a> :: 
-    list of Processing.js data structures and methods</a></li>
-<li><a href="http://processing.org/examples/">Processing.js examples</a> :: 
-    basic and advanced examples of how to use ProcessingJS</a>
-</ul>
+{% include 'gallery/_help.html' %}
 {% endblock content %}

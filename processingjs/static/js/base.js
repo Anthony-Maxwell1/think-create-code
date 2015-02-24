@@ -1,5 +1,9 @@
 $(document).ready(function(){ 
-    $(document).foundation();
+    $(document).foundation({
+        reveal : {
+            animation : 'fade'
+        }
+    });
     $('.artwork.preview, .code-block').resizable({
          start: function(event, ui) {
              $(this).css('pointer-events','none');
