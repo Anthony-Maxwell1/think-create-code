@@ -158,6 +158,11 @@ class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
             try:
                 stored_params = pickle.loads(cookie)
                 next_param = stored_params.get(REDIRECT_FIELD_NAME)
+
+                # Strip leading script prefix
+                script_prefix = get_script_prefix()
+                if script_prefix:
+                    next_param = re.sub(r'^%s' % get_script_prefix(), '/', next_param)
             except:
                 pass # ignore corrupted cookies or errors during unpickling
 
