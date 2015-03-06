@@ -71,12 +71,6 @@ class UserSetUp:
             return self.super_password
         return self.password
 
-    def performLogout(self):
-        '''Go to the logout page'''
-
-        logout_url = '%s%s' % (self.live_server_url, reverse('logout'))
-        self.selenium.get(logout_url)
-
     def assertLogin(self, client, next_path='', user='default'):
         login_path = reverse('login')
         if next_path:

@@ -1,6 +1,7 @@
 import os
 from functools import wraps
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.views import redirect_to_login
 from django.utils.decorators import method_decorator, available_attrs
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, JsonResponse
@@ -101,7 +102,13 @@ class MethodUserPermMixin(UserHasPermMixin):
         if self.request_has_perm(request):
             return super(UserHasPermMixin, self).dispatch(request, *args, **kwargs)
 
-        if self.raise_exception or not hasattr(self, 'get_error_url'):
+        if self.raise_exception:
+            raise PermissionDenied
+
+        elif not self.request.user.is_authenticated():
+            return redirect_to_login(self.request.path)
+
+        elif not hasattr(self, 'get_error_url'):
             raise PermissionDenied
 
         return HttpResponseRedirect(self.get_error_url())

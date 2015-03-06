@@ -43,15 +43,12 @@ class RenderArtworkView(TemplateView):
         return super(RenderArtworkView, self).dispatch(*args, **kwargs)
 
 
-class StudioArtworkView(RedirectView):
+class StudioArtworkView(LoggedInMixin, RedirectView):
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
         user = self.request.user
-        if (user.is_authenticated()):
-            return reverse('artwork-author-list', kwargs={'author': user.id, 'shared': 0})
-        else:
-            return '%s?next=%s' % ( reverse('login'), reverse('artwork-studio') )
+        return reverse('artwork-author-list', kwargs={'author': user.id, 'shared': 0})
 
 
 class ListArtworkView(ArtworkView, ListView):
@@ -160,14 +157,6 @@ class UpdateArtworkView(MethodObjectHasPermMixin, ArtworkView, UpdateView):
                     context['exhibitions_to_submit'].append(exh)
 
         return context
-
-    def get_error_url(self):
-        if self.request.user.is_authenticated():
-            raise PermissionDenied
-
-        # Redirect to login if not authenticated
-        return '%s?next=%s' % (reverse('login'), self.request.path)
-
 
 class DeleteArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, DeleteView):
 

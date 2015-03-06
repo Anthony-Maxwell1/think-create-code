@@ -41,7 +41,7 @@ class ShowVoteViewTests(VoteTests):
         client.get(view_url)
         response = self.assertLogin(client, view_url)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual('text/html', response.get('Content-Type'))
+        self.assertEqual('text/html; charset=utf-8', response.get('Content-Type'))
 
 
 class CreateVoteViewTests(VoteTests):

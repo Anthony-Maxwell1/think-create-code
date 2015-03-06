@@ -29,6 +29,16 @@ SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
 DEBUG = False
 TEMPLATE_DEBUG = False
 
+# LTI-related variables, specific to the 2015 Term 2 release of the Code101x course
+LTI_LOGIN_URL = None
+LTI_ENROL_URL = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
+LTI_LINK_TEXT = 'Code101x Think.Create.Code'
+LTI_PERSIST_NAME = 'lti-gallery'
+LTI_PERSIST_PARAMS = ['next']
+# Link to a live course are contains a Code Gallery LTI unit
+LTI_COURSE_URL = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
+
+
 # Determine enviroment to run in
 if 'test' in sys.argv:
     ENVIRONMENT = "testing"
@@ -36,7 +46,6 @@ elif 'runserver' in sys.argv:
     ENVIRONMENT = "development"
 else:
     ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production")
-
 
 if ENVIRONMENT == 'production':
 
@@ -48,11 +57,16 @@ if ENVIRONMENT == 'production':
              'PASSWORD': 'gAll3rY-rw',
         }
     }
-    STATIC_URL = '/Think.Create.Code/static/'
+    STATIC_URL = '/think.create.code/static/'
     ALLOWED_HOSTS = ['*']
+
+    LTI_LOGIN_URL = LTI_COURSE_URL
 
     # https://lti-adx.adelaide.edu.au/think.create.code/gallery/share
     SHARE_URL = 'http://bit.ly/1A3Kdoy'
+
+    # http://loco.services.adelaide.edu.au/think.create.code/gallery/share
+    #SHARE_URL = 'http://bit.ly/1MaoZG4'
 
     ALLOW_ANALYTICS = True
 
@@ -180,6 +194,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
     'uofa.context_processors.analytics',
+    'uofa.context_processors.referer',
 )
 
 # Content Security Policy
@@ -203,7 +218,10 @@ CSP_STYLE_SRC = (
 
 
 # Authentication
-LOGIN_URL = 'django.contrib.auth.views.login'
+# Show the LTIPermissionDenied view if there's an LTI_LOGIN_URL configured
+# Otherwise, fall back to the settings.LOGIN_URL
+LOGIN_URL = 'lti-403' if LTI_LOGIN_URL else 'django.contrib.auth.views.login'
+
 LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = [

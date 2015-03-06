@@ -862,7 +862,8 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         self.performLogin()
         self.selenium.get(edit_url)
         self.assertIsNotNone(
-            self.selenium.find_element_by_id('save_artwork')
+            self.selenium.find_element_by_id('save_artwork'),
+            self.selenium.page_source
         )
 
         # Update the title text

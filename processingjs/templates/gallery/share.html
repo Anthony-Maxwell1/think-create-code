@@ -14,9 +14,9 @@ try {
 } catch(e) {
     // pass
 }
-if (!share_path) share_path = '/';
+if (!share_path) share_path = '';
 var link = document.createElement('a');
-link.href = '{{ script_prefix }} ' + share_path;
+link.href = '{{ script_prefix }}' + share_path;
 window.location = link;
 </script>
 </body></html>

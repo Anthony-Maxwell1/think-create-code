@@ -1,23 +1,25 @@
 from django.test import TestCase
 from django.test.client import Client
+from django.test.utils import override_settings
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-import urllib
+from django.utils.importlib import import_module
+import sys
 from urlparse import urlparse
-import os
 
 from uofa.test import UserSetUp, SeleniumTestCase
-from gallery.views import ShareView
+from artwork.models import Artwork
 
-class LTILoginViewTest(UserSetUp, TestCase):
+
+class LTIEntryViewTest(UserSetUp, TestCase):
     """LTI Login view tests."""
 
     def test_public_get(self):
 
         '''Unauthenticated GET users get redirected to basic login page'''
         client = Client()
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
         response = client.get(lti_login_path)
 
         login_path = '%s?next=%s' % (reverse('login'), lti_login_path)
@@ -25,9 +27,9 @@ class LTILoginViewTest(UserSetUp, TestCase):
 
     def test_auth_get(self):
 
-        '''Authenticated GET users are shown the lti-login page'''
+        '''Authenticated GET users are shown the lti-entry page'''
         client = Client()
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
         response = self.assertLogin(client, lti_login_path)
 
         self.assertEqual(self.user, response.context['user'])
@@ -37,11 +39,11 @@ class LTILoginViewTest(UserSetUp, TestCase):
 
     def test_auth_post(self):
 
-        '''Authenticated POST users, without a nickname set, are shown the lti-login page'''
+        '''Authenticated POST users, without a nickname set, are shown the lti-entry page'''
         client = Client()
         self.assertLogin(client, reverse('home'))
 
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
         response = client.post(lti_login_path)
 
         self.assertEqual(self.user, response.context['user'])
@@ -59,7 +61,7 @@ class LTILoginViewTest(UserSetUp, TestCase):
         home_path = reverse('home')
         self.assertLogin(client, home_path)
 
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
         response = client.post(lti_login_path)
         self.assertRedirects(response, home_path, status_code=302, target_status_code=200)
 
@@ -74,7 +76,7 @@ class LTILoginViewTest(UserSetUp, TestCase):
         home_path = reverse('home')
         self.assertLogin(client, reverse('home'))
 
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
         list_path = reverse('exhibition-list')
         response = client.post(lti_login_path, {'custom_next': list_path})
         self.assertRedirects(response, list_path, status_code=302, target_status_code=200)
@@ -89,7 +91,7 @@ class LTILoginViewTest(UserSetUp, TestCase):
         home_path = reverse('home')
         self.assertLogin(client, home_path)
 
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
         form_data = {'first_name': 'AnotherNickname'}
         response = client.post(lti_login_path, form_data)
 
@@ -106,7 +108,7 @@ class LTILoginViewTest(UserSetUp, TestCase):
         home_path = reverse('home')
         self.assertLogin(client, home_path)
 
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
 
         form_data = {'first_name': ''}
         response = client.post(lti_login_path, form_data)
@@ -140,7 +142,7 @@ class LTILoginViewTest(UserSetUp, TestCase):
         post_data = {
             'first_name': 'NickName',
         }
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
         response = client.post(lti_login_path, post_data)
 
         # Ensure the updated user is a staff member
@@ -165,7 +167,7 @@ class LTILoginViewTest(UserSetUp, TestCase):
         post_data = {
             'first_name': 'NickName',
         }
-        lti_login_path = reverse('lti-login')
+        lti_login_path = reverse('lti-entry')
         response = client.post(lti_login_path, post_data)
 
         # Ensure the updated user is still a student
@@ -173,55 +175,161 @@ class LTILoginViewTest(UserSetUp, TestCase):
         self.assertFalse(user.is_staff)
 
 
-class ShareViewTest(SeleniumTestCase):
-    '''Test the Share view, used by the share links.
-       Have to use urllib to fetch the (bit.ly) external share urls,
-       and run the Selenium browser to perform the redirects.'''
+class LTILoginViewTest(TestCase):
 
-    def assertShareUrlRedirects(self, redirect_url):
-        parsed_redirect = urlparse(redirect_url)
-        response = urllib.urlopen(redirect_url)
-        target_url = response.geturl()
-        parsed_target = urlparse(target_url)
+    # Set the LTI Login Url, and use lti-403 as the login URL
+    @override_settings(LTI_LOGIN_URL='https://google.com')
+    @override_settings(LOGIN_URL='lti-403')
+    def test_view(self):
 
-        self.assertEqual(response.getcode(), 200)
-        self.assertEqual(parsed_redirect.netloc, urlparse(settings.SHARE_URL).netloc)
-        self.assertEqual(parsed_target.netloc, os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'])
-        self.assertEqual(parsed_target.path, reverse('share'))
+        client = Client()
 
-        self.assertEqual(parsed_redirect.scheme, parsed_target.scheme)
-        self.assertEqual(parsed_redirect.query,  parsed_target.query)
-        # I wish this worked.. since it's the meat of the share request.
-        # But since servers don't care about fragments, we can't see it in the target :(
-        # Have to rely on the integration tests instead.
-        #self.assertEqual(parsed_redirect.fragment, parsed_target.fragment)
+        # ensure no cookies set
+        cookie = client.cookies.get(settings.LTI_PERSIST_NAME)
+        self.assertIsNone(cookie)
+
+        # get login view, with next param set
+        target = reverse('artwork-studio')
+        querystr = '?next=' + target
+        lti_login = reverse('lti-login') + querystr
+        response = client.get(lti_login)
+
+        # ensure it redirects to the LTI_LOGIN_URL
+        self.assertRedirects(response, settings.LTI_LOGIN_URL, status_code=302, target_status_code=200)
+
+        # ensure cookie was set
+        response = client.get(target)
+        cookie = client.cookies.get(settings.LTI_PERSIST_NAME)
+        self.assertIsNotNone(cookie)
+
+
+class LTIEnrolViewTest(TestCase):
+
+    def test_view(self):
+
+        client = Client()
+
+        # ensure no cookies set
+        cookie = client.cookies.get(settings.LTI_PERSIST_NAME)
+        self.assertIsNone(cookie)
+
+        # get enrol view, with next param set
+        target = reverse('artwork-studio')
+        querystr = '?next=' + target
+        lti_enrol = reverse('lti-enrol') + querystr
+        response = client.get(lti_enrol)
+
+        # ensure it redirects to the LTI_ENROL_URL
+        self.assertRedirects(response, settings.LTI_ENROL_URL, status_code=302, target_status_code=404)
+
+        # ensure cookie was set
+        response = client.get(target)
+        cookie = client.cookies.get(settings.LTI_PERSIST_NAME)
+        self.assertIsNotNone(cookie)
+
+
+class LTIPermissionDeniedViewTest(TestCase):
+
+    # Set the LTI Login Url, and use lti-403 as the login URL
+    @override_settings(LTI_LOGIN_URL='https://google.com')
+    @override_settings(LOGIN_URL='lti-403')
+    def test_view(self):
+
+        # ensure we're logged out
+        client = Client()
+        client.logout()
+
+        # ensure login-required URL redirects to lti-403
+        target = reverse('artwork-studio')
+        querystr = '?next=' + target
+        lti_403 = reverse('lti-403') + querystr
+        response = client.get(target)
+        self.assertRedirects(response, lti_403, status_code=302, target_status_code=200)
+
+        # visit lti-403
+        response = client.get(lti_403)
+        self.assertEquals(response.context['lti_link_text'], settings.LTI_LINK_TEXT)
+        self.assertEquals(response.context['lti_query_string'], querystr)
+
+
+class LTILoginEntryViewTest(UserSetUp, TestCase):
+    '''Test the full LTI Login/Entry redirect cycle'''
+
+    def reload_urlconf(self):
+        if settings.ROOT_URLCONF in sys.modules:
+            reload(sys.modules[settings.ROOT_URLCONF])
+        return import_module(settings.ROOT_URLCONF)
+
+    # Set the LTI Login Url, and use lti-403 as the login URL
+    @override_settings(LTI_LOGIN_URL='https://google.com')
+    @override_settings(LOGIN_URL='lti-403')
+    def _performRedirectTest(self, target, target_status_code=200):
+
+        # url config is dependent on app settings, so reload
+        self.reload_urlconf()
+
+        client = Client()
+
+        # ensure we're logged out
+        client.logout()
+
+        # ensure we've got no LTI cookie set
+        cookie = client.cookies.get(settings.LTI_PERSIST_NAME)
+        self.assertIsNone(cookie)
+
+        # visit the lti login redirect url, with the target in the querystring
+        querystr = '?next=' + target
+        lti_login = reverse('lti-login') + querystr
+        response = client.get(lti_login)
+        self.assertRedirects(response, settings.LTI_LOGIN_URL, status_code=302, target_status_code=200)
+
+        # ensure cookies were set
+        cookie = client.cookies.get(settings.LTI_PERSIST_NAME)
+        self.assertIsNotNone(cookie)
+
+        # login, to bypass the LTI auth
+        client.login(username=self.get_username(), password=self.get_password())
+
+        # post to lti-entry, and ensure we're redirected back to target
+        lti_entry = reverse('lti-entry')
+        lti_post_param = {'first_name': 'Username'}
+        response = client.post(lti_entry, lti_post_param)
+        self.assertRedirects(response, target, status_code=302, target_status_code=target_status_code)
+        
+        # ensure the cookie has cleared by revisiting lti-entry, and ensuring
+        # we're redirected properly
+        for custom_next in (reverse('artwork-add'), None):
+            if custom_next:
+                lti_post_param['custom_next'] = custom_next
+            else:
+                del lti_post_param['custom_next']
+
+            response = client.post(lti_entry, lti_post_param)
+            self.assertRedirects(response, custom_next or reverse('home'), status_code=302, target_status_code=200)
+
+        return True
+
+    def test_my_studio(self):
+        path = reverse('artwork-studio') # redirects to artwork-author-list
+        ok = self._performRedirectTest(path, 302)
+        self.assertTrue(ok)
+
+    def test_artwork_add(self):
+        path = reverse('artwork-add')
+        ok = self._performRedirectTest(path)
+        self.assertTrue(ok)
+
+    def test_private_artwork(self):
+        private_artwork = Artwork.objects.create(title='Private Artwork', code='// code goes here', author=self.user)
+        path = reverse('artwork-view', kwargs={'pk': private_artwork.id})
+        ok = self._performRedirectTest(path)
+        self.assertTrue(ok)
+
+
+class ShareViewTest(TestCase):
 
     def test_share_view(self):
         client = Client()
         share_path = reverse('share')
         response = client.get(share_path)
         self.assertEqual(response.status_code, 200)
-
-    def test_get_share_url(self):
-        share_url = ShareView.get_share_url()
-        self.assertShareUrlRedirects(share_url)
-
-    def test_get_share_url_home(self):
-        share_url = ShareView.get_share_url(reverse('home'))
-        self.assertShareUrlRedirects(share_url)
-
-    def test_reverse_share_url(self):
-        share_url = ShareView.reverse_share_url()
-        self.assertShareUrlRedirects(share_url)
-
-    def test_reverse_share_url_home(self):
-        share_url = ShareView.reverse_share_url('home')
-        self.assertShareUrlRedirects(share_url)
-
-    def test_reverse_share_url_artwork_view(self):
-        share_url = ShareView.reverse_share_url('artwork-view', kwargs={'pk': 1})
-        self.assertShareUrlRedirects(share_url)
-
-    def test_reverse_share_url_exhibition_view(self):
-        share_url = ShareView.reverse_share_url('exhibition-view', kwargs={'pk': 1})
-        self.assertShareUrlRedirects(share_url)

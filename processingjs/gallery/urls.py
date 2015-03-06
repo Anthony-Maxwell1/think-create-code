@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 
 import gallery.views
 import artwork.views
@@ -17,8 +18,16 @@ urlpatterns = patterns('',
 
     url(r'^$', artwork.views.ListArtworkView.as_view(),
         name='home'),
-    url(r'^lti/$', gallery.views.LTILoginView.as_view(),
+    url(r'^lti/$', gallery.views.LTIEntryView.as_view(),
+        name='lti-entry'),
+    url(r'^lti/403', gallery.views.LTIPermissionDeniedView.as_view(),
+        name='lti-403'),
+    url(r'^lti/login', gallery.views.LTIRedirectView.as_view(),
+        {'redirect_url': settings.LTI_LOGIN_URL or settings.LOGIN_URL},
         name='lti-login'),
+    url(r'^lti/enrol', gallery.views.LTIRedirectView.as_view(),
+        {'redirect_url': settings.LTI_ENROL_URL},
+        name='lti-enrol'),
     url(r'^share/?$', gallery.views.ShareView.as_view(),
         name='share'),
     # N.B This /help url is used by the Nagios checks for this service.

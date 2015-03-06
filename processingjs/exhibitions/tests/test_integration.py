@@ -236,7 +236,7 @@ class ExhibitionViewIntegrationTests(SeleniumTestCase):
         self.selenium.get('%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': 1})))
         self.assertEqual(
             self.selenium.find_element_by_css_selector('p').text,
-            'The requested URL /e/1/ was not found on this server.'
+            'The page you were looking for has been moved, deleted, or does not exist.'
         )
 
     def test_view(self):

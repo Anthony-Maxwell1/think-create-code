@@ -24,7 +24,7 @@ your username in edX.</em></p>
             <button id="save_user" type="submit" class="postfix button">Save</button>
         </div>
     </div>
-    <input type="hidden" name="custom_next" value="{{ request.POST|get:'custom_next' }}" />
+    <input type="hidden" id="id_custom_next" name="custom_next" value="{{ request.POST|get:'custom_next' }}" />
 </form>
 
 {% endblock content %}
