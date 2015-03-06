@@ -139,7 +139,6 @@ class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
 
         # clear out the persistent LTI parameters; 
         # they've been used by get_success_url()
-        #FIXME response.set_cookie(gallery.settings.LTI_PERSIST_NAME, '')
         response.delete_cookie(gallery.settings.LTI_PERSIST_NAME)
 
         return response
