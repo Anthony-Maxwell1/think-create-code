@@ -1,0 +1,27 @@
+<div class="row" data-equalizer>
+    <div class="small-12 medium-6 columns" data-equalizer-watch>
+        <div class="code-block"><code>{{ object.code }}</code></div>
+
+        <div class="row"><div class="small-1 columns">&nbsp;</div></div>
+        <div class="row">
+            <div class="columns small-8">
+                <input type="checkbox" id="autoupdate" value="autoupdate" checked="checked" /> 
+                <label for="autoupdate">Auto-update drawing</label>
+            </div>
+            <div class="columns small-4 align-right">
+                <button id="show_help"
+                   class="button tiny"
+                   href="{% url 'help' %}"
+                   title="ProcessingJS Help"
+                   data-reveal-id="modal-help">Help</button>
+                <div id="modal-help" class="reveal-modal" data-reveal>
+                {% include 'gallery/_help.html' %}
+                <a href="#" class="close-reveal-modal" id="help-cancel">&#215;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="small-12 medium-6 columns artwork" id="artwork-{{ object.id }}" data-equalizer-watch>
+        {% include 'artwork/_render.html' with object=object autosize=1 %}
+    </div>
+</div>

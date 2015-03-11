@@ -6,7 +6,7 @@ $(document).ready(function() {
     });
 
     // Hook up the like/unlike buttons
-    $('#artwork-list-content').delegate('a.post-vote', 'click', function(evt) {
+    $('a.post-vote').on('click', function(evt) {
         var $target = $(evt.currentTarget);
         var post_url;
 

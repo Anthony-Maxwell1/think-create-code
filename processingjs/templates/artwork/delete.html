@@ -6,7 +6,7 @@
 
 <p>Are you sure you want to delete this artwork?</p>
 
-{% include "artwork/_view.html" %}
+{% include "artwork/_preview.html" %}
 
 <form action="{% url "artwork-delete" pk=artwork.id %}" method="POST">
   {% csrf_token %}

@@ -1,0 +1,14 @@
+{% load dict_filters %}
+{% if user.is_anonymous %}
+    <div class="artwork-score">{% if submission.score > 0 %} {{ submission.score }} vote{{ submission.score|pluralize }}{% endif %}</div>
+    <div>[<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" 
+            title="Sign in to vote">vote</a>]</div>
+{% else %}
+{% with votes|get:submission.id as voted %}
+<a unlike-url="{% url 'submission-unlike' submission=submission.id %}"
+     like-url="{% url 'submission-like'   submission=submission.id %}"
+        class="post-vote {% if voted %}unlike{% else %}like{% endif %}"
+        title="{% if voted %}unlike{% else %}like{% endif %}"
+   href="#"><i class="fa fa-thumbs-up"></i> <div class="artwork-score">{{ submission.score }}</div></a>
+{% endwith %}
+{% endif %}

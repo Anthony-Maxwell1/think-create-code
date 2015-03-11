@@ -9,6 +9,393 @@ from votes.models import Vote
 from uofa.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_load
 
 
+class SubmissionShowIntegrationTests(SeleniumTestCase):
+    def setUp(self):
+        super(SubmissionShowIntegrationTests, self).setUp()
+        self.exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='goes here',
+            author=self.staff_user)
+        self.artwork = Artwork.objects.create(
+            title='Title bar',
+            code='// code goes here',
+            author=self.user)
+
+    def test_404(self):
+        view_path = reverse('submission-view', kwargs={'pk': 1})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+        self.selenium.get(view_url)
+        error_404 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_404.text, 'Not Found'
+        )
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('submission-view-content')
+        )
+        
+    def test_view(self):
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+
+        view_path = reverse('submission-view', kwargs={'pk': submission.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+        self.selenium.get(view_url)
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('submission-view-content'),
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-title')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('VOTE')),
+            1
+        )
+        artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
+        self.assertEquals(artwork_score.text, '')
+
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('unshare')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-detail')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.exhibition.title)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.submission-date')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.code-block')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('artwork-%d' % self.artwork.id)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('save_artwork')),
+            0
+        )
+        
+    def test_author_view(self):
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+
+        self.performLogin()
+        view_path = reverse('submission-view', kwargs={'pk': submission.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('submission-view-content'),
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('VOTE')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-score')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('UNSHARE')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(' 1')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-detail')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.exhibition.title)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.submission-date')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.code-block')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('artwork-%d' % self.artwork.id)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('save_artwork')),
+            0
+        )
+
+    def test_anonymous_votes_view(self):
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+        vote = Vote.objects.create(submission=submission,
+            status=Vote.THUMBS_UP, voted_by=self.user)
+
+        # anonymous users don't see others' votes, just the score
+        view_path = reverse('submission-view', kwargs={'pk': submission.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+        self.selenium.get(view_url)
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('submission-view-content')
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-title')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('VOTE')),
+            1
+        )
+        artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
+        self.assertEquals(artwork_score.text, '1 VOTE')
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('UNSHARE')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(' 1')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-detail')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.exhibition.title)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.submission-date')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.code-block')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('artwork-%d' % self.artwork.id)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('save_artwork')),
+            0
+        )
+
+    def test_author_votes_view(self):
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+        vote = Vote.objects.create(submission=submission,
+            status=Vote.THUMBS_UP, voted_by=self.user)
+
+        view_path = reverse('submission-view', kwargs={'pk': submission.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+        unlike_path = reverse('submission-unlike', kwargs={'submission': submission.id})
+        like_path = reverse('submission-like', kwargs={'submission': submission.id})
+
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('submission-view-content')
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-title')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('VOTE')),
+            0
+        )
+
+        artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
+        self.assertEquals(artwork_score.text, '1')
+
+        unlike_votes = self.selenium.find_elements_by_link_text('1')
+        self.assertEqual(
+            len(unlike_votes),
+            1
+        )
+        self.assertEqual(unlike_votes[0].get_attribute('title'), 'unlike')
+        self.assertEqual(unlike_votes[0].get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(unlike_votes[0].get_attribute('like-url'), like_path)
+
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('UNSHARE')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-detail')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.exhibition.title)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.submission-date')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.code-block')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('artwork-%d' % self.artwork.id)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('save_artwork')),
+            0
+        )
+
+    def test_other_votes_view(self):
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+        vote = Vote.objects.create(submission=submission,
+            status=Vote.THUMBS_UP, voted_by=self.user)
+
+        view_path = reverse('submission-view', kwargs={'pk': submission.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+        unlike_path = reverse('submission-unlike', kwargs={'submission': submission.id})
+        like_path = reverse('submission-like', kwargs={'submission': submission.id})
+
+        self.performLogin(user='staff')
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(view_url)
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('submission-view-content')
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-title')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.share-link')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('VOTE')),
+            0
+        )
+
+        like_votes = self.selenium.find_elements_by_link_text('1')
+        self.assertEqual(
+            len(like_votes),
+            1
+        )
+        self.assertEqual(like_votes[0].get_attribute('title'), 'like')
+        self.assertEqual(like_votes[0].get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(like_votes[0].get_attribute('like-url'), like_path)
+
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text('unshare')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-detail')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_link_text(self.exhibition.title)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.submission-date')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.code-block')),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('artwork-%d' % self.artwork.id)),
+            1
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('save_artwork')),
+            0
+        )
+
+        # Click on 'like' link
+        like_votes[0].click()
+        time.sleep(5)   # wait for vote to be counted
+        unlike_votes = self.selenium.find_elements_by_link_text('2')
+        self.assertEqual(
+            len(unlike_votes),
+            1
+        )
+        self.assertEqual(unlike_votes[0].get_attribute('title'), 'unlike')
+        self.assertEqual(unlike_votes[0].get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(unlike_votes[0].get_attribute('like-url'), like_path)
+
+
+        # Click on 'unlike' link
+        unlike_votes[0].click()
+        time.sleep(5)   # wait for vote to be un-counted
+        like_votes = self.selenium.find_elements_by_link_text('1')
+        self.assertEqual(
+            len(like_votes),
+            1
+        )
+        self.assertEqual(like_votes[0].get_attribute('title'), 'like')
+        self.assertEqual(like_votes[0].get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(like_votes[0].get_attribute('like-url'), like_path)
+
+
 class SubmissionListIntegrationTests(SeleniumTestCase):
     """Exhibition view includes Submission list."""
 

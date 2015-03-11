@@ -8,7 +8,7 @@
    <a href="{% url 'exhibition-view' submission.exhibition.id %}">{{ submission.exhibition }}</a>?</p>
 <p><em>This artwork will be removed from the exhibition, and any votes removed, but the artwork itself will not be deleted.</em></p>
 
-{% include "artwork/_view.html" with object=submission.artwork %}
+{% include "artwork/_preview.html" with object=submission.artwork %}
 
 <form action="{% url "submission-delete" pk=submission.id %}" method="POST">
   {% csrf_token %}

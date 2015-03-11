@@ -1,0 +1,14 @@
+<div id="artwork-view-include">
+{% if object %}
+<div id="artwork-{{ object.id }}">
+<div class="artwork">
+{% include 'artwork/_render.html' with autosize=True %}
+</div>
+<h3 class="artwork-title">{{ object.title }}</h3>
+<p class="artwork-detail">by 
+    <a href="{% url 'artwork-author-list' object.author.id %}" 
+      title="view artwork by {{ object.author }}">{{ object.author }}</a>, 
+    updated <time>{{ object.modified_at|date }}</time></p>
+</div>
+{% endif %}
+</div>

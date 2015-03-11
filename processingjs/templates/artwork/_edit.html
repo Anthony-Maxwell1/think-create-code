@@ -1,0 +1,47 @@
+{% if object.id %}
+<div class="columns auto-width">
+    <h2>Edit Artwork</h2>
+</div>
+<div class="object-actions auto-width columns end">
+    <ul class="breadcrumbs">
+        {% if object.shared %}
+        <li><i class="fa fa-share-alt"></i> <span class="share-link">{{ share_url }}</span></li>
+        {% endif %}
+        {% if exhibitions_submitted|length or exhibitions_to_submit|length %}
+        <li><a href="{% url 'artwork-submit' artwork=object.id %}" 
+              title="Share {{ object.title }}" 
+              data-reveal-id="modal-submit" >share</a>
+            <div id="modal-submit" class="reveal-modal" data-reveal>
+            {% include 'artwork/_submit.html' %}
+            <a href="#" class="close-reveal-modal" id="submit-cancel">&#215;</a>
+            </div>
+        </li>
+        {% endif %}
+        <li><a href="{% url 'artwork-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
+    </ul>
+</div>
+{% else %}
+<h2>Add Artwork</h2>
+{% endif %}
+
+<form method="post" action="{{ action }}" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="columns small-12">
+    <ul class="edit_fields">
+    {{ form.as_ul }}
+    </ul>
+</div>
+
+{% include 'artwork/_play.html' %}
+<div class="columns medium-12 small-0">&nbsp;</div>
+
+<div class="small-6 columns end">
+    <button id="save_artwork" type="submit" title="Save to My Studio" class="postfix button">Save</button>
+</div>
+{% if object.id %}
+<div class="small-6 columns">
+    <button id="save_cancel" type="button" title="Undo changes made since last Save" class="postfix button" 
+        onclick="document.location = '{% url 'artwork-view' object.id %}';">Reset</button>
+</div>
+{% endif %}
+</form>

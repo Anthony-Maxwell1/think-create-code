@@ -11,6 +11,93 @@ from exhibitions.models import Exhibition
 from artwork.models import Artwork
 from votes.models import Vote
 
+class SubmissionShowViewTests(UserSetUp, TestCase):
+
+    def setUp(self):
+        super(SubmissionShowViewTests, self).setUp()
+
+        self.artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        self.exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+
+    def test_404(self):
+        client = Client()
+        view_url = reverse('submission-view', kwargs={'pk': 1})
+        response = client.get(view_url)
+        self.assertEqual(response.status_code, 404)
+        
+    def test_view(self):
+        client = Client()
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+
+        view_url = reverse('submission-view', kwargs={'pk': submission.id})
+        response = client.get(view_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('share_url' in response.context)
+        self.assertEquals(response.context['votes'], {})
+    
+    def test_author_view(self):
+        client = Client()
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+
+        logged_in = client.login(username=self.get_username(), password=self.get_password())
+        self.assertTrue(logged_in)
+        view_url = reverse('submission-view', kwargs={'pk': submission.id})
+        response = client.get(view_url)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTrue('share_url' in response.context)
+        self.assertEquals(response.context['votes'], {})
+        self.assertEquals(response.context['submission'].score, 0)
+    
+    def test_votes_view(self):
+        client = Client()
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+        vote = Vote.objects.create(submission=submission,
+            status=Vote.THUMBS_UP, voted_by=self.user)
+
+        # anonymous users don't see others' votes, just the score
+        view_url = reverse('submission-view', kwargs={'pk': submission.id})
+        response = client.get(view_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('share_url' in response.context)
+        self.assertEquals(response.context['votes'], {})
+        self.assertEquals(response.context['submission'].score, 1)
+
+        # logged-in users see own votes
+        logged_in = client.login(username=self.get_username(), password=self.get_password())
+        self.assertTrue(logged_in)
+        view_url = reverse('submission-view', kwargs={'pk': submission.id})
+        response = client.get(view_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('share_url' in response.context)
+        self.assertEquals(response.context['votes'], {submission.id: vote})
+        self.assertEquals(response.context['submission'].score, 1)
+
+        client.logout()
+        logged_in = client.login(username=self.get_username('staff'), password=self.get_password('staff'))
+        self.assertTrue(logged_in)
+        view_url = reverse('submission-view', kwargs={'pk': submission.id})
+        response = client.get(view_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('share_url' in response.context)
+        self.assertEquals(response.context['votes'], {})
+        self.assertEquals(response.context['submission'].score, 1)
+    
+
+
 class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
     """Exhibition view includes Submission list."""
 

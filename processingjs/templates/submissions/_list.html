@@ -1,7 +1,6 @@
 {% load pagination %}
 <div id="artwork-list-content">
 {% if object_list %}
-{% load dict_filters %}
 {% if object_list.count > 1 %}
 <div class="row">
     <div class="order_by">
@@ -31,21 +30,7 @@
                 <a href="{% url 'artwork-author-list' artwork.author.id %}" 
                   title="view artwork by {{ artwork.author }}">{{ artwork.author }}</a>
             </div>
-            <div class="artwork-votes">
-                {% if user.is_anonymous %}
-                    {% if submission.score > 0 %} {{ submission.score }} vote{{ submission.score|pluralize }} {% endif %}
-                    <div>[<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" 
-                            title="Sign in to vote">vote</a>]</div>
-                {% else %}
-                {% with votes|get:submission.id as voted %}
-                <a unlike-url="{% url 'submission-unlike' submission=submission.id %}"
-                     like-url="{% url 'submission-like'   submission=submission.id %}"
-                        class="post-vote {% if voted %}unlike{% else %}like{% endif %}"
-                        title="{% if voted %}unlike{% else %}like{% endif %}"
-                   href="#"><i class="fa fa-thumbs-up"></i> <div class="artwork-score">{{ submission.score }}</div></a>
-                {% endwith %}
-                {% endif %}
-            </div>
+            <div class="artwork-votes">{% include 'submissions/_vote.html' with object=submission %}</div>
         </div>
     </li>
     {% endwith %}

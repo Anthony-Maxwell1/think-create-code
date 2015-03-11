@@ -1,14 +1,32 @@
-<div id="artwork-view-include">
-{% if object %}
-<div id="artwork-{{ object.id }}">
-<div class="artwork">
-{% include 'artwork/_render.html' with autosize=True %}
+<div class="columns auto-width">
+    <h2 class="artwork-title">{{ object.title }}</h2>
 </div>
-<h3 class="artwork-title">{{ object.title }}</h3>
-<p class="artwork-detail">by 
-    <a href="{% url 'artwork-author-list' object.author.id %}" 
-      title="view artwork by {{ object.author }}">{{ object.author }}</a>, 
-    updated <time>{{ object.modified_at|date }}</time></p>
+<div class="object-actions auto-width columns end">
+    <ul class="breadcrumbs">
+        {% if object.shared %}
+        <li><i class="fa fa-share-alt"></i> <span class="share-link">{{ share_url }}</span></li>
+        {% endif %}
+        {% if submission %}
+        <li>{% include 'submissions/_vote.html' %}</li>
+        {% if USER_CAN_SAVE %}
+        <li><a href="{% url 'submission-delete' pk=submission.id %}" 
+              title="Un-share {{ object.title }}">unshare</a>
+        </li>
+        {% endif %}
+        {% endif %}
+    </ul>
 </div>
-{% endif %}
+<div class="columns small-12">
+    <div class="artwork-detail">by 
+        <a href="{% url 'artwork-author-list' object.author.id %}" 
+          title="view artwork by {{ object.author }}">{{ object.author }}</a>, 
+        {% if submission %}
+        shared to <a href="{% url 'exhibition-view' submission.exhibition.id %}">{{ submission.exhibition }}</a>
+        on <time class="submission-date">{{ submission.modified_at|date }}</time>
+        {% else %}
+        updated <time class="artwork-date">{{ object.modified_at|date }}</time>
+        {% endif %}
+    </div>
 </div>
+<div class="columns small-12">&nbsp;</div>
+{% include 'artwork/_play.html' %}

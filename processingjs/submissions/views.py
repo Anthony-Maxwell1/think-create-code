@@ -1,5 +1,5 @@
 import os
-from django.views.generic import ListView, CreateView, DeleteView
+from django.views.generic import DetailView, ListView, CreateView, DeleteView
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
@@ -7,6 +7,7 @@ from uofa.views import TemplatePathMixin, PostOnlyMixin, LoggedInMixin, ObjectHa
 from submissions.models import Submission, SubmissionForm
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
+from gallery.views import ShareView
 from votes.models import Vote
 
 
@@ -15,8 +16,27 @@ class SubmissionView(TemplatePathMixin):
     form_class = SubmissionForm
     template_dir = 'submissions'
 
-    def get_success_url(self):
-        return reverse('artwork-view', kwargs={'pk': self.object.artwork.id})
+
+class ShowSubmissionView(SubmissionView, DetailView):
+
+    template_name = SubmissionView.prepend_template_path('view.html')
+
+    def get_context_data(self, **kwargs):
+
+        context = super(ShowSubmissionView, self).get_context_data(**kwargs)
+
+        # Include share url
+        pk = self.get_object().id
+        context['share_url'] = ShareView.reverse_share_url(
+            'submission-view',
+            kwargs={'pk': pk})
+
+        # Include in the current user's votes for this submission
+        # as a dict of submission.id:vote
+        votes = Vote.can_delete_queryset(user=self.request.user, submission=pk).all()
+        context['votes'] = { v.submission_id:v for v in votes }
+
+        return context
 
 
 class ListSubmissionView(SubmissionView, ListView):
@@ -99,6 +119,9 @@ class CreateSubmissionView(PostOnlyMixin, LoggedInMixin, SubmissionView, CreateV
             self.request.user).exclude(id__in=exclude_exhibitions)
         
         return context
+
+    def get_success_url(self):
+        return reverse('artwork-view', kwargs={'pk': self.object.artwork_id})
 
 
 class DeleteSubmissionView(LoggedInMixin, ObjectHasPermMixin, SubmissionView, DeleteView):

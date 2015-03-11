@@ -5,19 +5,13 @@
 <script type="text/javascript" src="{% static "js/processing.min.js" %}"></script>
 <script type="text/javascript" src="{% static "js/ace/ace.js" %}"></script>
 <script type="text/javascript" src="{% static "js/artwork-edit.js" %}"></script>
+<script type="text/javascript" src="{% static "js/vote.js" %}"></script>
 {% endblock %}
 
 {% block content %}
-<div id="artwork-edit-content">
-{% if artwork.id %}
+<div id="submission-view-content">
 {% load rulez_perms %}
-{% rulez_perms can_save artwork as USER_CAN_SAVE %}
-{% endif %}
-
-{% if USER_CAN_SAVE %}
-{% include 'artwork/_edit.html' with object=artwork %}
-{% else %}
-{% include 'artwork/_view.html' with object=artwork %}
-{% endif %}
+{% rulez_perms can_save submission as USER_CAN_SAVE %}
+{% include 'artwork/_view.html' with object=submission.artwork submission=submission USER_CAN_SAVE=USER_CAN_SAVE %}
 </div>
 {% endblock content %}
