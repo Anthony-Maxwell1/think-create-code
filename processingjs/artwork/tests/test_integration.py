@@ -849,7 +849,8 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
 
         # Edit view for shared artwork allowed
-        self.selenium.get(edit_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(edit_url)
         self.assertEqual(self.selenium.current_url, edit_url)
 
         # But no save button shown
@@ -860,7 +861,8 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
 
         # Login as author
         self.performLogin()
-        self.selenium.get(edit_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(edit_url)
         self.assertIsNotNone(
             self.selenium.find_element_by_id('save_artwork'),
             self.selenium.page_source
@@ -1113,8 +1115,6 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
             new_code
         )
 
-    def test_autoupdate(self):
-        self.assertFalse(True); # TODO
 
 class ArtworkDeleteIntegrationTests(SeleniumTestCase):
 
