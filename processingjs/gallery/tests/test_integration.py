@@ -221,7 +221,7 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         )
 
 
-class ShareViewTest(SeleniumTestCase):
+class ShareViewIntegrationTest(SeleniumTestCase):
     '''Test the Share view, used by the share links'''
 
     def test_share_view(self):
