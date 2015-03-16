@@ -317,27 +317,27 @@ class ShareViewIntegrationTest(SeleniumTestCase):
         # Have to rely on the integration tests instead.
         #self.assertEqual(parsed_redirect.fragment, parsed_target.fragment)
 
-    def test_get_share_url(self):
+    def test_share_url_redirect(self):
         share_url = ShareView.get_share_url()
         self.assertShareUrlRedirects(share_url)
 
-    def test_get_share_url_home(self):
+    def test_share_url_home_redirects(self):
         share_url = ShareView.get_share_url(reverse('home'))
         self.assertShareUrlRedirects(share_url)
 
-    def test_reverse_share_url(self):
+    def test_reverse_share_url_redirects(self):
         share_url = ShareView.reverse_share_url()
         self.assertShareUrlRedirects(share_url)
 
-    def test_reverse_share_url_home(self):
+    def test_reverse_share_url_home_redirects(self):
         share_url = ShareView.reverse_share_url('home')
         self.assertShareUrlRedirects(share_url)
 
-    def test_reverse_share_url_artwork_view(self):
+    def test_reverse_share_url_artwork_view_redirects(self):
         share_url = ShareView.reverse_share_url('artwork-view', kwargs={'pk': 1})
         self.assertShareUrlRedirects(share_url)
 
-    def test_reverse_share_url_exhibition_view(self):
+    def test_reverse_share_url_exhibition_view_redirects(self):
         share_url = ShareView.reverse_share_url('exhibition-view', kwargs={'pk': 1})
         self.assertShareUrlRedirects(share_url)
 
