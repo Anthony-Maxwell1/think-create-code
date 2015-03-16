@@ -25,7 +25,7 @@
         {% include 'artwork/_render.html' with object=artwork %}
         </div>
         <div class="artwork-detail">
-            <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h2>
+            <h3 class="artwork-title"><a href="{% url 'submission-view' submission.id %}">{{ artwork.title }}</a></h2>
             <div class="artwork-detail">by 
                 <a href="{% url 'artwork-author-list' artwork.author.id %}" 
                   title="view artwork by {{ artwork.author }}">{{ artwork.author }}</a>
