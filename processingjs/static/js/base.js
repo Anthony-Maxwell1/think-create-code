@@ -10,7 +10,14 @@ $(document).ready(function(){
          },
          stop: function(event, ui) {
              $(this).css('pointer-events','auto');
-         } 
+         },
+         resize: function(event, ui) {
+            var $code = $('code');
+            if ($code.length && ('ace' in window)) {
+                var editor = ace.edit($code.get(0));
+                editor.resize();
+            }
+         }
      }).find('.ui-icon-gripsmall-diagonal-se')
      // Replace small grip icon with large grip
        .removeClass('ui-icon-gripsmall-diagonal-se')
