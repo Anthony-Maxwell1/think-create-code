@@ -26,25 +26,28 @@ $(document).ready(function() {
 
         // Redraw the iframe if #autoupdate is checked.
         if ($autoupdate.is(':checked')) {
-            var func = "drawIframe" + artworkId;
-            if (func in window) {
-                window[func](code);
-            } else {
-                console.error("Error updating artwork: " + func + " does not exist");
-            }
+            callFunc("drawIframe"+artworkId, code);
         }
         // Disable animation if #autoupdate unchecked.
         else {
-            window["animateIframe" + artworkId](false);
-            var func = "animateIframe" + artworkId;
-            if (func in window) {
-                window[func](false);
-            } else {
-                console.error("Error disabling animation: " + func + " does not exist");
-            }
+            animateIframe(false);
+            callFunc("animateIframe"+artworkId, false);
+        }
+    }
+
+    function callFunc(func, arg) {
+        if (func in window) {
+            window[func](arg);
+        } else {
+            console.error("Error: " + func + " does not exist");
         }
     }
 
     editor.on("change", updateDrawing);
     $autoupdate.on('change', updateDrawing);
+
+    // If there's code in the input field, but none in the editor, then populate it
+    if ($input.length && $input.val()) {
+        editor.setValue($input.val(), -1);
+    }
 });

@@ -14,6 +14,7 @@
         </li>
         {% endif %}
         {% endif %}
+        <li><a href="{% url 'artwork-clone' pk=object.id %} " title="Clone {{ object.title }}">clone</a></li>
     </ul>
 </div>
 <div class="columns small-12">

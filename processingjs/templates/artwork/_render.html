@@ -49,12 +49,14 @@
             'height': '100%',
             'scrolling': 'no'
         });
-        function drawIframe{{ object.id }}(code) {
+        var code{{ object.id }} = "{% filter escapejs %}{{ object.code }}{% endfilter %}";
+        function drawIframe{{ object.id }}(_code) {
             // Send the code as a message to the iframe
             $iframe{{ object.id }}.get(0).contentWindow.postMessage({ 
-                'code': code,
+                'code': _code,
                 'pk': '{{ object.id|default:"" }}'
             }, '*');
+            code{{ object.id }} = _code;
         }
         function animateIframe{{ object.id }}(animate) {
             // Stop/start the animation loop for the given iframe
@@ -64,9 +66,9 @@
             }, '*');
         }
 
-        // On iframe load, send the js code to be drawn
+        // On iframe load, send the latest js code to be drawn
         $iframe{{ object.id }}.on('load', function() {
-            drawIframe{{ object.id }}("{% filter escapejs %}{{ object.code }}{% endfilter %}");
+            drawIframe{{ object.id }}(code{{ object.id }});
         });
         $('#iframe-{{ object.id }}').html($iframe{{ object.id }});
     }

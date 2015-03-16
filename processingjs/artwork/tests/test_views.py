@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 
 from artwork.models import Artwork
 from uofa.test import UserSetUp
+import re
 
 
 class ArtworkListTests(UserSetUp, TestCase):
@@ -324,6 +325,98 @@ class ArtworkDeleteTests(UserSetUp, TestCase):
         # Login to ensure the artwork still exists
         response = client.get(view_url)
         self.assertEquals(response.context['object'].title, artwork.title)
+
+
+class ArtworkCreateTests(UserSetUp, TestCase):
+
+    def test_create(self):
+        client = Client()
+
+        add_path = reverse('artwork-add')
+        login_path = '%s?next=%s' % (reverse('login'), add_path)
+        list_path = reverse('artwork-list')
+
+        # Ensure no artworks yet
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 0)
+
+        # Create view redirects to login
+        response = client.get(add_path)
+        self.assertRedirects(response, login_path, status_code=302, target_status_code=200)
+
+        # Post to create - unauthenticated redirects to login
+        post_content = {'title': 'My artwork title', 'code': '/* test code */'}
+        response = client.post(add_path, post_content)
+        self.assertRedirects(response, login_path, status_code=302, target_status_code=200)
+
+        # Login
+        response = self.assertLogin(client, add_path)
+        self.assertEquals(response.context['object'], '')
+        
+        # Post an update - succeeds as author (can't assertRedirects; don't know new object id)
+        response = client.post(add_path, post_content)
+
+        # Ensure the change was saved
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0].title, post_content['title'])
+        self.assertEquals(response.context['object_list'][0].code, post_content['code'])
+
+
+class ArtworkCloneTests(UserSetUp, TestCase):
+
+    def test_clone(self):
+        client = Client()
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=self.user)
+
+        clone_path = reverse('artwork-clone', kwargs={'pk': artwork.id})
+        login_path = '%s?next=%s' % (reverse('login'), clone_path)
+        list_path = reverse('artwork-list')
+
+        # Ensure only 1 artwork in the list
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0].title, artwork.title)
+        self.assertEquals(response.context['object_list'][0].code, artwork.code)
+
+        # Clone view redirects to login
+        response = client.get(clone_path)
+        self.assertRedirects(response, login_path, status_code=302, target_status_code=200)
+
+        # Post to create - unauthenticated redirects to login
+        post_content = {'code': '/* updated code */', 'title': 'Updated title'}
+        response = client.post(clone_path, post_content)
+        self.assertRedirects(response, login_path, status_code=302, target_status_code=200)
+
+        # Login
+        response = self.assertLogin(client, clone_path)
+        self.assertEquals(response.context['object'], '')
+        self.assertEquals(
+            '%s' % response.context['form'],
+            '''<tr><th><label for="id_title">Title:</label></th><td><input id="id_title" maxlength="500" name="title" type="text" value="[Clone] %s" /><input id="id_code" name="code" type="hidden" value="/* Cloned from http://testserver%s */
+%s" /></td></tr>'''
+            % (artwork.title, reverse('artwork-view', kwargs={'pk': artwork.id}), artwork.code)
+        )
+        
+        # Post an update - succeeds as author (can't assertRedirects; don't know new object id)
+        response = client.post(clone_path, post_content)
+
+        # Ensure the change was saved (to logged-in list page)
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 2)
+        self.assertEquals(response.context['object_list'][0].title, post_content['title'])
+        self.assertEquals(response.context['object_list'][0].code, post_content['code'])
+        self.assertEquals(response.context['object_list'][1].title, artwork.title)
+        self.assertEquals(response.context['object_list'][1].code, artwork.code)
+
+        # Logout, and ensure only the original artwork is visible (shared
+        # setting does not get Cloned)
+        client.logout()
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 1)
+        self.assertEquals(response.context['object_list'][0].title, artwork.title)
+        self.assertEquals(response.context['object_list'][0].code, artwork.code)
 
 
 class ArtworkEditTests(UserSetUp, TestCase):

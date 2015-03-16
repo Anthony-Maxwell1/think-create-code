@@ -9,7 +9,7 @@
 
 {% block content %}
 <div id="artwork-edit-content">
-{% if artwork.id %}
+{% if artwork %}
 {% load rulez_perms %}
 {% rulez_perms can_save artwork as USER_CAN_SAVE %}
 {% endif %}

@@ -116,6 +116,31 @@ class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):
         return context
 
 
+class CloneArtworkView(CreateArtworkView):
+    '''Create a new Artwork, cloned from an existing artwork'''
+
+    clone_title = '[Clone] {title}'
+    clone_code = "/* Cloned from {url} */\n{code}"
+
+    def get_initial(self):
+        self.cloned = self.get_object()
+        return {
+            'title': self.clone_title.format(title=self.cloned.title),
+            'code': self.clone_code.format(
+                code=self.cloned.code,
+                url=self.request.build_absolute_uri(self.cloned.get_absolute_url())
+            ),
+        }
+
+    def get(self, request, *args, **kwargs):
+        return super(CloneArtworkView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(CloneArtworkView, self).get_context_data(**kwargs)
+        context['cloned'] = self.cloned
+        return context
+
+
 class UpdateArtworkView(MethodObjectHasPermMixin, ArtworkView, UpdateView):
 
     template_name = ArtworkView.prepend_template_path('edit.html')

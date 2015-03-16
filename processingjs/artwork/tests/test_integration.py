@@ -806,6 +806,209 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         )
 
 
+class ArtworkCloneIntegrationTests(SeleniumTestCase):
+
+    def setUp(self):
+        super(ArtworkCloneIntegrationTests, self).setUp()
+
+        self.artwork = Artwork.objects.create(
+            title='Title bar',
+            code='// code goes here',
+            shared=1,
+            author=self.user,
+        )
+        self.clone_path = reverse('artwork-clone', kwargs={'pk': self.artwork.id })
+        self.clone_url = '%s%s' % (self.live_server_url, self.clone_path)
+
+        self.view_url = '%s%s' % (self.live_server_url, 
+            reverse('artwork-view', kwargs={'pk': self.artwork.id }))
+        self.list_url = '%s%s' % (self.live_server_url, reverse('artwork-list'))
+
+
+    def test_clone_artwork(self):
+
+        # Ensure only 1 artwork in the list
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            self.artwork.title
+        )
+
+        # clone viewlredirects to login form
+        self.selenium.get(self.clone_url)
+        self.assertLogin(self.clone_path)
+
+        # login form redirects to clone form
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_title').get_attribute('value'),
+            '[Clone] %s' % self.artwork.title
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_code').get_attribute('value'),
+            '''/* Cloned from %s */
+%s''' % (self.view_url, self.artwork.code)
+        )
+
+        title_field = self.selenium.find_element_by_id('id_title')
+        title_field.clear()
+        cloned_title = 'Testing clone update'
+        title_field.send_keys('Testing clone update')
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_artwork').click()
+
+        # clone action redirects to view url for cloned artwork
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+
+        # Ensure changes were saved
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_title').get_attribute('value'),
+            cloned_title
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_code').get_attribute('value'),
+            '''/* Cloned from %s */
+%s''' % (self.view_url, self.artwork.code)
+        )
+
+        # Ensure 2 artwork in the (logged-in) list
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            2
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            len(titles),
+            2
+        )
+        self.assertEqual(
+            titles[0].text,
+            cloned_title
+        )
+        self.assertEqual(
+            titles[1].text,
+            self.artwork.title
+        )
+
+        # Logout, and ensure there's only one (shared setting does not get Cloned)
+        self.performLogout()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            len(titles),
+            1
+        )
+        self.assertEqual(
+            titles[0].text,
+            self.artwork.title
+        )
+        
+    def test_clone_artwork_cancel(self):
+
+        # Ensure only 1 artwork in the list
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
+            self.artwork.title
+        )
+
+        # clone viewlredirects to login form
+        self.selenium.get(self.clone_url)
+        self.assertLogin(self.clone_path)
+
+        # login form redirects to clone form
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_title').get_attribute('value'),
+            '[Clone] %s' % self.artwork.title
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_code').get_attribute('value'),
+            '''/* Cloned from %s */
+%s''' % (self.view_url, self.artwork.code)
+        )
+
+        title_field = self.selenium.find_element_by_id('id_title')
+        title_field.clear()
+        cloned_title = 'Testing clone update'
+        title_field.send_keys('Testing clone update')
+
+        # Hit 'cancel' link on clone page
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_cancel').click()
+
+        # clone action redirects to view url of original artwork
+        self.assertEqual(self.selenium.current_url, self.view_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+
+        # Ensure changes were not saved
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_title').get_attribute('value'),
+            self.artwork.title
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_id('id_code').get_attribute('value'),
+            self.artwork.code
+        )
+
+        # Ensure 1 artwork in the (logged-in) list
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            len(titles),
+            1
+        )
+        self.assertEqual(
+            titles[0].text,
+            self.artwork.title
+        )
+
+        # Logout, and ensure there's still only one
+        self.performLogout()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            len(titles),
+            1
+        )
+        self.assertEqual(
+            titles[0].text,
+            self.artwork.title
+        )
+
+
 class ArtworkEditIntegrationTests(SeleniumTestCase):
 
     def test_author_edit_unshared_artwork(self):

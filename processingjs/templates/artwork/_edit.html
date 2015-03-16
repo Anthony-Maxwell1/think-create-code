@@ -44,4 +44,10 @@
         onclick="document.location = '{% url 'artwork-view' object.id %}';">Reset</button>
 </div>
 {% endif %}
+{% if cloned.id %}
+<div class="small-6 columns">
+    <button id="save_cancel" type="button" title="Don't save cloned Artwork" class="postfix button" 
+        onclick="document.location = '{% url 'artwork-view' cloned.id %}';">Cancel</button>
+</div>
+{% endif %}
 </form>
