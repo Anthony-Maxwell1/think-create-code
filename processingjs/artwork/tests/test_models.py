@@ -70,7 +70,7 @@ class ArtworkTests(UserSetUp, TestCase):
         self.assertTrue(superuser.can_see(self.staff_user))
         self.assertTrue(superuser.can_see(self.super_user))
 
-    def test_can_save(self):
+    def test_can_save_private(self):
         student = Artwork(
             author=self.user,
             title='Empty code',
@@ -94,6 +94,34 @@ class ArtworkTests(UserSetUp, TestCase):
         self.assertFalse(superuser.can_save(self.user))
         self.assertFalse(superuser.can_save(self.staff_user))
         self.assertTrue(superuser.can_save(self.super_user))
+
+    def test_cant_save_shared(self):
+        student = Artwork(
+            author=self.user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        self.assertFalse(student.can_save(self.user))
+        self.assertFalse(student.can_save(self.staff_user))
+        self.assertFalse(student.can_save(self.super_user))
+
+        staff = Artwork(
+            author=self.staff_user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        self.assertFalse(staff.can_save(self.user))
+        self.assertFalse(staff.can_save(self.staff_user))
+        self.assertFalse(staff.can_save(self.super_user))
+
+        superuser = Artwork(
+            author=self.super_user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        self.assertFalse(superuser.can_save(self.user))
+        self.assertFalse(superuser.can_save(self.staff_user))
+        self.assertFalse(superuser.can_save(self.super_user))
 
     def test_can_see_private_queryset(self):
         student = Artwork(
@@ -172,7 +200,7 @@ class ArtworkTests(UserSetUp, TestCase):
         self.assertEqual(student_qs.all()[1].id, staff.id)
         self.assertEqual(student_qs.all()[2].id, superuser.id)
 
-    def test_can_save_queryset(self):
+    def test_can_save_private_queryset(self):
         student = Artwork(
             author=self.user,
             title='Empty code',
@@ -206,11 +234,51 @@ class ArtworkTests(UserSetUp, TestCase):
         self.assertEqual(len(super_qs.all()), 1)
         self.assertEqual(super_qs.all()[0].id, superuser.id)
 
-    def test_get_absolute_url(self):
+    def test_can_save_shared_queryset(self):
+        student = Artwork(
+            author=self.user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        student.save()
+
+        staff = Artwork(
+            author=self.staff_user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        staff.save()
+
+        superuser = Artwork(
+            author=self.super_user,
+            title='Empty code',
+            shared=1,
+            code='// code goes here')
+        superuser.save()
+
+        public_qs = Artwork.can_save_queryset()
+        self.assertEqual(len(public_qs.all()), 0)
+
+        student_qs = Artwork.can_save_queryset(user=self.user)
+        self.assertEqual(len(student_qs.all()), 0)
+
+        staff_qs = Artwork.can_save_queryset(user=self.staff_user)
+        self.assertEqual(len(staff_qs.all()), 0)
+
+        super_qs = Artwork.can_save_queryset(user=self.super_user)
+        self.assertEqual(len(super_qs.all()), 0)
+
+    def test_get_absolute_url_private(self):
         artwork = Artwork.objects.create(title='Empty code', code='// code goes here', author=self.user)
-        view_url = reverse('artwork-view', kwargs={'pk': artwork.id})
+        view_url = reverse('artwork-edit', kwargs={'pk': artwork.id})
         abs_url = artwork.get_absolute_url()
         self.assertEqual(view_url, abs_url)
+
+    def test_get_absolute_url_shared(self):
+        artwork = Artwork.objects.create(title='Empty code', code='// code goes here', shared=1, author=self.user)
+        shared_url = reverse('submission-view', kwargs={'pk': artwork.shared})
+        abs_url = artwork.get_absolute_url()
+        self.assertEqual(shared_url, abs_url)
 
 
 class ArtworkModelFormTests(UserSetUp, TestCase):

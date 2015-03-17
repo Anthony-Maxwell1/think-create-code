@@ -281,7 +281,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
             'exhibition': exhibition.id,
         }
         response = client.post(create_url, post_data)
-        view_url = reverse('artwork-view', kwargs={'pk':student_artwork.id})
+        view_url = reverse('submission-view', kwargs={'pk':1})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Ensure submission is in the exhibition view list
@@ -366,7 +366,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         }
         create_url = reverse('artwork-submit', kwargs={'artwork': staff_artwork.id})
         response = client.post(create_url, post_data)
-        view_url = reverse('artwork-view', kwargs={'pk':staff_artwork.id})
+        view_url = reverse('submission-view', kwargs={'pk':1})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Ensure one submission is in the exhibition view list
@@ -412,7 +412,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         }
         create_url = reverse('artwork-submit', kwargs={'artwork': super_artwork.id})
         response = client.post(create_url, post_data)
-        view_url = reverse('artwork-view', kwargs={'pk':super_artwork.id})
+        view_url = reverse('submission-view', kwargs={'pk':1})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Ensure one submissions in the exhibition view list
@@ -476,7 +476,7 @@ class SubmissionCreateTests(UserSetUp, TestCase):
             'exhibition': exhibition.id,
         }
         response = client.post(create_url, post_data)
-        view_url = reverse('artwork-view', kwargs={'pk':student_artwork.id})
+        view_url = reverse('submission-view', kwargs={'pk':1})
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Submit same thing again
@@ -736,7 +736,7 @@ class SubmissionDeleteViewTest(UserSetUp, TestCase):
         client.post(delete_url, {})
 
         artwork = Artwork.objects.get(id=artwork.id)
-        self.assertEqual(artwork.shared, 1)
+        self.assertEqual(artwork.shared, 0)
 
         # Post second un-submission
         delete_url = reverse('submission-delete', kwargs={'pk': submission2.id})

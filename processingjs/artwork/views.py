@@ -128,7 +128,8 @@ class CloneArtworkView(CreateArtworkView):
             'title': self.clone_title.format(title=self.cloned.title),
             'code': self.clone_code.format(
                 code=self.cloned.code,
-                url=self.request.build_absolute_uri(self.cloned.get_absolute_url())
+                url=self.request.build_absolute_uri(
+                    reverse('artwork-view', kwargs={'pk': self.cloned.id}))
             ),
         }
 
@@ -154,19 +155,15 @@ class UpdateArtworkView(MethodObjectHasPermMixin, ArtworkView, UpdateView):
 
         artwork = context['object']
         if artwork:
-            context['share_url'] = ShareView.reverse_share_url(
-                'artwork-view',
-                kwargs={'pk': artwork.id})
+            context['share_url'] = ShareView.get_share_url(artwork.get_absolute_url())
 
-            # TODO : make this an AJAX query, so we can fetch on demand
-            
             submissions_qs = Submission.objects.filter(
                 artwork__exact=artwork.id).order_by('-created_at').all()
             submissions = { int(x.exhibition_id) : x for x in submissions_qs }
 
             exhibitions_qs = Exhibition.can_see_queryset(
                 Exhibition.objects,
-                self.request.user).order_by('-released_at')
+                self.request.user).order_by('-released_at', 'created_at')
             exhibitions = exhibitions_qs.all()
 
             # Collect the exhibitions we've already submitted this artwork to,
@@ -183,14 +180,14 @@ class UpdateArtworkView(MethodObjectHasPermMixin, ArtworkView, UpdateView):
 
         return context
 
+
 class DeleteArtworkView(LoggedInMixin, ObjectHasPermMixin, ArtworkView, DeleteView):
 
     template_name = ArtworkView.prepend_template_path('delete.html')
     user_perm = 'can_save'
 
     def get_error_url(self):
-        return reverse('artwork-view', kwargs={'pk': self.get_object().id})
+        return self.get_object().get_absolute_url()
 
     def get_success_url(self):
         return reverse('artwork-list')
-

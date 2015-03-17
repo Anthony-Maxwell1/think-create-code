@@ -10,8 +10,6 @@
 
 {% block content %}
 <div id="submission-view-content">
-{% load rulez_perms %}
-{% rulez_perms can_save submission as USER_CAN_SAVE %}
-{% include 'artwork/_view.html' with object=submission.artwork submission=submission USER_CAN_SAVE=USER_CAN_SAVE %}
+{% include 'artwork/_view.html' with object=submission.artwork submission=submission %}
 </div>
 {% endblock content %}

@@ -121,7 +121,7 @@ class CreateSubmissionView(PostOnlyMixin, LoggedInMixin, SubmissionView, CreateV
         return context
 
     def get_success_url(self):
-        return reverse('artwork-view', kwargs={'pk': self.object.artwork_id})
+        return reverse('submission-view', kwargs={'pk': self.object.id})
 
 
 class DeleteSubmissionView(LoggedInMixin, ObjectHasPermMixin, SubmissionView, DeleteView):

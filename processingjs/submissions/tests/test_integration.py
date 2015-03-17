@@ -891,8 +891,11 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
-        # Should redirect to artwork view
-        self.assertEqual(self.selenium.current_url, artwork_url)
+        # Should redirect to submission view
+        self.student_artwork = Artwork.objects.get(pk=self.student_artwork.id)
+        submission_url = '%s%s' % (self.live_server_url, 
+            reverse('submission-view', kwargs={'pk': self.student_artwork.shared}))
+        self.assertEqual(self.selenium.current_url, submission_url)
 
         # And my submission should be in the exhibition list
         self.selenium.get(exhibition_url)
@@ -954,7 +957,8 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('save_submission').click()
 
         # Should see artwork submit page
-        submission_url = '%s%s' % (self.live_server_url, reverse('artwork-submit', kwargs={'artwork': self.student_artwork.id}))
+        submission_url = '%s%s' % (self.live_server_url, 
+            reverse('artwork-submit', kwargs={'artwork': self.student_artwork.id}))
         self.assertEqual(self.selenium.current_url, submission_url)
 
 
@@ -995,8 +999,11 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
-        # Should see the artwork view page
-        self.assertEqual(self.selenium.current_url, artwork_url)
+        # Should see the submission view page
+        self.student_artwork = Artwork.objects.get(pk=self.student_artwork.id)
+        submission_url = '%s%s' % (self.live_server_url, 
+            reverse('submission-view', kwargs={'pk': self.student_artwork.shared}))
+        self.assertEqual(self.selenium.current_url, submission_url)
 
         # Exhibition view should show submission in list
         self.selenium.get(exhibition_url)
@@ -1028,7 +1035,8 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('save_submission').click()
 
         # Should see artwork submit page
-        submission_url = '%s%s' % (self.live_server_url, reverse('artwork-submit', kwargs={'artwork': self.student_artwork.id}))
+        submission_url = '%s%s' % (self.live_server_url, 
+            reverse('artwork-submit', kwargs={'artwork': self.student_artwork.id}))
         self.assertEqual(self.selenium.current_url, submission_url)
 
         # Click Cancel button
@@ -1069,7 +1077,8 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('save_submission').click()
 
         # Should see artwork submit page
-        submission_url = '%s%s' % (self.live_server_url, reverse('artwork-submit', kwargs={'artwork': self.student_artwork.id}))
+        submission_url = '%s%s' % (self.live_server_url, 
+            reverse('artwork-submit', kwargs={'artwork': self.student_artwork.id}))
         self.assertEqual(self.selenium.current_url, submission_url)
 
         # With artwork id hidden (since it's in the url)
@@ -1101,8 +1110,11 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
-        # Should see the artwork view page
-        self.assertEqual(self.selenium.current_url, artwork_url)
+        # Should see the submission view page
+        self.student_artwork = Artwork.objects.get(pk=self.student_artwork.id)
+        submission_url = '%s%s' % (self.live_server_url, 
+            reverse('submission-view', kwargs={'pk': self.student_artwork.shared}))
+        self.assertEqual(self.selenium.current_url, submission_url)
 
         # Artwork shoul dbe present in the exhibition view
         self.selenium.get(exhibition2_url)
@@ -1110,7 +1122,6 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
             self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)
         )
 
-class TempTestClass(SubmissionCreateIntegrationTests): # XXX
     def test_submit_artwork_already_submitted(self):
 
         self.exhibition.save()
@@ -1168,8 +1179,11 @@ class TempTestClass(SubmissionCreateIntegrationTests): # XXX
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
-        # Should redirect to the artwork view
-        self.assertEqual(self.selenium.current_url, artwork_url)
+        # Should redirect to the submission view
+        self.student_artwork = Artwork.objects.get(pk=self.student_artwork.id)
+        submission_url = '%s%s' % (self.live_server_url, 
+            reverse('submission-view', kwargs={'pk': self.student_artwork.shared}))
+        self.assertEqual(self.selenium.current_url, submission_url)
          
         # Should see the artwork on the exhibition view page
         self.selenium.get(exhibition_url)
@@ -1177,55 +1191,23 @@ class TempTestClass(SubmissionCreateIntegrationTests): # XXX
             self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)
         )
 
-        # Go back to the artwork submit modal
+        # Go back to the submission view
         with wait_for_page_load(self.selenium):
-            self.selenium.get(artwork_url)
+            self.selenium.get(submission_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
-        self.selenium.find_element_by_link_text('SHARE').click()
-        time.sleep(3)
-
-        # Should be one less radio button
-        inputs = self.selenium.find_elements_by_tag_name('input')
-        self.assertEqual(7, len(inputs))
-        self.assertEqual('hidden', inputs[0].get_attribute('type'))
-        self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
-
-        self.assertEqual('text', inputs[1].get_attribute('type'))
-        self.assertEqual('title', inputs[1].get_attribute('name'))
-        self.assertEqual(self.student_artwork.title, inputs[1].get_attribute('value'))
-
-        self.assertEqual('hidden', inputs[2].get_attribute('type'))
-        self.assertEqual('code', inputs[2].get_attribute('name'))
-        self.assertEqual(self.student_artwork.code, inputs[2].get_attribute('value'))
-
-        self.assertEqual('checkbox', inputs[3].get_attribute('type'))
-        self.assertEqual('', inputs[3].get_attribute('name'))
-        self.assertEqual('autoupdate', inputs[3].get_attribute('value'))
-
-        self.assertEqual('hidden', inputs[4].get_attribute('type'))
-        self.assertEqual('csrfmiddlewaretoken', inputs[4].get_attribute('name'))
-
-        self.assertEqual('hidden', inputs[5].get_attribute('type'))
-        self.assertEqual('artwork', inputs[5].get_attribute('name'))
-        self.assertEqual(self.student_artwork.id, long(inputs[5].get_attribute('value')))
-
-        self.assertEqual('radio', inputs[6].get_attribute('type'))
-        self.assertEqual('exhibition', inputs[6].get_attribute('name'))
-        self.assertEqual(exhibition2.id, long(inputs[6].get_attribute('value')))
-
-        # First exhibition is shown as submitted
-        self.assertRegexpMatches(self.selenium.page_source, r'Shared to ')
-        self.assertEqual(
-            self.selenium.find_element_by_link_text(self.exhibition.title).get_attribute('href'),
-            exhibition_url
+        # No more 'SHARE' link
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('SHARE')
         )
-        # with an unsubmit link
+
+        # Unsubmit link shown instead
         self.assertIsNotNone(
-            self.selenium.find_element_by_link_text('unshare')
+            self.selenium.find_element_by_link_text('UNSHARE')
         )
 
     def test_submit_shares_artwork(self):
@@ -1279,6 +1261,9 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         self.exhibition_url = '%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': self.exhibition.id}))
         self.artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': self.student_artwork.id}))
 
+        self.student_artwork = Artwork.objects.get(pk=self.student_artwork.id)
+        self.submission_url = '%s%s' % (self.live_server_url, reverse('submission-view', kwargs={'pk': self.student_artwork.shared}))
+
     def test_unsubmit_link_student_own(self):
 
         self.performLogin(user='student')
@@ -1290,54 +1275,20 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('artwork-%s' % self.student_artwork.id),
         )
 
-        # View the artwork to get to the submit link
+        # View the submission to get to the unshare link
         with wait_for_page_load(self.selenium):
-            self.selenium.get(self.artwork_url)
+            self.selenium.get(self.submission_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_id('artwork-%s' % self.student_artwork.id)),
             1
         )
 
-        # Click submit link to show the modal
-        self.selenium.find_element_by_link_text('SHARE').click()
-        time.sleep(3)
-
-        # Should only be the edit artwork input elements, no submit form
-        inputs = self.selenium.find_elements_by_tag_name('input')
-        self.assertEqual(4, len(inputs))
-        self.assertEqual('hidden', inputs[0].get_attribute('type'))
-        self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
-
-        self.assertEqual('text', inputs[1].get_attribute('type'))
-        self.assertEqual('title', inputs[1].get_attribute('name'))
-        self.assertEqual(self.student_artwork.title, inputs[1].get_attribute('value'))
-
-        self.assertEqual('hidden', inputs[2].get_attribute('type'))
-        self.assertEqual('code', inputs[2].get_attribute('name'))
-        self.assertEqual(self.student_artwork.code, inputs[2].get_attribute('value'))
-
-        self.assertEqual('checkbox', inputs[3].get_attribute('type'))
-        self.assertEqual('', inputs[3].get_attribute('name'))
-        self.assertEqual('autoupdate', inputs[3].get_attribute('value'))
-
-
-        # First exhibition is shown as submitted
-        self.assertRegexpMatches(self.selenium.page_source, r'Shared to ')
-        self.assertEqual(
-            self.selenium.find_element_by_link_text(self.exhibition.title).get_attribute('href'),
-            self.exhibition_url
-        )
-
-        # with an unsubmit link
-        unsubmit = self.selenium.find_element_by_link_text('unshare')
-        self.assertEqual(self.delete_url, unsubmit.get_attribute('href'))
-
-        # Click unsubmit
+        # Click unshare link
         with wait_for_page_load(self.selenium):
-            unsubmit.click()
+            self.selenium.find_element_by_link_text('UNSHARE').click()
 
         self.assertEqual(self.selenium.current_url, self.delete_url)
-        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
+        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to unshare this artwork')
 
         # Confirm delete
         with wait_for_page_load(self.selenium):
@@ -1360,14 +1311,14 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         # Go to delete submission page
         with wait_for_page_load(self.selenium):
             self.selenium.get(self.delete_url)
-        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
+        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to unshare this artwork')
 
         # Cancel delete
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('submission_do_not_delete').click()
 
-        # Back on Artwork view page
-        self.assertEqual(self.selenium.current_url, self.artwork_url)
+        # Back on Submission view page
+        self.assertEqual(self.selenium.current_url, self.submission_url)
 
         # Confirm my submission is still on the exhibition page
         with wait_for_page_load(self.selenium):
@@ -1442,7 +1393,7 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         # Visit submission delete page
         with wait_for_page_load(self.selenium):
             self.selenium.get(self.delete_url)
-        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
+        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to unshare this artwork')
 
         # Confirm delete
         with wait_for_page_load(self.selenium):
@@ -1477,14 +1428,16 @@ class SubmissionDeleteIntegrationTests(SeleniumTestCase):
         # Visit submission delete page
         with wait_for_page_load(self.selenium):
             self.selenium.get(self.delete_url)
-        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to delete this submission')
+        self.assertRegexpMatches(self.selenium.page_source, r'Are you sure you want to unshare this artwork')
 
         # Cancel delete
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('submission_do_not_delete').click()
 
-        # Back on Artwork view page
-        self.assertEqual(self.selenium.current_url, self.artwork_url)
+        # Should see the submission view page
+        submission_url = '%s%s' % (self.live_server_url, 
+            reverse('submission-view', kwargs={'pk': self.student_artwork.shared}))
+        self.assertEqual(self.selenium.current_url, submission_url)
 
         # Confirm my submission is still on the exhibition page
         with wait_for_page_load(self.selenium):

@@ -494,8 +494,6 @@ class ExhibitionCreateIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('save_exhibition').click()
 
         # add action redirects to view url
-        view_path = reverse('exhibition-view', kwargs={'pk': 1})
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.exhibition')),
             1

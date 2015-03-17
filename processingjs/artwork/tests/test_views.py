@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 
 from artwork.models import Artwork
+from exhibitions.models import Exhibition
+from submissions.models import Submission
 from uofa.test import UserSetUp
 import re
 
@@ -285,7 +287,7 @@ class ArtworkDeleteTests(UserSetUp, TestCase):
         self.assertTrue(logged_in)
 
         # however, we still can't delete the artwork, because we can't see it.
-        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        view_url = artwork.get_absolute_url()
         response = client.get(delete_url)
         self.assertRedirects(response, view_url, status_code=302, target_status_code=403)
 
@@ -302,7 +304,16 @@ class ArtworkDeleteTests(UserSetUp, TestCase):
         client = Client()
 
         otherUser = get_user_model().objects.create(username='other')
-        artwork = Artwork.objects.create(title='Other User artwork', code='// code goes here', shared=1, author=otherUser)
+        artwork = Artwork.objects.create(title='Other User artwork', code='// code goes here', author=otherUser)
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='goes here',
+            author=self.staff_user)
+        submission = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition,
+            submitted_by=otherUser)
+        artwork = Artwork.objects.get(pk=artwork.id)
 
         delete_url = reverse('artwork-delete', kwargs={'pk':artwork.id})
         response = client.get(delete_url)
@@ -314,7 +325,7 @@ class ArtworkDeleteTests(UserSetUp, TestCase):
         self.assertTrue(logged_in)
 
         # however, we still can't delete the artwork, because we don't own it
-        view_url = reverse('artwork-view', kwargs={'pk':artwork.id})
+        view_url = artwork.get_absolute_url()
         response = client.get(delete_url)
         self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
@@ -324,7 +335,7 @@ class ArtworkDeleteTests(UserSetUp, TestCase):
 
         # Login to ensure the artwork still exists
         response = client.get(view_url)
-        self.assertEquals(response.context['object'].title, artwork.title)
+        self.assertEquals(response.context['object'].artwork.title, artwork.title)
 
 
 class ArtworkCreateTests(UserSetUp, TestCase):
@@ -447,13 +458,13 @@ class ArtworkEditTests(UserSetUp, TestCase):
 
         # Post an update - succeeds as author
         response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+        self.assertRedirects(response, edit_url, status_code=302, target_status_code=200)
 
         # Ensure the change was saved
         response = client.get(view_url)
         self.assertEquals(response.context['object'].title, 'My overridden title')
 
-    def test_author_edit_shared_artwork(self):
+    def test_author_cant_edit_shared_artwork(self):
         
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=self.user)
 
@@ -477,15 +488,15 @@ class ArtworkEditTests(UserSetUp, TestCase):
         self.assertEquals(response.context['object'].title, artwork.title)
         self.assertEquals(response.context['object'].code, artwork.code)
 
-        # Post an update - succeeds as author
+        # Post an update - not permitted for shared artwork
         response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
-        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
+        self.assertEquals(response.status_code, 403)
 
-        # Ensure the change was saved
+        # Ensure the change was not saved
         response = client.get(view_url)
-        self.assertEquals(response.context['object'].title, 'My overridden title')
+        self.assertEquals(response.context['object'].title, 'Title bar')
 
-    def test_non_author_edit_unshared_artwork(self):
+    def test_non_author_cant_edit_unshared_artwork(self):
         
         # Create unshared artwork owned by another student user
         otherUser = get_user_model().objects.create(username='other')

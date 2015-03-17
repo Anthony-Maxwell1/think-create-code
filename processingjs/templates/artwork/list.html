@@ -18,7 +18,7 @@
     <li><div class="artwork preview">
         {% include 'artwork/_render.html' with object=artwork %}
         </div>
-        <h3 class="artwork-title"><a href="{% url 'artwork-view' artwork.id %}">{{ artwork.title }}</a></h3>
+        <h3 class="artwork-title"><a href="{{ artwork.get_absolute_url }}">{{ artwork.title }}</a></h3>
         {% if not author %}
         <div class="artwork-detail">by 
             <a href="{% url 'artwork-author-list' artwork.author.id %}" 

@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 import time
 
 from artwork.models import Artwork
+from exhibitions.models import Exhibition
+from submissions.models import Submission
 from uofa.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_load
 
 
@@ -572,15 +574,11 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             NoSuchElementException,
             self.selenium.find_element_by_link_text, ('EDIT')
         )
-        # and delete links
-        self.assertIsNotNone(
+        # and no delete links
+        self.assertRaises(
+            NoSuchElementException,
             self.selenium.find_element_by_link_text, ('DELETE')
         )
-        # and clicking on delete redirects to expected page
-        self.selenium.find_element_by_link_text('DELETE').click()
-        self.assertEqual(self.selenium.current_url, 
-            '%s%s' % (self.live_server_url, reverse('artwork-delete', kwargs={'pk': artwork.id})))
-
 
         # Staff can see it
         self.performLogout()
@@ -634,7 +632,7 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id, ('autoupdate')
         )
 
-    def test_private_artwork_share_url(self):
+    def test_artwork_share_url(self):
 
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
@@ -647,7 +645,7 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             0
         )
 
-        # Owner can, but no share link
+        # Owner can, but no share link shown until Artwork is shared.
         self.assertLogin(view_path)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
@@ -658,9 +656,22 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             0
         )
 
-        # Make the artwork shared to see the share link
-        artwork.shared = 1
-        artwork.save()
+        # Share the artwork shared to see the share link
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='goes here',
+            author=self.staff_user)
+        submission = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition,
+            submitted_by=self.user)
+
+        artwork = Artwork.objects.get(pk=artwork.id)
+        self.assertEqual(artwork.shared, submission.id)
+
+        submission_path = reverse('submission-view', kwargs={'pk': artwork.shared})
+        submission_url = '%s%s' % (self.live_server_url, submission_path)
+
         self.selenium.get(view_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
@@ -671,10 +682,10 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             1
         )
 
-        # Ensure that visiting the share_link redirects back to this view_url
+        # Ensure that visiting the share_link redirects back to the submission view url
         share_link = self.selenium.find_element_by_css_selector('.share-link').text
         self.selenium.get(share_link)
-        self.assertEqual(self.selenium.current_url, view_url)
+        self.assertEqual(self.selenium.current_url, submission_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -684,50 +695,24 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             1
         )
 
-        # Un-share the artwork, logout, and ensure and we're forced to login.
-        artwork.shared = 0
-        artwork.save()
+        # Un-share the artwork, logout, and ensure share link 404s
+        submission.delete()
+        artwork = Artwork.objects.get(pk=artwork.id)
+        self.assertEqual(artwork.shared, 0)
+
+        self.selenium.get(share_link)
+        error_404 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_404.text, 'Not Found'
+        )
+
+        # even when logged in
         self.performLogout()
         self.selenium.get(share_link)
-        self.assertNotEqual(self.selenium.current_url, view_url)
-        self.assertLogin(view_path)
-
-    def test_public_artwork_share_url(self):
-
-        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
-        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
-        view_url = '%s%s' % (self.live_server_url, view_path)
-
-        # Public can see shared artwork
-        self.selenium.get(view_url)
+        error_404 = self.selenium.find_element_by_tag_name('h1')
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
-            1
+            error_404.text, 'Not Found'
         )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.share-link')),
-            1
-        )
-
-        # Ensure that visiting the share_link redirects back to this view_url
-        share_link = self.selenium.find_element_by_css_selector('.share-link').text
-        self.selenium.get(share_link)
-        self.assertEqual(self.selenium.current_url, view_url)
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork')),
-            1
-        )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.share-link')),
-            1
-        )
-
-        # Un-share the artwork, and we're forced to login.
-        artwork.shared = 0
-        artwork.save()
-        self.selenium.get(share_link)
-        self.assertNotEqual(self.selenium.current_url, view_url)
-        self.assertLogin(view_path)
 
 
 class ArtworkRenderViewIntegrationTests(SeleniumTestCase):
@@ -770,9 +755,9 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
 
-        # add action redirects to list url
-        view_path = reverse('artwork-view', kwargs={'pk': 1})
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+        # add action redirects to edit url
+        edit_path = reverse('artwork-edit', kwargs={'pk': 1})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -965,12 +950,8 @@ class ArtworkCloneIntegrationTests(SeleniumTestCase):
 
         # Ensure changes were not saved
         self.assertEqual(
-            self.selenium.find_element_by_id('id_title').get_attribute('value'),
+            self.selenium.find_element_by_css_selector('.artwork-title').text,
             self.artwork.title
-        )
-        self.assertEqual(
-            self.selenium.find_element_by_id('id_code').get_attribute('value'),
-            self.artwork.code
         )
 
         # Ensure 1 artwork in the (logged-in) list
@@ -1016,7 +997,6 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
 
         edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
-        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
 
         # edit redirects to login form
         self.selenium.get('%s%s' % (self.live_server_url, edit_path))
@@ -1031,7 +1011,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         # Save succeeds as author
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
 
         # Wait for iframe to load
         time.sleep(5)
@@ -1043,7 +1023,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
             'updated title'
         )
 
-    def test_author_edit_shared_artwork(self):
+    def test_author_cant_edit_shared_artwork(self):
         
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=self.user)
 
@@ -1066,31 +1046,21 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         self.performLogin()
         with wait_for_page_load(self.selenium):
             self.selenium.get(edit_url)
-        self.assertIsNotNone(
-            self.selenium.find_element_by_id('save_artwork'),
-            self.selenium.page_source
+
+        # Still no Save button; can't edit shared Artwork
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('save_artwork')
         )
 
-        # Update the title text
-        self.selenium.find_element_by_id('id_title').clear()
-        self.selenium.find_element_by_id('id_title').send_keys('updated title')
-
-        # Save succeeds as author
-        with wait_for_page_load(self.selenium):
-            self.selenium.find_element_by_id('save_artwork').click()
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
-
-        # Wait for iframe to load
-        time.sleep(5)
-
-        # ensure edit was saved
-        artwork = Artwork.objects.get(pk=artwork.id)
-        self.assertEqual(
-            artwork.title,
-            'updated title'
+        # Cannot update the title text
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('id_title')
         )
 
-    def test_non_author_edit_unshared_artwork(self):
+
+    def test_non_author_cant_edit_unshared_artwork(self):
         
         # Create unshared artwork owned by another student user
         otherUser = get_user_model().objects.create(username='other')
@@ -1110,7 +1080,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_tag_name('h1').text, '403 Forbidden'
         )
 
-    def test_non_author_edit_shared_artwork(self):
+    def test_non_author_cant_edit_shared_artwork(self):
         
         # Create unshared artwork owned by another student user
         otherUser = get_user_model().objects.create(username='other')
@@ -1141,7 +1111,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id, ('save_artwork')
         )
 
-    def test_staff_edit_shared_artwork(self):
+    def test_staff_cant_edit_shared_artwork(self):
         
         # Create unshared artwork owned by another student user
         otherUser = get_user_model().objects.create(username='other')
@@ -1304,8 +1274,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('save_artwork').click()
 
         # save returns us to the view page
-        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
 
         # ensure edit was saved
         artwork = Artwork.objects.get(pk=artwork.id)
@@ -1379,7 +1348,7 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         self.selenium.get(delete_url)
         
         # 4. Ensure we're redirected back to view
-        view_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': artwork.id}))
+        view_url = '%s%s' % (self.live_server_url, artwork.get_absolute_url())
         self.assertEqual(self.selenium.current_url, view_url)
 
 

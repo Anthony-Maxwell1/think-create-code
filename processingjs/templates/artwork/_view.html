@@ -1,3 +1,4 @@
+{% load rulez_perms %}
 <div class="columns auto-width">
     <h2 class="artwork-title">{{ object.title }}</h2>
 </div>
@@ -7,8 +8,9 @@
         <li><i class="fa fa-share-alt"></i> <span class="share-link">{{ share_url }}</span></li>
         {% endif %}
         {% if submission %}
+        {% rulez_perms can_save submission as USER_CAN_SAVE_SUBMISSION %}
         <li>{% include 'submissions/_vote.html' %}</li>
-        {% if USER_CAN_SAVE %}
+        {% if USER_CAN_SAVE_SUBMISSION %}
         <li><a href="{% url 'submission-delete' pk=submission.id %}" 
               title="Un-share {{ object.title }}">unshare</a>
         </li>

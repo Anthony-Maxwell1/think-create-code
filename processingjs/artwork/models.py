@@ -26,7 +26,10 @@ class Artwork(models.Model):
         return unicode(self).encode('utf-8')
 
     def get_absolute_url(self):
-        return reverse('artwork-view', kwargs={'pk': self.id})
+        if self.shared:
+            return reverse('submission-view', kwargs={'pk': self.shared})
+        else:
+            return reverse('artwork-edit', kwargs={'pk': self.id})
 
     # Only authors can see un-shared artwork
     def can_see(self, user=None):
@@ -36,9 +39,10 @@ class Artwork(models.Model):
             return True
         return False
 
-    # Only allow authors to save artwork
+    # Only allow authors to save un-shared artwork
     def can_save(self, user=None):
         if (user and user.is_authenticated() and 
+             (self.shared == 0) and
              (self.author.id == user.id)):
             return True
         return False
@@ -63,8 +67,8 @@ class Artwork(models.Model):
         if not qs:
             qs = cls.objects
         if (user and user.is_authenticated()):
-            # Authors can submit any artwork
-            return qs.filter(author__exact=user.id)
+            # Authors can submit any unshared artwork
+            return qs.filter(author__exact=user.id, shared__exact=0)
         else:
             return qs.none()
 

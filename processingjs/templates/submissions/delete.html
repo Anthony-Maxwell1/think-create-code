@@ -2,19 +2,23 @@
 
 {% block content %}
 <div id="submission-delete-content">
-<h1>Remove Submission</h1>
+<h1>Unshare Artwork</h1>
 
-<p>Are you sure you want to delete this submission from 
+<p>Are you sure you want to unshare this artwork from 
    <a href="{% url 'exhibition-view' submission.exhibition.id %}">{{ submission.exhibition }}</a>?</p>
-<p><em>This artwork will be removed from the exhibition, and any votes removed, but the artwork itself will not be deleted.</em></p>
+<div data-alert class="row warning alert-box">
+    <div>The Share URL will become invalid.</div>
+    <div>All Votes for this Artwork will be removed.</div>
+    <div>The Artwork itself <em>will not</em> be deleted, only removed from this Exhibition.</div>
+</div>
 
 {% include "artwork/_preview.html" with object=submission.artwork %}
 
 <form action="{% url "submission-delete" pk=submission.id %}" method="POST">
   {% csrf_token %}
 
-  <button id="submission_delete" type="submit">Yes, remove.</button>
-  <a id="submission_do_not_delete" href="{% url "artwork-view" submission.artwork_id %}">No, cancel.</a>
+  <button id="submission_delete" type="submit">Yes, unshare.</button>
+  <a id="submission_do_not_delete" href="{% url "submission-view" submission.id %}">No, cancel.</a>
 </form>
 </div>
 {% endblock %}

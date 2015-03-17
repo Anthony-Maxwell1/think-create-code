@@ -1,8 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django import forms
-from django.db.models.signals import pre_save, pre_delete
-from django.db.models import F
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from rulez import registry
 
@@ -52,20 +51,20 @@ registry.register('can_save', Submission)
 registry.register('can_vote', Submission)
 
 
-@receiver(pre_save, sender=Submission)
-def pre_save(sender, instance=None, **kwargs):
-    '''Increment artwork.shared counter'''
+@receiver(post_save, sender=Submission)
+def post_save(sender, instance=None, **kwargs):
+    '''Update artwork.shared to submission id'''
     if instance:
         from artwork.models import Artwork
-        Artwork.objects.filter(id__exact=instance.artwork_id).update(shared=F('shared')+1)
+        Artwork.objects.filter(id__exact=instance.artwork_id).update(shared=instance.id)
 
 
 @receiver(pre_delete, sender=Submission)
 def pre_delete(sender, instance=None, **kwargs):
-    '''Decrement artwork.shared counter, and delete existing votes.'''
+    '''Decrement artwork.shared, and delete existing votes.'''
     if instance:
         from artwork.models import Artwork
-        Artwork.objects.filter(id__exact=instance.artwork_id).update(shared=F('shared')-1)
+        Artwork.objects.filter(id__exact=instance.artwork_id).update(shared=0)
 
         from votes.models import Vote
         Vote.can_delete_queryset(submission=instance).delete()

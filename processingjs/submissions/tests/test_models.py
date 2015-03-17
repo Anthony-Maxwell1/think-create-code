@@ -131,11 +131,11 @@ class SubmissionTests(UserSetUp, TestCase):
             author=self.user)
         submission2 = Submission.objects.create(exhibition=exhibition2, artwork=artwork, submitted_by=self.user)
         artwork = Artwork.objects.get(id=artwork.id)
-        self.assertEqual(artwork.shared, 2)
+        self.assertEqual(artwork.shared, submission2.id)
 
         submission1.delete()
         artwork = Artwork.objects.get(id=artwork.id)
-        self.assertEqual(artwork.shared, 1)
+        self.assertEqual(artwork.shared, 0)
 
         submission2.delete()
         artwork = Artwork.objects.get(id=artwork.id)
