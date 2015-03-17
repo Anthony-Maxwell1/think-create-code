@@ -30,7 +30,6 @@ $(document).ready(function() {
         }
         // Disable animation if #autoupdate unchecked.
         else {
-            animateIframe(false);
             callFunc("animateIframe"+artworkId, false);
         }
     }
