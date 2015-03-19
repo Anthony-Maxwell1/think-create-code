@@ -12,7 +12,7 @@
   {% csrf_token %}
 
   <button id="artwork_delete" type="submit">Yes, delete.</button>
-  <a id="artwork_do_not_delete" href="{% url "artwork-list" %}">No, cancel.</a>
+  <a id="artwork_do_not_delete" href="{{ artwork.get_absolute_url }}">No, cancel.</a>
 </form>
 </div>
 {% endblock %}

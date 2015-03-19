@@ -41,13 +41,13 @@
 {% if object.id %}
 <div class="small-6 columns">
     <button id="save_cancel" type="button" title="Undo changes made since last Save" class="postfix button" 
-        onclick="document.location = '{% url 'artwork-view' object.id %}';">Reset</button>
+        onclick="document.location = '{{ object.get_absolute_url }}';">Reset</button>
 </div>
 {% endif %}
 {% if cloned.id %}
 <div class="small-6 columns">
     <button id="save_cancel" type="button" title="Don't save cloned Artwork" class="postfix button" 
-        onclick="document.location = '{% url 'artwork-view' cloned.id %}';">Cancel</button>
+        onclick="document.location = '{% url cloned.get_absolute_url %}';">Cancel</button>
 </div>
 {% endif %}
 </form>
