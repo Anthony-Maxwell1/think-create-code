@@ -1,7 +1,7 @@
 <div id="artwork-view-include">
 {% if object %}
 <div id="artwork-{{ object.id }}">
-<div class="artwork">
+<div class="artwork preview">
 {% include 'artwork/_render.html' with autosize=True %}
 </div>
 <h3 class="artwork-title">{{ object.title }}</h3>
