@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.common.keys import Keys
 from django.contrib.auth import get_user_model
 import time
@@ -441,7 +441,13 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_link_text, ('DELETE')
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id, ('autoupdate')
+            self.selenium.find_element_by_css_selector, ('.play')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.pause')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.paused')
         )
 
         # Owner can see it
@@ -457,7 +463,13 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id, ('save_artwork')
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id, ('autoupdate')
+            self.selenium.find_element_by_id, ('play')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id, ('pause')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.paused')
         )
         self.assertRaises(
             NoSuchElementException,
@@ -488,7 +500,13 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id, ('save_artwork')
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id, ('autoupdate')
+            self.selenium.find_element_by_id, ('play')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id, ('pause')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.paused')
         )
         self.assertRaises(
             NoSuchElementException,
@@ -522,7 +540,13 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_link_text, ('DELETE')
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id, ('autoupdate')
+            self.selenium.find_element_by_id, ('play')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id, ('pause')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.paused')
         )
 
     def test_shared_artwork_links(self):
@@ -552,7 +576,13 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_link_text, ('DELETE')
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id, ('autoupdate')
+            self.selenium.find_element_by_id, ('play')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id, ('pause')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.paused')
         )
 
         # Owner can see it
@@ -568,7 +598,13 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id, ('save_artwork')
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id, ('autoupdate')
+            self.selenium.find_element_by_id, ('play')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id, ('pause')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.paused')
         )
         self.assertRaises(
             NoSuchElementException,
@@ -595,7 +631,13 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id, ('save_artwork')
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id, ('autoupdate')
+            self.selenium.find_element_by_id, ('play')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id, ('pause')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.paused')
         )
         self.assertRaises(
             NoSuchElementException,
@@ -629,7 +671,13 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_link_text, ('DELETE')
         )
         self.assertIsNotNone(
-            self.selenium.find_element_by_id, ('autoupdate')
+            self.selenium.find_element_by_id, ('play')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id, ('pause')
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_css_selector, ('.paused')
         )
 
     def test_artwork_share_url(self):
@@ -703,7 +751,7 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
         self.selenium.get(share_link)
         error_404 = self.selenium.find_element_by_tag_name('h1')
         self.assertEqual(
-            error_404.text, 'Not Found'
+            error_404.text, 'Not Found', self.selenium.page_source
         )
 
         # even when logged in
@@ -711,7 +759,7 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
         self.selenium.get(share_link)
         error_404 = self.selenium.find_element_by_tag_name('h1')
         self.assertEqual(
-            error_404.text, 'Not Found'
+            error_404.text, 'Not Found', self.selenium.page_source
         )
 
 
@@ -775,7 +823,7 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_id('id_title').send_keys('do not submit')
         self.selenium.find_element_by_css_selector('.ace_text-input').send_keys('// code goes here')
 
-        # No more 'cancel' link on Add Artwork page
+        # No more 'cancel' link on New Artwork page
         self.assertRaises(
             NoSuchElementException,
             self.selenium.find_element_by_id, ('save_cancel')
@@ -799,14 +847,24 @@ class ArtworkCloneIntegrationTests(SeleniumTestCase):
         self.artwork = Artwork.objects.create(
             title='Title bar',
             code='// code goes here',
-            shared=1,
             author=self.user,
         )
+        # Share the artwork shared to see the share link
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='goes here',
+            author=self.staff_user)
+        submission = Submission.objects.create(
+            artwork=self.artwork,
+            exhibition=exhibition,
+            submitted_by=self.user)
+        self.artwork = Artwork.objects.get(pk=self.artwork.id)
+
         self.clone_path = reverse('artwork-clone', kwargs={'pk': self.artwork.id })
         self.clone_url = '%s%s' % (self.live_server_url, self.clone_path)
 
         self.view_url = '%s%s' % (self.live_server_url, 
-            reverse('artwork-view', kwargs={'pk': self.artwork.id }))
+            reverse('artwork-view', kwargs={'pk': self.artwork.id}))
         self.list_url = '%s%s' % (self.live_server_url, reverse('artwork-list'))
 
 
@@ -917,7 +975,7 @@ class ArtworkCloneIntegrationTests(SeleniumTestCase):
             self.artwork.title
         )
 
-        # clone viewlredirects to login form
+        # clone view redirects to login form
         self.selenium.get(self.clone_url)
         self.assertLogin(self.clone_path)
 
@@ -941,8 +999,9 @@ class ArtworkCloneIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_cancel').click()
 
-        # clone action redirects to view url of original artwork
-        self.assertEqual(self.selenium.current_url, self.view_url)
+        # cancel clone action redirects to absolute url of original artwork
+        self.assertEqual(self.selenium.current_url, 
+            '%s%s' % (self.live_server_url, self.artwork.get_absolute_url()))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1
@@ -1207,9 +1266,9 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_cancel').click()
 
-        # Cancel returns us to the view page
-        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+        # Cancel returns us to the edit page
+        edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
 
         # edit was canceled
         artwork = Artwork.objects.get(pk=artwork.id)
@@ -1324,9 +1383,16 @@ class ArtworkDeleteIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('artwork_do_not_delete').click()
 
-        # delete action redirects to list url
+        # delete action redirects to view url
+        view_path = artwork.get_absolute_url()
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            1,
+        )
+
+        # Check artwork still exists in list
         list_path = reverse('artwork-list')
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1,
@@ -1357,6 +1423,7 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
 
     def test_artwork_render_compile_error(self):
 
+        # Create artwork with bad code, and share it
         artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
 
         render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
@@ -1374,18 +1441,32 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
             script_code, ''
         )
 
-        # We should get no errors in the logs
+        # We should get no errors shown
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, '')
+
+        # and no errors in the logs
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
     def test_view_artwork_compile_error(self):
 
+        # Create artwork with bad code, and share it
         artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
 
         view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, view_path))
 
-        # We should get no errors in the logs
+        # The paused overlay should be hidden
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork.id).is_displayed())
+
+        # We should get no iframes loaded
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_tag_name, ('iframe')
+        )
+
+        # and no errors in the logs
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
@@ -1398,9 +1479,10 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
 
     def test_artwork_list_compile_error(self):
 
-        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
-        Artwork.objects.create(title='Good test code1', code='// good code!', shared=1, author=self.user)
-        Artwork.objects.create(title='Bad test code2', code='still bad code!', shared=1, author=self.user)
+        # Create 3 artworks, 2 with bad code, and share them
+        artwork1 = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+        artwork2 = Artwork.objects.create(title='Good test code1', code='// good code!', shared=1, author=self.user)
+        artwork3 = Artwork.objects.create(title='Bad test code2', code='still bad code!', shared=1, author=self.user)
 
         list_path = reverse('artwork-list')
         with wait_for_page_load(self.selenium):
@@ -1410,7 +1492,18 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
             3
         )
 
-        # We should get no errors in the logs
+        # The paused overlays should be hidden
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork1.id).is_displayed())
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork2.id).is_displayed())
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork3.id).is_displayed())
+
+        # We should get no iframes loaded
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_tag_name, ('iframe')
+        )
+
+        # and no errors in the logs
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
@@ -1431,8 +1524,19 @@ class ArtworkRender_NoHTML5Iframe_IntegrationTests(NoHTML5SeleniumTestCase):
         # Add redirects to login form
         self.assertLogin(add_path)
 
+        # The paused overlay won't exist
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_css_selector, ('.paused')
+        )
 
-        # We should get no errors in the logs
+        # We should get no iframes loaded
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_tag_name, ('iframe')
+        )
+
+        # and no errors in the logs
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
@@ -1450,6 +1554,7 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
 
     def test_artwork_render_compile_error(self):
 
+        # Create artwork with bad code, and share it
         artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
 
         render_path = reverse('artwork-render', kwargs={'pk': artwork.id})
@@ -1467,31 +1572,20 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
             script_code, ''
         )
 
-        # We should get no errors in the logs
+        # We should get no error shown
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, '')
+
+        # no errors reported to the logs
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
-    def test_artwork_view_compile_error(self):
-
-        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
-
-        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
-        with wait_for_page_load(self.selenium):
-            self.selenium.get('%s%s' % (self.live_server_url, view_path))
-
-        # HTML5 attributes should be detectable via javascript
-        self.assertTrue(self.selenium.execute_script('return Modernizr.sandbox'))
-
-        # We should get 1 error in the logs
-        errors = self.get_browser_log(level=u'SEVERE')
-        self.assertEqual(len(errors), 1)
-        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
-
     def test_artwork_list_compile_error(self):
 
-        Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
-        Artwork.objects.create(title='Good test code1', code='// good code!', shared=1, author=self.user)
-        Artwork.objects.create(title='Bad test code2', code='still bad code!', shared=1, author=self.user)
+        # Create 3 artworks, 2 with bad code, and share them
+        artwork1 = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+        artwork2 = Artwork.objects.create(title='Good test code1', code='// good code!', shared=1, author=self.user)
+        artwork3 = Artwork.objects.create(title='Bad test code2', code='still bad code!', shared=1, author=self.user)
 
         list_path = reverse('artwork-list')
         with wait_for_page_load(self.selenium):
@@ -1501,44 +1595,569 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
             3
         )
 
-        # We should get 2 errors in the logs
-        errors = self.get_browser_log(level=u'SEVERE')
-        self.assertEqual(len(errors), 2)
-        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
-        self.assertEqual(errors[1]['message'], 'SyntaxError: missing ; before statement')
+        # The paused overlays should be shown
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork1.id).is_displayed())
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork2.id).is_displayed())
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork3.id).is_displayed())
 
-        # n.b: we're inferring that the 2nd "good" artwork did get rendered,
-        # by assuring that the error from the  1st "bad" artwork did not halt
-        # processing, since the 3rd bad artwork threw an error too.
-        # Not sure how else to test this?
+        # Push play-all to start all animations
+        self.selenium.find_element_by_id('play-all').click()
+        time.sleep(1)
+
+        # The paused overlays should be hidden
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork1.id).is_displayed())
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork2.id).is_displayed())
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork3.id).is_displayed())
+
+        # We should get 2 errors shown for artworks 1 & 3
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork1.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork1.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork3.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork3.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # and no error shown for artwork 2
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork2.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork2.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+    def test_artwork_list_play_buttons(self):
+
+        # Create 3 artworks, 2 with bad code, and share them
+        artwork1 = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+        artwork2 = Artwork.objects.create(title='Good test code1', code='// good code!', shared=1, author=self.user)
+        artwork3 = Artwork.objects.create(title='Bad test code2', code='still bad code!', shared=1, author=self.user)
+
+        list_path = reverse('artwork-list')
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+
+        # The paused overlays should be shown
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork1.id).is_displayed())
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork2.id).is_displayed())
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork3.id).is_displayed())
+
+        # We should get no errors yet
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork1.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork1.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork3.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork3.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork2.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork2.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+        # Play 1
+        # Hit paused-1's play link
+        self.selenium.find_element_by_css_selector('#paused-%s a' % artwork1.id).click()
+        time.sleep(1)
+
+        # The first paused overlay should be hidden, the others should be shown
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork1.id).is_displayed())
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork2.id).is_displayed())
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork3.id).is_displayed())
+
+        # We should get errors shown for artwork 1
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork1.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork1.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # and no error for artwork 3
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork3.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork3.id)
+        self.assertEqual(error.text, '');
+        self.selenium.switch_to.default_content()
+
+        # and no error shown for artwork 2
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork2.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork2.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+
+        # Play 2
+        # Hit paused-2's play link
+        self.selenium.find_element_by_css_selector('#paused-%s a' % artwork2.id).click()
+        time.sleep(1)
+
+        # The first 2 paused overlays should be hidden, the other should be shown
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork1.id).is_displayed())
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork2.id).is_displayed())
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork3.id).is_displayed())
+
+        # We should get errors shown for artwork 1
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork1.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork1.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # and no error for artwork 3
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork3.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork3.id)
+        self.assertEqual(error.text, '');
+        self.selenium.switch_to.default_content()
+
+        # and no error shown for artwork 2
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork2.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork2.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+
+        # Play 3
+        # Hit paused-1's play link
+        self.selenium.find_element_by_css_selector('#paused-%s a' % artwork3.id).click()
+        time.sleep(1)
+
+        # All the paused overlays should be hidden now
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork1.id).is_displayed())
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork2.id).is_displayed())
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork3.id).is_displayed())
+
+        # We should get 2 errors shown for artworks 1 & 3
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork1.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork1.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork3.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork3.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # and no error shown for artwork 2
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork2.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork2.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+    def test_artwork_view_compile_error(self):
+
+        # Create artwork with bad code, and share it
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, view_path))
+
+        # HTML5 attributes should be detectable via javascript
+        self.assertTrue(self.selenium.execute_script('return Modernizr.sandbox;'))
+
+        # The paused overlay should be displayed
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork.id).is_displayed())
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(1)
+
+        # The paused overlay should be hidden
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork.id).is_displayed())
+
+        # Ensure error is showing in iframe
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
 
     def test_edit_artwork_compile_error(self):
 
+        # Create artwork with bad code, and share it
         artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+
         edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, edit_path))
 
-        # Automatic redraw enabled
-        self.assertTrue(self.selenium.find_element_by_id('autoupdate').is_selected())
+        # The paused overlay should be displayed
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork.id).is_displayed())
 
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(1)
+
+        # The paused overlay should be hidden
+        self.assertFalse(self.selenium.find_element_by_id('paused-%s' % artwork.id).is_displayed())
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
         errors = self.get_browser_log(level=u'SEVERE')
-        self.assertEqual(len(errors), 1)
-        self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
+        self.assertEqual(len(errors), 0)
 
     def test_add_artwork_compile_error(self):
         add_path = reverse('artwork-add')
         self.selenium.get('%s%s' % (self.live_server_url, add_path))
         # add redirects to login form
         self.assertLogin(add_path)
-        # Automatic redraw enabled
-        self.assertTrue(self.selenium.find_element_by_id('autoupdate').is_selected())
+
+        # The paused overlay won't even exist
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_css_selector, ('.paused')
+        )
+
+        # Push play to start the animation while we send keys
+        self.selenium.find_element_by_id('play').click()
  
         self.selenium.find_element_by_id('id_title').send_keys('bad submission')
         self.selenium.find_element_by_css_selector('.ace_text-input').send_keys("bad code!")
 
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % '')
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % '')
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
         errors = self.get_browser_log(level=u'SEVERE')
-        # FIXME : for unknown reasons, I can't get the errors to appear in
-        # selenium with send_keys.  Should be:
-        # self.assertEqual(len(errors), 1)
-        # self.assertEqual(errors[0]['message'], 'SyntaxError: missing ; before statement')
         self.assertEqual(len(errors), 0)
+
+
+class ArtworkRenderCrash(SeleniumTestCase):
+
+    def test_nicks_hanging_artwork(self):
+        '''Tests code provided by Nick Faulkner, which was crashing his browser.'''
+        code = '''//This code won't work because it's not
+//actually Processing.  This is pseudo-code.
+
+for (<initialisation>; <test>; <update>) {
+    <instructions>;
+}
+'''
+        artwork = Artwork.objects.create(title='Bad test code1', code=code, shared=1, author=self.user)
+
+        edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, edit_path))
+
+        # The paused overlay should be displayed
+        self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork.id).is_displayed())
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(1)
+
+        # Javascript exception thrown on next command
+        self.assertRaises(
+            WebDriverException,
+            self.selenium.find_element_by_id, ('paused-%s' % artwork.id)
+        )
+
+
+class TestOne(SeleniumTestCase):
+    def test_edit_artwork_overlay_play_pause(self):
+
+        # Create artwork with bad code, and share it
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+
+        edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, edit_path))
+
+        pausedOverlay = self.selenium.find_element_by_id('paused-%s' % artwork.id)
+        playBtn = self.selenium.find_element_by_id('play')
+        pauseBtn = self.selenium.find_element_by_id('pause')
+
+        # The paused overlay should be displayed
+        self.assertTrue(pausedOverlay.is_displayed())
+
+        # The Play button should be enabled
+        self.assertFalse(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be disabled
+        self.assertTrue(pauseBtn.get_attribute('disabled'))
+
+
+        # Push play link in paused overlay to start the animation
+        self.selenium.find_element_by_css_selector('#paused-%s a' % artwork.id).click()
+        time.sleep(1)
+
+        # The paused overlay should be hidden
+        self.assertFalse(pausedOverlay.is_displayed())
+
+        # The Play button should be disabled
+        self.assertTrue(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be enabled
+        self.assertFalse(pauseBtn.get_attribute('disabled'))
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
+        # Click Pause
+        pauseBtn.click()
+
+        # The paused overlay should be hidden
+        self.assertFalse(pausedOverlay.is_displayed())
+
+        # The Play button should be enabled
+        self.assertFalse(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be disabled
+        self.assertTrue(pauseBtn.get_attribute('disabled'))
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
+        # Update code
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys("bad code")
+
+        # The paused overlay should be hidden
+        self.assertFalse(pausedOverlay.is_displayed())
+
+        # The Play button should be enabled
+        self.assertFalse(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be disabled
+        self.assertTrue(pauseBtn.get_attribute('disabled'))
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
+        # Click Play
+        playBtn.click()
+        time.sleep(1)
+
+        # The paused overlay should be hidden
+        self.assertFalse(pausedOverlay.is_displayed())
+
+        # The Play button should be disabled
+        self.assertTrue(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be enabled
+        self.assertFalse(pauseBtn.get_attribute('disabled'))
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+    def test_edit_artwork_play_pause(self):
+
+        # Create artwork with bad code, and share it
+        artwork = Artwork.objects.create(title='Bad test code1', code='bad code! bad!;', shared=1, author=self.user)
+
+        edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, edit_path))
+
+        pausedOverlay = self.selenium.find_element_by_id('paused-%s' % artwork.id)
+        playBtn = self.selenium.find_element_by_id('play')
+        pauseBtn = self.selenium.find_element_by_id('pause')
+
+        # The paused overlay should be displayed
+        self.assertTrue(pausedOverlay.is_displayed())
+
+        # The Play button should be enabled
+        self.assertFalse(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be disabled
+        self.assertTrue(pauseBtn.get_attribute('disabled'))
+
+
+        # Click play button
+        playBtn.click()
+        time.sleep(1)
+
+        # The paused overlay should be hidden
+        self.assertFalse(pausedOverlay.is_displayed())
+
+        # The Play button should be disabled
+        self.assertTrue(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be enabled
+        self.assertFalse(pauseBtn.get_attribute('disabled'))
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
+        # Click Pause
+        pauseBtn.click()
+
+        # The paused overlay should be hidden
+        self.assertFalse(pausedOverlay.is_displayed())
+
+        # The Play button should be enabled
+        self.assertFalse(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be disabled
+        self.assertTrue(pauseBtn.get_attribute('disabled'))
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
+        # Update code
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys("bad code")
+
+        # The paused overlay should be hidden
+        self.assertFalse(pausedOverlay.is_displayed())
+
+        # The Play button should be enabled
+        self.assertFalse(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be disabled
+        self.assertTrue(pauseBtn.get_attribute('disabled'))
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
+        # Click Play
+        playBtn.click()
+        time.sleep(1)
+
+        # The paused overlay should be hidden
+        self.assertFalse(pausedOverlay.is_displayed())
+
+        # The Play button should be disabled
+        self.assertTrue(playBtn.get_attribute('disabled'))
+        
+        # The Pause button should be enabled
+        self.assertFalse(pauseBtn.get_attribute('disabled'))
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement');
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+

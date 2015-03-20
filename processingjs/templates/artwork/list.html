@@ -1,4 +1,10 @@
 {% extends "base.html" %}
+
+{% block extras %}
+{% load staticfiles %}
+<script type="text/javascript" src="{% static "js/artwork-render.js" %}"></script>
+{% endblock %}
+
 {% block content %}
 {% load pagination %}
 <div id="artwork-list-content">
@@ -6,26 +12,21 @@
 <h1>Artwork {% if shared %}shared{% endif %} by {{ author }}</h1>
 {% endif %}
 
-{% if user.is_anonymous or author == user %}
 <div class="row">
-    <h4><a href="{% url 'artwork-add' %}" id="artwork-add">&#43; Add Artwork</a></h4>
+    <div class="columns small-6">
+        <h4><a href="{% url 'artwork-add' %}" id="artwork-add">&#43; New Artwork</a></h4>
+    </div>
+    <div class="columns small-6 align-right">
+        {% if object_list.count > 1 %}
+        <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
+        {% endif %}
+    </div>
 </div>
-{% endif %}
 
 <div class="small-grid-2">&nbsp;</div>
 <ul class="large-block-grid-5 medium-block-grid-3 small-block-grid-2">
     {% for artwork in object_list %}
-    <li><div class="artwork preview">
-        {% include 'artwork/_render.html' with object=artwork %}
-        </div>
-        <h3 class="artwork-title"><a href="{{ artwork.get_absolute_url }}">{{ artwork.title }}</a></h3>
-        {% if not author %}
-        <div class="artwork-detail">by 
-            <a href="{% url 'artwork-author-list' artwork.author.id %}" 
-              title="view artwork by {{ artwork.author }}">{{ artwork.author }}</a>
-        </div>
-        {% endif %}
-    </li>
+    <li>{% include 'artwork/_list.html' with object=artwork %}</li>
     {% endfor %}
 </ul>
 </div>

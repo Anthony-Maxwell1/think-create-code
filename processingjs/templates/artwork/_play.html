@@ -1,18 +1,18 @@
 <div data-equalizer style="position: relative">
     <div class="small-12 medium-6 columns" data-equalizer-watch>
         <div class="code-block"><code>{{ object.code }}</code></div>
-
         <div class="row"><div class="small-1 columns">&nbsp;</div></div>
         <div class="row">
             <div class="columns small-8">
-                <input type="checkbox" id="autoupdate" value="autoupdate" checked="checked" /> 
-                <label for="autoupdate">Auto-update drawing</label>
+                <button id="play" class="button tiny" type="button" title="Play"><i class="fa fa-play"></i></button>
+                <button id="pause" class="button tiny disabled" type="button" title="Pause" disabled><i class="fa fa-pause"></i></button>
             </div>
             <div class="columns small-4 align-right">
                 <button id="show_help"
                    class="button tiny"
                    href="{% url 'help' %}"
                    title="ProcessingJS Help"
+                   type="button"
                    data-reveal-id="modal-help">Help</button>
                 <div id="modal-help" class="reveal-modal" data-reveal>
                 {% include 'gallery/_help.html' %}

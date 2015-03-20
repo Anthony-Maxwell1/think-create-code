@@ -3,16 +3,19 @@
 {% if object_list %}
 {% if object_list.count > 1 %}
 <div class="row">
-    <div class="order_by">
-    <ul>
-        {% if order == 'score' %}
-        <li><a href="{% url 'exhibition-view' pk=exhibition_id %}" title="sort submissions by most recent">Most Recent</a></li>
-        <li>Most Votes</li>
-        {% else %}
-        <li>Most Recent</li>
-        <li><a href="{% url 'exhibition-view-score' pk=exhibition_id %}" title="sort submissions by most votes">Most Votes</a></li>
-        {% endif %}
-    </ul>
+    <div class="columns small-6">
+        <ul class="order_by">
+            {% if order == 'score' %}
+            <li><a href="{% url 'exhibition-view' pk=exhibition_id %}" title="sort submissions by most recent">Most Recent</a></li>
+            <li>Most Votes</li>
+            {% else %}
+            <li>Most Recent</li>
+            <li><a href="{% url 'exhibition-view-score' pk=exhibition_id %}" title="sort submissions by most votes">Most Votes</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="columns small-6 align-right">
+        <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
     </div>
 </div>
 {% endif %}
@@ -21,18 +24,7 @@
     <ul class="small-block-grid-2">
     {% for submission in object_list %}
     {% with submission.artwork as artwork %}
-    <li><div class="artwork preview" id="artwork-{{ artwork.id }}">
-        {% include 'artwork/_render.html' with object=artwork %}
-        </div>
-        <div class="artwork-detail">
-            <h3 class="artwork-title"><a href="{{ artwork.get_absolute_url }}">{{ artwork.title }}</a></h2>
-            <div class="artwork-detail">by 
-                <a href="{% url 'artwork-author-list' artwork.author.id %}" 
-                  title="view artwork by {{ artwork.author }}">{{ artwork.author }}</a>
-            </div>
-            <div class="artwork-votes">{% include 'submissions/_vote.html' with object=submission %}</div>
-        </div>
-    </li>
+    <li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
     {% endwith %}
     {% endfor %}
     </ul>

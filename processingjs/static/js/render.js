@@ -60,13 +60,11 @@ $(document).ready(function() {
 
                     // 5. Try running the script, reporting any errors to the user
                     try {
-                        $error.hide();
+                        $error.empty().hide();
                         Processing.reload();
                     } catch(e) {
                         parent.postMessage({'error': e.message, 'pk': pk}, '*');
                         $error.html(e.message).show();
-                        // have to re-throw the error, to pass integration tests 
-                        throw e;
                     }
                 }
                 else if ('animate' in evt.data) {

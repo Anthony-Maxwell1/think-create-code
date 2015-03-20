@@ -7,69 +7,34 @@
 <li><a href="http://msdn.microsoft.com/en-us/hh563496.aspx">Read more about iframe security risks</a>.</li>
 </ul>
 </div>
+{% if object.id %}
+<div class="paused" id="paused-{{ object.id }}">
+    <div class="table">
+        <div class="cell">
+            <a href="#" title="play"><i class="fa fa-play-circle"></i></a>
+        </div>
+    </div>
+</div>
+{% endif %}
 <script>
     // If we can sandbox the iframe, create it.
     if ( Modernizr.sandbox ) {
-
-        // 1. Listen for messages from the iframe
-        function iframeMessage{{ object.id }}(evt) {
-            if (evt && evt.data && evt.data.pk == '{{ object.id }}') {
-                {% if autosize %}
-                // Respond to resize events
-                if (evt.data.resize) {
-                    var resize = evt.data.resize;
-                    $('#iframe-{{ object.id }}').css('width', resize.width);
-                    $('#iframe-{{ object.id }}').css('height', resize.height);
-
-                    // artwork/edit uses equalizer divs, so reflow them on resize.
-                    $(document).foundation('equalizer', 'reflow');
-                }
-                {% endif %}
-                // Respond to errors
-                if (evt.data.error) {
-                    // Show error if there's an element to show it on (e.g. artwork/edit)
-                    var $error = $('#error-{{ object.id }}');
-                    if ($error.get(0)) {
-                        $error.html(evt.data.error).show();
-                    }
-                }
-            }
-        }
-        if (window.addEventListener){
-            addEventListener("message", iframeMessage{{ object.id }}, false);
-        } else {
-            attachEvent("onmessage", iframeMessage{{ object.id }});
-        }
-
-        // 2. Create the iframe
-        var $iframe{{ object.id }} = $('<iframe>', { 
-            'sandbox': 'allow-scripts',
-            'src': "{% if object.id %}{% url 'artwork-render' pk=object.id %}{% else %}{% url 'artwork-render-create' %}{% endif %}",
-            'width': '100%',
-            'height': '100%',
-            'scrolling': 'no'
+        {% if object.id %}
+        createArtworkIframe({
+            target: $('#iframe-{{ object.id }}'),
+            id: {{ object.id }},
+            code: "{% filter escapejs %}{{ object.code }}{% endfilter %}",
+            renderUrl: "{% url 'artwork-render' pk=object.id %}",
+            autosize: {{ autosize|default:0 }},
+            overlay: '#paused-{{ object.id }}'
         });
-        var code{{ object.id }} = "{% filter escapejs %}{{ object.code }}{% endfilter %}";
-        function drawIframe{{ object.id }}(_code) {
-            // Send the code as a message to the iframe
-            $iframe{{ object.id }}.get(0).contentWindow.postMessage({ 
-                'code': _code,
-                'pk': '{{ object.id|default:"" }}'
-            }, '*');
-            code{{ object.id }} = _code;
-        }
-        function animateIframe{{ object.id }}(animate) {
-            // Stop/start the animation loop for the given iframe
-            $iframe{{ object.id }}.get(0).contentWindow.postMessage({ 
-                'animate': animate?true:false,
-                'pk': '{{ object.id|default:"" }}'
-            }, '*');
-        }
-
-        // On iframe load, send the latest js code to be drawn
-        $iframe{{ object.id }}.on('load', function() {
-            drawIframe{{ object.id }}(code{{ object.id }});
+        {% else %}
+        createArtworkIframe({
+            target: $('#iframe-{{ object.id }}'),
+            code: "{% filter escapejs %}{{ object.code }}{% endfilter %}",
+            renderUrl: "{% url 'artwork-render-create' %}",
+            autosize: {{ autosize|default:0 }}
         });
-        $('#iframe-{{ object.id }}').html($iframe{{ object.id }});
+        {% endif %}
     }
 </script>

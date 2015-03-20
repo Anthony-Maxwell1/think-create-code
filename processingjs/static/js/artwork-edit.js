@@ -17,33 +17,55 @@ $(document).ready(function() {
     session.setUseSoftTabs(true);
     session.setTabSize(4);
 
-    var $autoupdate = $('#autoupdate');
+    var $play = $('#play');
+    var $pause = $('#pause');
+
+    // Register for the start/stop Animation events, so we get triggered even
+    // when the "paused" overlay is clicked.
+    $(window).on('artwork.update.animate', function(evt, msg) {
+        if (msg['pk'] == artworkId) {
+            if (msg['animate']) {
+                $play.addClass('disabled');
+                $play.prop('disabled', true);
+                $pause.removeClass('disabled');
+                $pause.prop('disabled', false);
+            } else {
+                $pause.addClass('disabled');
+                $pause.prop('disabled', true);
+                $play.removeClass('disabled');
+                $play.prop('disabled', false);
+            }
+        }
+    });
+
+    // Call a function with the given name (and implied arguments list)
+    // Log error to console if the function does not exist.
+    function callFunc(func) {
+        if (func in window) {
+            window[func].apply(null, Array.prototype.slice.call(arguments, 1));
+        } else {
+            console.error("Error: " + func + " does not exist");
+        }
+    }
+
     function updateDrawing() {
         var code = editor.getValue() || '';
         if ($input.length) {
             $input.val(code);
         }
 
-        // Redraw the iframe if #autoupdate is checked.
-        if ($autoupdate.is(':checked')) {
-            callFunc("drawIframe"+artworkId, code);
-        }
-        // Disable animation if #autoupdate unchecked.
-        else {
-            callFunc("animateIframe"+artworkId, false);
-        }
-    }
-
-    function callFunc(func, arg) {
-        if (func in window) {
-            window[func](arg);
-        } else {
-            console.error("Error: " + func + " does not exist");
-        }
+        // Update the animation code
+        callFunc("updateArtwork"+artworkId, {'code': code});
     }
 
     editor.on("change", updateDrawing);
-    $autoupdate.on('change', updateDrawing);
+
+    $play.on('click', function() {
+        callFunc("updateArtwork"+artworkId, {'animate': true});
+    });
+    $pause.on('click', function() {
+        callFunc("updateArtwork"+artworkId, {'animate': false});
+    });
 
     // If there's code in the input field, but none in the editor, then populate it
     if ($input.length && $input.val()) {

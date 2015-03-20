@@ -81,6 +81,42 @@ iframe {
        -moz-transition: all 1s;
             transition: all 1s;
 }
+
+/* Paused artwork displayed with overlay */
+.paused {
+    display: none;
+    background-color: black;
+    opacity: .7;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+.paused .fa {
+    font-size: 500%;
+}
+.paused a:link,
+.paused a:visited {
+    color: grey;
+}
+.paused a:hover,
+.paused a:active {
+    color: white;
+}
+/* all this shit just to vertically align.. */
+.paused .table {
+    display: table;
+    width: 100%;
+    height: 100%;
+}
+.paused .cell {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+
 /* Adjust margins for form fields */
 ul.edit_fields {
     list-style-type: none;
@@ -123,6 +159,9 @@ div.ui-resizable {
 .help-link {
     text-align: right;
 }
+button .fa {
+    font-size: 150%;
+}
 /* Highlight exhibitions that haven't been released yet */
 .not-available {
     font-weight: bold;
@@ -144,33 +183,30 @@ div.ui-resizable {
 .artwork-votes .unlike:active {
     color: #ababab;
 }
-.artwork-score {
-    display: inline-block;
+.artwork-score, .artwork-votes {
+    display: inline;
 }
 
 .pagination .fa {
     position: relative;
     top: 1px;
 }
-.order_by {
-    text-align: right;
-}
 .order_by:before {
     content: "Sort by: ";
     font-size: 85%;
 }
-.order_by ul {
+.order_by {
     list-style-type: none;
     display: inline;
     margin: 0;
     font-size: 85%;
 }
-.order_by ul li {
+.order_by li {
     display: inline;
 }
-.order_by ul li:before {
+.order_by  li:before {
     content: ' | ';
 }
-.order_by ul li:first-child:before {
+.order_by  li:first-child:before {
     content: '';
 }
