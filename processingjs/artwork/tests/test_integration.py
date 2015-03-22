@@ -720,7 +720,8 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
         submission_path = reverse('submission-view', kwargs={'pk': artwork.shared})
         submission_url = '%s%s' % (self.live_server_url, submission_path)
 
-        self.selenium.get(view_url)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(submission_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             1

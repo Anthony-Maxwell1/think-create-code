@@ -9,7 +9,7 @@
         {% endif %}
         {% if submission %}
         {% rulez_perms can_save submission as USER_CAN_SAVE_SUBMISSION %}
-        <li>{% include 'submissions/_vote.html' %}</li>
+        <li>{% include 'submissions/_vote.html' with object=submission %}</li>
         {% if USER_CAN_SAVE_SUBMISSION %}
         <li><a href="{% url 'submission-delete' pk=submission.id %}" 
               title="Un-share {{ object.title }}">unshare</a>

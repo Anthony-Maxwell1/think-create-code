@@ -183,7 +183,7 @@ class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
         # No votes, no vote text shown
         response = client.get(self.view_url)
         self.assertEquals(response.context['submissions']['object_list'].count(), 1)
-        self.assertNotRegexpMatches(response.content, r'0 votes')
+        self.assertRegexpMatches(response.content, r'0 votes')
         self.assertRegexpMatches(response.content, r'Sign in to vote')
 
         # Add a vote, ensure it's shown correctly

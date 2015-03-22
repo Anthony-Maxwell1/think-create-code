@@ -32,12 +32,13 @@ nav #nav-logged-in:after {
 .object-actions {
     padding-top: 1em;
 }
+.object-actions li {
+    vertical-align: middle;
+    line-height: 1.2em;
+}
 .object-actions .fa {
-    color: #007095;
     font-size: 2em;
-    line-height: 0em;
-    position: relative;
-    top: 3px;
+    line-height: 0.5em;
     -webkit-text-stroke: 1px white;
 }
 .object-actions .share-link {
@@ -173,14 +174,20 @@ button .fa {
 .artwork-votes .fa {
     font-size: 150%;
 }
-.artwork-votes .unlike,
-.artwork-votes .like:hover,
-.artwork-votes .like:active {
+.unlike,
+.like:hover,
+.like:active,
+.unlike .fa,
+.like:hover .fa,
+.like:active .fa {
     color: #008cba;
 }
-.artwork-votes .like,
-.artwork-votes .unlike:hover,
-.artwork-votes .unlike:active {
+.like,
+.unlike:hover,
+.unlike:active,
+.like .fa,
+.unlike:hover .fa,
+.unlike:active .fa {
     color: #ababab;
 }
 .artwork-score, .artwork-votes {

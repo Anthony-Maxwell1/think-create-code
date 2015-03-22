@@ -54,12 +54,16 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.share-link')),
             1
         )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_link_text('VOTE')),
-            1
-        )
+        vote_link = self.selenium.find_element_by_id('vote-%s' % submission.id)
+        self.assertEqual(vote_link.get_attribute('href'), 
+            '%s%s?next=%s' % (self.live_server_url, reverse('login'), view_path))
+        self.assertEqual(vote_link.text, '0')
+        self.assertEqual(vote_link.get_attribute('title'), 'Sign in to vote')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), None)
+        self.assertEqual(vote_link.get_attribute('like-url'), None)
+
         artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
-        self.assertEquals(artwork_score.text, '')
+        self.assertEquals(artwork_score.text, '0')
 
         self.assertEqual(
             len(self.selenium.find_elements_by_link_text('unshare')),
@@ -108,21 +112,17 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
         self.assertIsNotNone(
             self.selenium.find_element_by_id('submission-view-content'),
         )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_link_text('VOTE')),
-            0
-        )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.artwork-score')),
-            1
-        )
+
+        vote_link = self.selenium.find_element_by_id('vote-%s' % submission.id)
+        self.assertEqual(vote_link.get_attribute('href'), '%s#' % (view_url))
+        self.assertEqual(vote_link.text, '0')
+
+        artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
+        self.assertEquals(artwork_score.text, '0')
+
         self.assertEqual(
             len(self.selenium.find_elements_by_link_text('UNSHARE')),
             1
-        )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_link_text(' 1')),
-            0
         )
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork-detail')),
@@ -176,12 +176,18 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.share-link')),
             1
         )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_link_text('VOTE')),
-            1
-        )
+
+        vote_link = self.selenium.find_element_by_id('vote-%s' % submission.id)
+        self.assertEqual(vote_link.get_attribute('href'), 
+            '%s%s?next=%s' % (self.live_server_url, reverse('login'), view_path))
+        self.assertEqual(vote_link.text, '1')
+        self.assertEqual(vote_link.get_attribute('title'), 'Sign in to vote')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), None)
+        self.assertEqual(vote_link.get_attribute('like-url'), None)
+
         artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
-        self.assertEquals(artwork_score.text, '1 VOTE')
+        self.assertEquals(artwork_score.text, '1')
+
         self.assertEqual(
             len(self.selenium.find_elements_by_link_text('UNSHARE')),
             0
@@ -242,26 +248,16 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork-title')),
             1
         )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('.share-link')),
-            1
-        )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_link_text('VOTE')),
-            0
-        )
+
+        vote_link = self.selenium.find_element_by_id('vote-%s' % submission.id)
+        self.assertEqual(vote_link.get_attribute('href'), '%s#' % (view_url))
+        self.assertEqual(vote_link.text, '1')
+        self.assertEqual(vote_link.get_attribute('title'), 'unlike')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(vote_link.get_attribute('like-url'), like_path)
 
         artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
         self.assertEquals(artwork_score.text, '1')
-
-        unlike_votes = self.selenium.find_elements_by_link_text('1')
-        self.assertEqual(
-            len(unlike_votes),
-            1
-        )
-        self.assertEqual(unlike_votes[0].get_attribute('title'), 'unlike')
-        self.assertEqual(unlike_votes[0].get_attribute('unlike-url'), unlike_path)
-        self.assertEqual(unlike_votes[0].get_attribute('like-url'), like_path)
 
         self.assertEqual(
             len(self.selenium.find_elements_by_link_text('UNSHARE')),
@@ -323,19 +319,16 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.share-link')),
             1
         )
-        self.assertEqual(
-            len(self.selenium.find_elements_by_link_text('VOTE')),
-            0
-        )
 
-        like_votes = self.selenium.find_elements_by_link_text('1')
-        self.assertEqual(
-            len(like_votes),
-            1
-        )
-        self.assertEqual(like_votes[0].get_attribute('title'), 'like')
-        self.assertEqual(like_votes[0].get_attribute('unlike-url'), unlike_path)
-        self.assertEqual(like_votes[0].get_attribute('like-url'), like_path)
+        vote_link = self.selenium.find_element_by_id('vote-%s' % submission.id)
+        self.assertEqual(vote_link.get_attribute('href'), '%s#' % (view_url))
+        self.assertEqual(vote_link.text, '1')
+        self.assertEqual(vote_link.get_attribute('title'), 'like')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(vote_link.get_attribute('like-url'), like_path)
+
+        artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
+        self.assertEquals(artwork_score.text, '1')
 
         self.assertEqual(
             len(self.selenium.find_elements_by_link_text('unshare')),
@@ -370,30 +363,23 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             0
         )
 
-        # Click on 'like' link
-        like_votes[0].click()
+        # Click on vote link to 'like'
+        vote_link.click()
         time.sleep(5)   # wait for vote to be counted
-        unlike_votes = self.selenium.find_elements_by_link_text('2')
-        self.assertEqual(
-            len(unlike_votes),
-            1
-        )
-        self.assertEqual(unlike_votes[0].get_attribute('title'), 'unlike')
-        self.assertEqual(unlike_votes[0].get_attribute('unlike-url'), unlike_path)
-        self.assertEqual(unlike_votes[0].get_attribute('like-url'), like_path)
+        self.assertEqual(vote_link.get_attribute('href'), '%s#' % (view_url))
+        self.assertEqual(vote_link.text, '2')
+        self.assertEqual(vote_link.get_attribute('title'), 'unlike')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(vote_link.get_attribute('like-url'), like_path)
 
-
-        # Click on 'unlike' link
-        unlike_votes[0].click()
-        time.sleep(5)   # wait for vote to be un-counted
-        like_votes = self.selenium.find_elements_by_link_text('1')
-        self.assertEqual(
-            len(like_votes),
-            1
-        )
-        self.assertEqual(like_votes[0].get_attribute('title'), 'like')
-        self.assertEqual(like_votes[0].get_attribute('unlike-url'), unlike_path)
-        self.assertEqual(like_votes[0].get_attribute('like-url'), like_path)
+        # Click on vote link to 'unlike'
+        vote_link.click()
+        time.sleep(5)   # wait for vote to be counted
+        self.assertEqual(vote_link.get_attribute('href'), '%s#' % (view_url))
+        self.assertEqual(vote_link.text, '1')
+        self.assertEqual(vote_link.get_attribute('title'), 'like')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(vote_link.get_attribute('like-url'), like_path)
 
 
 class SubmissionListIntegrationTests(SeleniumTestCase):
@@ -715,6 +701,9 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         # Submit artwork to the exhibition
         submission = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
 
+        unlike_path = reverse('submission-unlike', kwargs={'submission': submission.id})
+        like_path = reverse('submission-like', kwargs={'submission': submission.id})
+
         # One vote section per submission
         self.selenium.get(self.exhibition_url)
         self.assertEqual(
@@ -722,27 +711,29 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
             1
         )
 
-        # No like/unlike links shown to public
-        self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('a.post-vote')),
-            0
-        )
-
-        # No votes, so no vote text shown
-        self.assertNotRegexpMatches(self.selenium.page_source, r'0 votes')
+        # Public must login to vote
+        vote_link = self.selenium.find_element_by_id('vote-%s' % submission.id)
+        self.assertEqual(vote_link.get_attribute('href'), 
+            '%s%s?next=%s' % (self.live_server_url, reverse('login'), self.exhibition_path))
+        self.assertEqual(vote_link.text, '0')
+        self.assertEqual(vote_link.get_attribute('title'), 'Sign in to vote')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), None)
+        self.assertEqual(vote_link.get_attribute('like-url'), None)
 
         # Create a staff vote
         Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
 
         # Ensure it's counted
         self.selenium.get(self.exhibition_url)
-        self.assertRegexpMatches(self.selenium.page_source, r'1 vote')
+        vote_link = self.selenium.find_element_by_id('vote-%s' % submission.id)
+        self.assertEqual(vote_link.get_attribute('href'), 
+            '%s%s?next=%s' % (self.live_server_url, reverse('login'), self.exhibition_path))
+        self.assertEqual(vote_link.text, '1')
+        self.assertEqual(vote_link.get_attribute('title'), 'Sign in to vote')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), None)
+        self.assertEqual(vote_link.get_attribute('like-url'), None)
 
-        # Can login via 'vote' link
-        vote_link = self.selenium.find_element_by_link_text('vote')
-        self.assertIsNotNone(vote_link)
-
-        # Login as student user
+        # Login as student user via 'vote' link
         with wait_for_page_load(self.selenium):
             vote_link.click()
         self.assertLogin(user='student', next_path=self.exhibition_path)
@@ -755,18 +746,191 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         self.assertEquals(artwork_score.text, '1')
 
         # Logged-in user can like this submission
-        like_button = self.selenium.find_element_by_css_selector('a.like')
-        self.assertIsNotNone(like_button)
-        like_button.click()
+        vote_link = self.selenium.find_element_by_id('vote-%s' % submission.id)
+        self.assertEqual(vote_link.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link.text, '1')
+        self.assertEqual(vote_link.get_attribute('title'), 'like')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(vote_link.get_attribute('like-url'), like_path)
+        artwork_score = self.selenium.find_element_by_css_selector('.artwork-score')
+        self.assertEquals(artwork_score.text, '1')
+
+        vote_link.click()
         time.sleep(5)   # wait for vote to be counted
+
+        self.assertEqual(vote_link.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link.text, '2')
+        self.assertEqual(vote_link.get_attribute('title'), 'unlike')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(vote_link.get_attribute('like-url'), like_path)
         self.assertEquals(artwork_score.text, '2')
 
         # And we can unlike it too
-        unlike_button = self.selenium.find_element_by_css_selector('a.unlike')
-        self.assertIsNotNone(unlike_button)
-        unlike_button.click()
-        time.sleep(5)   # wait for vote to be removed
+        vote_link.click()
+        time.sleep(5)   # wait for vote to be counted
+
+        self.assertEqual(vote_link.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link.text, '1')
+        self.assertEqual(vote_link.get_attribute('title'), 'like')
+        self.assertEqual(vote_link.get_attribute('unlike-url'), unlike_path)
+        self.assertEqual(vote_link.get_attribute('like-url'), like_path)
         self.assertEquals(artwork_score.text, '1')
+
+    def test_multiple_vote_like_unlike(self):
+
+        # Submit artworks to the exhibition
+        submission1 = Submission.objects.create(artwork=self.artwork, exhibition=self.exhibition, submitted_by=self.user)
+        artwork2 = Artwork.objects.create(title='Artwork Two', code='// code goes here', author=self.user)
+        submission2 = Submission.objects.create(artwork=artwork2, exhibition=self.exhibition, submitted_by=self.user)
+
+        unlike_path1 = reverse('submission-unlike', kwargs={'submission': submission1.id})
+        like_path1 = reverse('submission-like', kwargs={'submission': submission1.id})
+        unlike_path2 = reverse('submission-unlike', kwargs={'submission': submission2.id})
+        like_path2 = reverse('submission-like', kwargs={'submission': submission2.id})
+
+        # One vote section per submission
+        self.selenium.get(self.exhibition_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork-votes')),
+            2
+        )
+
+        # Public must login to vote
+        vote_link1 = self.selenium.find_element_by_id('vote-%s' % submission1.id)
+        self.assertEqual(vote_link1.get_attribute('href'), 
+            '%s%s?next=%s' % (self.live_server_url, reverse('login'), self.exhibition_path))
+        self.assertEqual(vote_link1.text, '0')
+        self.assertEqual(vote_link1.get_attribute('title'), 'Sign in to vote')
+        self.assertEqual(vote_link1.get_attribute('unlike-url'), None)
+        self.assertEqual(vote_link1.get_attribute('like-url'), None)
+
+        vote_link2 = self.selenium.find_element_by_id('vote-%s' % submission2.id)
+        self.assertEqual(vote_link2.get_attribute('href'), 
+            '%s%s?next=%s' % (self.live_server_url, reverse('login'), self.exhibition_path))
+        self.assertEqual(vote_link2.text, '0')
+        self.assertEqual(vote_link2.get_attribute('title'), 'Sign in to vote')
+        self.assertEqual(vote_link2.get_attribute('unlike-url'), None)
+        self.assertEqual(vote_link2.get_attribute('like-url'), None)
+
+        # Create a staff vote on submission2
+        Vote.objects.create(submission=submission2, status=Vote.THUMBS_UP, voted_by=self.staff_user)
+
+        # Ensure it's counted against the correct submission
+        self.selenium.get(self.exhibition_url)
+        vote_link1 = self.selenium.find_element_by_id('vote-%s' % submission1.id)
+        self.assertEqual(vote_link1.get_attribute('href'), 
+            '%s%s?next=%s' % (self.live_server_url, reverse('login'), self.exhibition_path))
+        self.assertEqual(vote_link1.text, '0')
+        self.assertEqual(vote_link1.get_attribute('title'), 'Sign in to vote')
+        self.assertEqual(vote_link1.get_attribute('unlike-url'), None)
+        self.assertEqual(vote_link1.get_attribute('like-url'), None)
+
+        vote_link2 = self.selenium.find_element_by_id('vote-%s' % submission2.id)
+        self.assertEqual(vote_link2.get_attribute('href'), 
+            '%s%s?next=%s' % (self.live_server_url, reverse('login'), self.exhibition_path))
+        self.assertEqual(vote_link2.text, '1')
+        self.assertEqual(vote_link2.get_attribute('title'), 'Sign in to vote')
+        self.assertEqual(vote_link2.get_attribute('unlike-url'), None)
+        self.assertEqual(vote_link2.get_attribute('like-url'), None)
+
+        # Login as student user via 'vote' link
+        with wait_for_page_load(self.selenium):
+            vote_link2.click()
+        self.assertLogin(user='student', next_path=self.exhibition_path)
+
+        # Ensure we're back on the view page
+        self.assertEqual(self.selenium.current_url, self.exhibition_url)
+
+        # Can see staff vote
+        vote_link2 = self.selenium.find_element_by_id('vote-%s' % submission2.id)
+        self.assertEqual(vote_link2.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link2.text, '1')
+        self.assertEqual(vote_link2.get_attribute('title'), 'like')
+        self.assertEqual(vote_link2.get_attribute('unlike-url'), unlike_path2)
+        self.assertEqual(vote_link2.get_attribute('like-url'), like_path2)
+        artwork_score2 = self.selenium.find_element_by_css_selector('#vote-%s .artwork-score' % submission2.id)
+        self.assertEquals(artwork_score2.text, '1')
+
+        vote_link1 = self.selenium.find_element_by_id('vote-%s' % submission1.id)
+        self.assertEqual(vote_link1.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link1.text, '0')
+        self.assertEqual(vote_link1.get_attribute('title'), 'like')
+        self.assertEqual(vote_link1.get_attribute('unlike-url'), unlike_path1)
+        self.assertEqual(vote_link1.get_attribute('like-url'), like_path1)
+        artwork_score1 = self.selenium.find_element_by_css_selector('#vote-%s .artwork-score' % submission1.id)
+        self.assertEquals(artwork_score1.text, '0')
+
+        # Logged-in user can like this submission
+        vote_link2.click()
+        time.sleep(5)   # wait for vote to be counted
+
+        self.assertEqual(vote_link2.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link2.text, '2')
+        self.assertEqual(vote_link2.get_attribute('title'), 'unlike')
+        self.assertEqual(vote_link2.get_attribute('unlike-url'), unlike_path2)
+        self.assertEqual(vote_link2.get_attribute('like-url'), like_path2)
+        self.assertEquals(artwork_score2.text, '2')
+
+        self.assertEqual(vote_link1.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link1.text, '0')
+        self.assertEqual(vote_link1.get_attribute('title'), 'like')
+        self.assertEqual(vote_link1.get_attribute('unlike-url'), unlike_path1)
+        self.assertEqual(vote_link1.get_attribute('like-url'), like_path1)
+        self.assertEquals(artwork_score1.text, '0')
+
+        # And we can unlike it too
+        vote_link2.click()
+        time.sleep(5)   # wait for vote to be counted
+
+        self.assertEqual(vote_link2.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link2.text, '1')
+        self.assertEqual(vote_link2.get_attribute('title'), 'like')
+        self.assertEqual(vote_link2.get_attribute('unlike-url'), unlike_path2)
+        self.assertEqual(vote_link2.get_attribute('like-url'), like_path2)
+        self.assertEquals(artwork_score2.text, '1')
+
+        self.assertEqual(vote_link1.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link1.text, '0')
+        self.assertEqual(vote_link1.get_attribute('title'), 'like')
+        self.assertEqual(vote_link1.get_attribute('unlike-url'), unlike_path1)
+        self.assertEqual(vote_link1.get_attribute('like-url'), like_path1)
+        self.assertEquals(artwork_score1.text, '0')
+
+        # We can like the other submission
+        vote_link1.click()
+        time.sleep(5)   # wait for vote to be counted
+
+        self.assertEqual(vote_link2.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link2.text, '1')
+        self.assertEqual(vote_link2.get_attribute('title'), 'like')
+        self.assertEqual(vote_link2.get_attribute('unlike-url'), unlike_path2)
+        self.assertEqual(vote_link2.get_attribute('like-url'), like_path2)
+        self.assertEquals(artwork_score2.text, '1')
+
+        self.assertEqual(vote_link1.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link1.text, '1')
+        self.assertEqual(vote_link1.get_attribute('title'), 'unlike')
+        self.assertEqual(vote_link1.get_attribute('unlike-url'), unlike_path1)
+        self.assertEqual(vote_link1.get_attribute('like-url'), like_path1)
+        self.assertEquals(artwork_score1.text, '1')
+
+        # And we can unlike the other submission
+        vote_link1.click()
+        time.sleep(5)   # wait for vote to be counted
+
+        self.assertEqual(vote_link2.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link2.text, '1')
+        self.assertEqual(vote_link2.get_attribute('title'), 'like')
+        self.assertEqual(vote_link2.get_attribute('unlike-url'), unlike_path2)
+        self.assertEqual(vote_link2.get_attribute('like-url'), like_path2)
+        self.assertEquals(artwork_score2.text, '1')
+
+        self.assertEqual(vote_link1.get_attribute('href'), '%s#' % (self.exhibition_url))
+        self.assertEqual(vote_link1.text, '0')
+        self.assertEqual(vote_link1.get_attribute('title'), 'like')
+        self.assertEqual(vote_link1.get_attribute('unlike-url'), unlike_path1)
+        self.assertEqual(vote_link1.get_attribute('like-url'), like_path1)
+        self.assertEquals(artwork_score1.text, '0')
 
 
 class SubmissionCreateIntegrationTests(SeleniumTestCase):

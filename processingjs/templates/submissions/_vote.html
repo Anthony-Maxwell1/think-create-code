@@ -1,14 +1,18 @@
 {% load dict_filters %}
+<a id="vote-{{ object.id }}"
 {% if user.is_anonymous %}
-    <div class="artwork-score">{% if submission.score > 0 %} {{ submission.score }} vote{{ submission.score|pluralize }}{% endif %}</div>
-    <div>[<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" 
-            title="Sign in to vote">vote</a>]</div>
+    href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" 
+   class="like"
+   title="Sign in to vote"
 {% else %}
-{% with votes|get:submission.id as voted %}
-<a unlike-url="{% url 'submission-unlike' submission=submission.id %}"
-     like-url="{% url 'submission-like'   submission=submission.id %}"
-        class="post-vote {% if voted %}unlike{% else %}like{% endif %}"
-        title="{% if voted %}unlike{% else %}like{% endif %}"
-   href="#"><i class="fa fa-thumbs-up"></i> <div class="artwork-score">{{ submission.score }}</div></a>
+    href="#"
+   unlike-url="{% url 'submission-unlike' submission=object.id %}"
+     like-url="{% url 'submission-like'   submission=object.id %}"
+{% with votes|get:object.id as voted %}
+    class="post-vote {% if voted %}unlike{% else %}like{% endif %}"
+    title="{% if voted %}unlike{% else %}like{% endif %}"
 {% endwith %}
 {% endif %}
+><i class="fa fa-thumbs-up"></i>
+  <div class="artwork-score" title="{{ object.score}} vote{% if object.score == 1 %}{% else %}s{% endif %}">{{ object.score }}</div>
+</a>
