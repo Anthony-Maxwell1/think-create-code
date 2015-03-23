@@ -218,9 +218,7 @@ CSP_STYLE_SRC = (
 
 
 # Authentication
-# Show the LTIPermissionDenied view if there's an LTI_LOGIN_URL configured
-# Otherwise, fall back to the settings.LOGIN_URL
-LOGIN_URL = 'lti-403' if LTI_LOGIN_URL else 'django.contrib.auth.views.login'
+LOGIN_URL = 'login'
 
 LOGIN_REDIRECT_URL = '/'
 

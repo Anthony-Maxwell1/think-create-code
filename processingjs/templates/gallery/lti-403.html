@@ -2,7 +2,7 @@
 {% block content %}
 <div id="lti-403-page">
 <h1>{{ lti_link_text }}</h1>
-<p>This content may only be viewed by participants of <a href="{% url 'lti-login' %}{{ lti_query_string }}">{{ lti_link_text }}</a>.</p>
+<p>This page may only be viewed by participants of <a href="{% url 'lti-login' %}{{ lti_query_string }}">{{ lti_link_text }}</a>.</p>
 
 <h2>Already enrolled?</h2>
 <a href="{% url 'lti-login' %}{{ lti_query_string }}">Go to {{ lti_link_text }}</a>.

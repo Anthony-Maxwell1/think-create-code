@@ -3,6 +3,7 @@ from django.test.runner import DiscoverRunner
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
+from django.utils.importlib import import_module
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities    
 
 from selenium.webdriver.firefox.webdriver import WebDriver
@@ -12,6 +13,7 @@ from pyvirtualdisplay import Display
 
 import os
 import re
+import sys
 import time
 from contextlib import contextmanager
 
@@ -71,8 +73,8 @@ class UserSetUp:
             return self.super_password
         return self.password
 
-    def assertLogin(self, client, next_path='', user='default'):
-        login_path = reverse('login')
+    def assertLogin(self, client, next_path='', user='default', login='login'):
+        login_path = reverse(login)
         if next_path:
             login_path = '%s?next=%s' % (login_path, next_path)
 
@@ -82,6 +84,19 @@ class UserSetUp:
 
         # go to next_path
         return client.get(next_path)
+
+
+class TestOverrideSettings(object):
+
+    def tearDown(self):
+        super(TestOverrideSettings, self).tearDown()
+        # reload urlconf without overrides
+        self.reload_urlconf()
+
+    def reload_urlconf(self):
+        if settings.ROOT_URLCONF in sys.modules:
+            reload(sys.modules[settings.ROOT_URLCONF])
+        return import_module(settings.ROOT_URLCONF)
 
 
 class SeleniumTestCase(UserSetUp, LiveServerTestCase):
@@ -132,12 +147,12 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
             % (id, propName)
         )
 
-    def performLogin(self, user='default'):
+    def performLogin(self, user='default', login='login'):
         '''Go to the login page, and assert login'''
 
-        login_url = '%s%s' % (self.live_server_url, reverse('login'))
+        login_url = '%s%s' % (self.live_server_url, reverse(login))
         self.selenium.get(login_url)
-        self.assertLogin(user=user)
+        self.assertLogin(user=user, login=login)
 
     def performLogout(self):
         '''Go to the logout page'''
@@ -145,9 +160,9 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
         logout_url = '%s%s' % (self.live_server_url, reverse('logout'))
         self.selenium.get(logout_url)
 
-    def assertLogin(self, next_path = '', user='default'):
+    def assertLogin(self, next_path = '', user='default', login='login'):
         '''Assert that we are at the login page, perform login, and assert success.'''
-        self._doLogin(next_path, user)
+        self._doLogin(next_path, user, login)
         if next_path:
             next_url = '%s%s' % (self.live_server_url, next_path)
         else:
@@ -160,10 +175,10 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
         redirect_url = '%s%s' % (self.live_server_url, redirect_path)
         self.assertEqual(self.selenium.current_url, redirect_url)
     
-    def _doLogin(self, next_path = '', user='default'):
+    def _doLogin(self, next_path = '', user='default', login='login'):
         '''Assert that we are at the login page, perform login, and assert success.'''
 
-        login_url = '%s%s' % (self.live_server_url, reverse('login'))
+        login_url = '%s%s' % (self.live_server_url, reverse(login))
         if next_path:
             login_url = '%s?next=%s' % (login_url, next_path)
 

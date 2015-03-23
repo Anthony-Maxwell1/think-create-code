@@ -1,16 +1,14 @@
 import re
 import time
 import os
-import sys
 import urllib
 from urlparse import urlparse
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.test.utils import override_settings
-from django.utils.importlib import import_module
 from selenium.common.exceptions import NoSuchElementException
 
-from uofa.test import SeleniumTestCase, wait_for_page_load
+from uofa.test import SeleniumTestCase, TestOverrideSettings, wait_for_page_load
 from selenium.common.exceptions import NoSuchElementException
 from gallery.views import ShareView
 from artwork.models import Artwork
@@ -342,12 +340,13 @@ class ShareViewIntegrationTest(SeleniumTestCase):
         self.assertShareUrlRedirects(share_url)
 
 
-class LTILoginViewTest(SeleniumTestCase):
+class LTILoginViewTest(TestOverrideSettings, SeleniumTestCase):
 
     # Set the LTI Login Url, and use lti-403 as the login URL
     @override_settings(LTI_LOGIN_URL='https://www.google.com.au')
-    @override_settings(LOGIN_URL='lti-403')
     def test_view(self):
+
+        self.reload_urlconf()
 
         # ensure no cookies set
         cookies = self.selenium.get_cookies()
@@ -464,12 +463,13 @@ class LTIEntryViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, artwork_url)
 
 
-class LTIPermissionDeniedViewTest(SeleniumTestCase):
+class LTIPermissionDeniedViewTest(TestOverrideSettings, SeleniumTestCase):
 
     # Set the LTI Login Url, and use lti-403 as the login URL
     @override_settings(LTI_LOGIN_URL='https://www.google.com.au')
-    @override_settings(LOGIN_URL='lti-403')
     def test_view(self):
+
+        self.reload_urlconf()
 
         # ensure we're logged out
         self.performLogout()
@@ -478,11 +478,11 @@ class LTIPermissionDeniedViewTest(SeleniumTestCase):
         target_url = '%s%s' % (self.live_server_url, target_path)
 
         querystr = '?next=' + target_path
-        lti_403 = '%s%s%s' % (self.live_server_url, reverse('lti-403'), querystr)
+        lti_403 = '%s%s%s' % (self.live_server_url, reverse('login'), querystr)
         lti_login = '%s%s%s' % (self.live_server_url, reverse('lti-login'), querystr)
         lti_enrol = '%s%s%s' % (self.live_server_url, reverse('lti-enrol'), querystr)
 
-        # ensure login-required URL redirects to lti-403
+        # ensure login-required URL redirects to configured login page (lti-403)
         self.selenium.get(target_url)
         self.assertEqual(self.selenium.current_url, lti_403)
 
@@ -497,17 +497,11 @@ class LTIPermissionDeniedViewTest(SeleniumTestCase):
         self.assertEqual(enrol_link.get_attribute('href'), lti_enrol)
 
 
-class LTILoginEntryViewTest(SeleniumTestCase):
+class LTILoginEntryViewTest(TestOverrideSettings, SeleniumTestCase):
     '''Test the full LTI Login/Entry redirect cycle'''
-
-    def reload_urlconf(self):
-        if settings.ROOT_URLCONF in sys.modules:
-            reload(sys.modules[settings.ROOT_URLCONF])
-        return import_module(settings.ROOT_URLCONF)
 
     # Set the LTI Login Url, and use lti-403 as the login URL
     @override_settings(LTI_LOGIN_URL='https://www.google.com.au')
-    @override_settings(LOGIN_URL='lti-403')
     def _performRedirectTest(self, target, target_redirect=None):
 
         # url config is dependent on app settings, so reload
@@ -542,8 +536,10 @@ class LTILoginEntryViewTest(SeleniumTestCase):
         # lti-entry redirects to login
         lti_entry = reverse('lti-entry')
         lti_entry_url = '%s%s' % (self.live_server_url, lti_entry)
+
+        # need to force auth real login here to get past lti-entry auth
+        self.performLogin(login='auth-login')
         self.selenium.get(lti_entry_url)
-        self.assertLogin(lti_entry)
 
         # fill in form
         first_name = self.selenium.find_element_by_id('id_first_name')

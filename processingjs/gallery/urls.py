@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, include, url
+from django.core.urlresolvers import reverse_lazy
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.auth import views as auth_views
 from django.conf import settings
@@ -88,12 +89,25 @@ urlpatterns = patterns('',
         name='vote-ok'),
     url(r'^vote/(?P<pk>\d+)$', votes.views.ShowVoteView.as_view(),
         name='vote-view'),
+
+    # Decide whether to use auth login or lti-403 as the 'login' url
+    url(r'^login/$',
+        gallery.views.LTIPermissionDeniedView.as_view(),
+        name='login') if settings.LTI_LOGIN_URL 
+    else
     url(r'^login/$', auth_views.login,
         {'template_name': 'login.html'},
         name='login'),
+
+    # Ensure there's always a link available for the auth login
+    url(r'^auth/login/$', auth_views.login,
+        {'template_name': 'login.html'},
+        name='auth-login'),
+
     url(r'^logout/$', auth_views.logout,
-        {'next_page': '/'},
+        {'next_page': reverse_lazy('home')},
         name='logout'),
+
     url(r'^media/(?P<name>.+)$', 'database_files.views.serve',
         name='database_file'),
 )

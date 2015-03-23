@@ -4,11 +4,10 @@ from django.test.utils import override_settings
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-from django.utils.importlib import import_module
 import sys
 from urlparse import urlparse
 
-from uofa.test import UserSetUp, SeleniumTestCase
+from uofa.test import UserSetUp, SeleniumTestCase, TestOverrideSettings
 from artwork.models import Artwork
 
 
@@ -175,12 +174,14 @@ class LTIEntryViewTest(UserSetUp, TestCase):
         self.assertFalse(user.is_staff)
 
 
-class LTILoginViewTest(TestCase):
+class LTILoginViewTest(TestOverrideSettings, TestCase):
 
     # Set the LTI Login Url, and use lti-403 as the login URL
     @override_settings(LTI_LOGIN_URL='https://google.com')
     @override_settings(LOGIN_URL='lti-403')
     def test_view(self):
+
+        self.reload_urlconf()
 
         client = Client()
 
@@ -228,12 +229,14 @@ class LTIEnrolViewTest(TestCase):
         self.assertIsNotNone(cookie)
 
 
-class LTIPermissionDeniedViewTest(TestCase):
+class LTIPermissionDeniedViewTest(TestOverrideSettings, TestCase):
 
     # Set the LTI Login Url, and use lti-403 as the login URL
     @override_settings(LTI_LOGIN_URL='https://google.com')
     @override_settings(LOGIN_URL='lti-403')
     def test_view(self):
+
+        self.reload_urlconf()
 
         # ensure we're logged out
         client = Client()
@@ -252,13 +255,8 @@ class LTIPermissionDeniedViewTest(TestCase):
         self.assertEquals(response.context['lti_query_string'], querystr)
 
 
-class LTILoginEntryViewTest(UserSetUp, TestCase):
+class LTILoginEntryViewTest(TestOverrideSettings, UserSetUp, TestCase):
     '''Test the full LTI Login/Entry redirect cycle'''
-
-    def reload_urlconf(self):
-        if settings.ROOT_URLCONF in sys.modules:
-            reload(sys.modules[settings.ROOT_URLCONF])
-        return import_module(settings.ROOT_URLCONF)
 
     # Set the LTI Login Url, and use lti-403 as the login URL
     @override_settings(LTI_LOGIN_URL='https://google.com')
