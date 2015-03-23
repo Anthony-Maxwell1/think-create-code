@@ -42,4 +42,15 @@ $(document).ready(function(){
             window.getSelection().addRange(div);
         }
     });
+
+    // Hide/show help accordion according to #hash
+    var hash = window.location.hash;
+    var $accordion;
+    if (hash) {
+        $accordion = $('#help-content .accordion a[href=' + hash + ']');
+    }
+    if (!$accordion || !$accordion.length) {
+        $accordion = $('#help-content .accordion a').first();
+    }
+    $accordion.trigger('click');
 });

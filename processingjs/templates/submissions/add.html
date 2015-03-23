@@ -9,13 +9,16 @@
     </ul>
     <div data-alert class="row warning alert-box">
         <div class="columns">
-            <div>Once you have Shared your Artwork, you can no longer Edit it.</div>
-            <div>However, you will be able to Unshare it, or Clone it into a New Artwork.</div>
+            <div>Once you have Shared your Artwork, you can <strong>no longer change it</strong>.</div>
         </div>
     </div>
     <div class="row">
         <div class="small-6 columns">
             <button id="save_submission" type="submit" class="postfix button">Save</button>
+        </div>
+        <div class="columns small-6">
+            <button id="help" type="button" onclick="window.location='{% url 'help' %}#sharing'" 
+                class="postfix button">Help</button>
         </div>
     </div>
 </form>
