@@ -220,7 +220,8 @@ CSP_STYLE_SRC = (
 # Authentication
 LOGIN_URL = 'login'
 
-LOGIN_REDIRECT_URL = '/'
+from django.core.urlresolvers import reverse_lazy
+LOGIN_REDIRECT_URL = reverse_lazy('home')
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Django's default auth backend
