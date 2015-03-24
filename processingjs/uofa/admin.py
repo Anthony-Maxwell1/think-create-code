@@ -1,4 +1,7 @@
 from django.contrib import admin
 from uofa.models import User
 
-admin.site.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'username',)
+
+admin.site.register(User, UserAdmin)
