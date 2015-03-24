@@ -11,11 +11,11 @@ import submissions.views
 import votes.views
 from votes.models import Vote
 
-#from django.contrib import admin
-#admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
 
 urlpatterns = patterns('',
-    #url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', include(admin.site.urls)),
 
     url(r'^$', artwork.views.ListArtworkView.as_view(),
         name='home'),

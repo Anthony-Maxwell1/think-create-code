@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import signals
+from django.dispatch import receiver
 from django.forms import ModelForm
 from django.core import validators
 from django.utils import timezone
@@ -9,6 +11,10 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.models import UserManager
 
 from uofa.fields import NullableCharField
+
+def staff_member_group():
+    '''ID of the Staff Members permissions group, for the Admin site'''
+    return 1
 
 
 class UserManager(UserManager):
@@ -45,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), blank=True)
     is_staff = models.BooleanField(_('staff status'), default=False,
         help_text=_('Designates whether the user can log into this admin '
-                    'site.'))
+                    'site and have Staff Member group permissions.'))
     is_active = models.BooleanField(_('active'), default=True,
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
@@ -83,6 +89,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         Sends an email to this User.
         """
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+@receiver(signals.post_save, sender=User)
+def post_save(sender, instance=None, **kwargs):
+    '''user.is_staff determines membership in staff_member_group()'''
+    staff_group = staff_member_group()
+    if instance.is_staff:
+        instance.groups.add(staff_group)
+    else:
+        instance.groups.remove(staff_group)
 
 
 class UserForm(ModelForm):

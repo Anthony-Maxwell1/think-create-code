@@ -122,6 +122,118 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
         )
 
 
+class GalleryStaffAdminIntegrationTests(SeleniumTestCase):
+
+    def setUp(self):
+        super(GalleryStaffAdminIntegrationTests, self).setUp()
+
+        # Load staff group fixtures data
+        from django.core.management import call_command
+        call_command("loaddata", 'fixtures/000_staff_group.json', verbosity=0)
+
+        self.assertEquals(0, self.user.groups.count())
+        self.assertEquals(1, self.staff_user.groups.count())
+        self.assertEquals(1, self.super_user.groups.count())
+
+    def test_public(self):
+
+        self.performLogout()
+        base_url = self.live_server_url
+        self.selenium.get(base_url)
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('Administer')
+        )
+
+    def test_student(self):
+
+        self.performLogout()
+        self.performLogin('student')
+
+        base_url = self.live_server_url
+        self.selenium.get(base_url)
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_link_text, ('Administer')
+        )
+
+    def test_staff(self):
+
+        self.performLogout()
+        self.performLogin('staff')
+
+        base_url = self.live_server_url
+        self.selenium.get(base_url)
+
+        admin_link = self.selenium.find_element_by_link_text('Administer')
+        admin_link.click()
+
+        admin_index_url = '%s%s' % (base_url, reverse('admin:index'))
+        self.assertEqual(self.selenium.current_url, admin_index_url)
+
+    def test_student_admin_login(self):
+
+        base_url = self.live_server_url
+        admin_login_path = reverse('admin:login')
+        admin_login_url = '%s%s' % (base_url, admin_login_path)
+
+        self.performLogout()
+        self.selenium.get(admin_login_url)
+        self._doLogin(user='student', login='admin:login')
+
+        # Student user ends up back at the admin login page, with an error
+        self.assertEqual(self.selenium.current_url, admin_login_url)
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.errornote').text,
+            'Please enter the correct username and password for a staff account.'
+            ' Note that both fields may be case-sensitive.'
+        )
+
+    def test_staff_admin_login(self):
+
+        base_url = self.live_server_url
+        admin_index_path = reverse('admin:index')
+        admin_index_url = '%s%s' % (base_url, admin_index_path)
+        admin_login_url = '%s%s?next=%s' % (base_url, reverse('admin:login'), admin_index_path)
+
+        self.performLogout()
+        self.selenium.get(admin_login_url)
+        self.assertLogin(user='staff', login='admin:login', next_path=admin_index_path)
+
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-artwork a').get_attribute('href'),
+                         '%sartwork/artwork/' % admin_index_url)
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-group a').get_attribute('href'),
+                         '%sauth/group/' % admin_index_url)
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-exhibition a').get_attribute('href'),
+                         '%sexhibitions/exhibition/' % admin_index_url)
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-submission a').get_attribute('href'),
+                         '%ssubmissions/submission/' % admin_index_url)
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-user a').get_attribute('href'),
+                         '%suofa/user/' % admin_index_url)
+
+    def test_super_admin_login(self):
+
+        base_url = self.live_server_url
+        admin_index_path = reverse('admin:index')
+        admin_index_url = '%s%s' % (base_url, admin_index_path)
+        admin_login_url = '%s%s?next=%s' % (base_url, reverse('admin:login'), admin_index_path)
+
+        self.performLogout()
+        self.selenium.get(admin_login_url)
+        self.assertLogin(user='super', login='admin:login', next_path=admin_index_path)
+
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-artwork a').get_attribute('href'),
+                         '%sartwork/artwork/' % admin_index_url)
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-group a').get_attribute('href'),
+                         '%sauth/group/' % admin_index_url)
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-exhibition a').get_attribute('href'),
+                         '%sexhibitions/exhibition/' % admin_index_url)
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-submission a').get_attribute('href'),
+                         '%ssubmissions/submission/' % admin_index_url)
+        self.assertEqual(self.selenium.find_element_by_css_selector('.model-user a').get_attribute('href'),
+                         '%suofa/user/' % admin_index_url)
+
+
 class GalleryHomePageIntegrationTests(SeleniumTestCase):
     '''Test the default (home) page'''
 

@@ -43,14 +43,19 @@
                 <a href="{% url "artwork-studio" %}" title="view my artwork">My Studio</a>
             </li>
             <li>
-                <a href="{% url "artwork-shared" %}" id="nav-list" title="view shared artwork">Artwork</a>
+                <a href="{% url "artwork-shared" %}" title="view shared artwork">Artwork</a>
             </li>
             <li>
-                <a href="{% url "exhibition-list" %}" id="nav-list" title="view exhibitions">Exhibitions</a>
+                <a href="{% url "exhibition-list" %}" title="view exhibitions">Exhibitions</a>
             </li>
             <li>
-                <a href="{% url "help" %}" id="nav-list" title="help links and resources">Help</a>
+                <a href="{% url "help" %}" title="help links and resources">Help</a>
             </li>
+            {% if user.is_staff %}
+            <li>
+                <a href="{% url "admin:index" %}" title="admin view">Administer</a>
+            </li>
+            {% endif %}
         </ul>
         </section>
         {% if user.is_anonymous %}

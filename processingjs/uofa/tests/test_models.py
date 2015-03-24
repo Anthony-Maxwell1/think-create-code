@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core import mail
 
-from uofa.models import User, UserManager, UserForm
+from uofa.models import User, UserManager, UserForm, staff_member_group
 
 class UserManagerTests(TestCase):
 
@@ -93,6 +93,42 @@ class UserTests(TestCase):
         self.assertEqual(message.body, "This is a message")
         self.assertEqual(message.from_email, "from@domain.com")
         self.assertEqual(message.to, [user.email])
+
+
+class UserGroupTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        # Load staff group fixtures data
+        from django.core.management import call_command
+        call_command("loaddata", 'fixtures/000_staff_group.json', verbosity=0)
+        super(UserGroupTests, cls).setUpClass()
+
+    def test_staff_group(self):
+        '''Ensure user.is_staff determines membership in Staff Members group'''
+        user = User.objects.create_user('user_name')
+        group_id = staff_member_group()
+
+        self.assertEquals(0, user.groups.count())
+
+        # refetch to ensure data not cached
+        user = User.objects.get(username='user_name')
+        self.assertEquals(0, user.groups.count())
+
+        user.is_staff = True
+        user.save()
+        user = User.objects.get(username='user_name')
+        self.assertEquals(1, user.groups.count())
+
+        user.is_staff = False
+        user.save()
+        user = User.objects.get(username='user_name')
+        self.assertEquals(0, user.groups.filter(id=group_id).count())
+
+        # changing without saving does nothing
+        user.is_staff = True
+        user = User.objects.get(username='user_name')
+        self.assertEquals(0, user.groups.filter(id=group_id).count())
 
 
 class UserModelFormTests(TestCase):
