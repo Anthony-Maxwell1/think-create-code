@@ -36,9 +36,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     username = models.CharField(_('username'), max_length=255, unique=True,
         help_text=_('Required. 255 characters or fewer. Letters, digits and '
-                    '@/./+/-/_ only.'),
+                    '@.+:_- only.'),
         validators=[
-            validators.RegexValidator(r'^[\w.@+-]+$', _('Enter a valid username.'), 'invalid'),
+            validators.RegexValidator(r'^[\w.@+:-]+$', _('Enter a valid username.'), 'invalid'),
         ])
     first_name = NullableCharField(_('nickname'), max_length=255, unique=True,
             blank=True, null=True, default=None,
