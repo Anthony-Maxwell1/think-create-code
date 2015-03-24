@@ -173,11 +173,11 @@ div.ui-resizable {
     padding-top: 0.5em;
     padding-bottom: 0.5em;
 }
-.accordion-navigation h2:before {
+.accordion-navigation h3:before {
     content: "\25B8 ";
     padding-right: 0.1em;
 }
-.accordion-navigation.active h2:before {
+.accordion-navigation.active h3:before {
     content: "\25BE ";
 }
 button .fa {
