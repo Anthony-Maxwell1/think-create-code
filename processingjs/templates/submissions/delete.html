@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% block extras %}
+{% load staticfiles %}
+<script type="text/javascript" src="{% static "js/artwork-render.js" %}"></script>
+{% endblock %}
 
 {% block content %}
 <div id="submission-delete-content">
@@ -6,7 +10,7 @@
 
 <p>Are you sure you want to unshare this artwork from 
    <a href="{% url 'exhibition-view' submission.exhibition.id %}">{{ submission.exhibition }}</a>?</p>
-<div data-alert class="row warning alert-box">
+<div data-alert class="warning alert-box auto-width">
     <div>The Share URL will become invalid.</div>
     <div>All Votes for this Artwork will be removed.</div>
     <div>The Artwork itself <em>will not</em> be deleted, only removed from this Exhibition.</div>

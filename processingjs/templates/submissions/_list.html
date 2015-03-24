@@ -2,40 +2,36 @@
 <div id="artwork-list-content">
 {% if object_list %}
 {% if object_list.count > 1 %}
-<div class="row">
-    <div class="columns small-6">
-        <ul class="order_by">
-            {% if order == 'score' %}
-            <li><a href="{% url 'exhibition-view' pk=exhibition_id %}" title="sort submissions by most recent">Most Recent</a></li>
-            <li>Most Votes</li>
-            {% else %}
-            <li>Most Recent</li>
-            <li><a href="{% url 'exhibition-view-score' pk=exhibition_id %}" title="sort submissions by most votes">Most Votes</a></li>
-            {% endif %}
-        </ul>
-    </div>
-    <div class="columns small-6 align-right">
-        <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
-    </div>
+<div class="columns small-6">
+    <ul class="order_by">
+        {% if order == 'score' %}
+        <li><a href="{% url 'exhibition-view' pk=exhibition_id %}" title="sort submissions by most recent">Most Recent</a></li>
+        <li>Most Votes</li>
+        {% else %}
+        <li>Most Recent</li>
+        <li><a href="{% url 'exhibition-view-score' pk=exhibition_id %}" title="sort submissions by most votes">Most Votes</a></li>
+        {% endif %}
+    </ul>
+</div>
+<div class="columns small-6 align-right">
+    <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
 </div>
 {% endif %}
-<div class="row">
-    <div class="small-grid-2">&nbsp;</div>
-    <ul class="small-block-grid-2">
-    {% for submission in object_list %}
-    {% with submission.artwork as artwork %}
-    <li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
-    {% endwith %}
-    {% endfor %}
-    </ul>
-    <div class="small-grid-2">&nbsp;</div>
+<div class="small-grid-2">&nbsp;</div>
+<ul class="small-block-grid-2">
+{% for submission in object_list %}
+{% with submission.artwork as artwork %}
+<li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
+{% endwith %}
+{% endfor %}
+</ul>
+<div class="small-grid-2">&nbsp;</div>
 
-    <a id="reveal-modal-error" href="#" data-reveal-id="modal-error" ></a>
-    <div id="modal-error" class="reveal-modal" data-reveal>
-        <div><h3>We're sorry, an error has occurred.</h3></div>
-        <p>Please reload the current page, and try again.</p>
-        <div><button id="page-reload">Reload</button></div>
-    </div>
+<a id="reveal-modal-error" href="#" data-reveal-id="modal-error" ></a>
+<div id="modal-error" class="reveal-modal" data-reveal>
+    <div><h3>We're sorry, an error has occurred.</h3></div>
+    <p>Please reload the current page, and try again.</p>
+    <div><button id="page-reload">Reload</button></div>
 </div>
 {% endif %}
 </div>

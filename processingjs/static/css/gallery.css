@@ -138,9 +138,6 @@ ul.edit_fields .helptext {
     font-style: italic;
 }
 
-#submission-edit-content ul.edit_fields label {
-    font-size: 200%;
-}
 #submission-edit-content .errorlist {
     color: red;
 }

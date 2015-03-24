@@ -12,15 +12,15 @@
 <h1>Artwork {% if shared %}shared{% endif %} by {{ author }}</h1>
 {% endif %}
 
-<div class="row">
-    <div class="columns small-6">
-        <h4><a href="{% url 'artwork-add' %}" id="artwork-add">&#43; New Artwork</a></h4>
-    </div>
-    <div class="columns small-6 align-right">
-        {% if object_list.count > 1 %}
-        <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
-        {% endif %}
-    </div>
+<div class="columns small-6">
+    <h4><a href="{% url 'artwork-add' %}" id="artwork-add">&#43; New Artwork</a></h4>
+</div>
+<div class="columns small-6 align-right">
+    {% if object_list.count > 1 %}
+    <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
+    {% else %}
+    &nbsp;
+    {% endif %}
 </div>
 
 <div class="small-grid-2">&nbsp;</div>

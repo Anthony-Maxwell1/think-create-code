@@ -25,7 +25,9 @@ class SelectOneOrNoneWidget(RadioSelect):
             for option_value, option_label in chain(self.choices, choices):
                 # skip field.empty_label
                 if option_value:
-                    output.append(format_html('<li><input type="{0}" name="{1}" value="{2}" id="{1}-{2}" /> {3}</li>',
+                    output.append(format_html(
+                        '<li><input type="{0}" name="{1}" value="{2}" id="{1}-{2}" />'
+                        ' <label for="{1}-{2}">{3}</label></li>',
                         'radio',
                         name,
                         option_value,
