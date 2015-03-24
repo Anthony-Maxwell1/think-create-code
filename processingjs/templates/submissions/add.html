@@ -7,22 +7,25 @@
     <ul class="edit_fields">
     {{ form.as_ul }}
     </ul>
-    <div data-alert class="row warning alert-box">
-        <div class="columns">
-            <div>Once you have Shared your Artwork, you can <strong>no longer change it</strong>.</div>
-        </div>
+    <div data-alert class="row warning alert-box columns small-6 small-centered">
+        Once you have Shared your Artwork, you must <strong>UNSHARE or CLONE</strong> to change it.
     </div>
     <div class="row">
         <div class="small-6 columns">
             <button id="save_submission" type="submit" class="postfix button">Save</button>
         </div>
         <div class="columns small-6">
-            <button id="help" type="button" onclick="window.location='{% url 'help' %}#sharing'" 
-                class="postfix button">Help</button>
+            <button id="help" type="button" class="postfix button" data-reveal-id="modal-help"
+                onclick="showHelp('#editshared')">Help</button>
         </div>
     </div>
 </form>
+</div>
 <a id="save_cancel" href="{% url "exhibition-list" %}">back to list</a>
 <div id="error"></div>
+</div>
+<div id="modal-help" class="reveal-modal" data-reveal>
+{% include 'gallery/_help.html' %}
+<a href="#" class="close-reveal-modal" id="help-cancel">&#215;</a>
 </div>
 {% endblock content %}

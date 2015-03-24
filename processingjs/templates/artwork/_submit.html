@@ -1,5 +1,4 @@
 {% if object %}
-
 {% for exhibition in exhibitions_submitted %}
 <p>Shared to <a href="{% url 'exhibition-view' exhibition.id %}">{{ exhibition }}</a>
     {% if exhibition.submitted.submitted_by.id != user.id %}
@@ -23,21 +22,18 @@
         </label>
     </div>
     {% endfor %}
-    <div data-alert class="row warning alert-box">
-        <div class="columns">
-            <div>Once you have Shared your Artwork, you can <strong>no longer change it</strong>.</div>
-        </div>
+    <div data-alert class="row warning alert-box columns small-8 small-centered">
+        Once you have Shared your Artwork, you must <strong>UNSHARE or CLONE</strong> to change it.
     </div>
     <div class="row">
         <div class="columns small-6">
             <button id="save_submission" type="submit" class="postfix button">Share</button>
         </div>
         <div class="columns small-6">
-            <button id="help" type="button" onclick="window.location='{% url 'help' %}#sharing'" 
-                class="postfix button">Help</button>
+            <button id="help" type="button" class="postfix button" data-reveal-id="modal-help"
+                onclick="showHelp('#editshared')">Help</button>
         </div>
     </div>
 </form>
 {% endif %}
-
 {% endif %}

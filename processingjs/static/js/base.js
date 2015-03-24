@@ -44,13 +44,17 @@ $(document).ready(function(){
     });
 
     // Hide/show help accordion according to #hash
-    var hash = window.location.hash;
-    var $accordion;
-    if (hash) {
-        $accordion = $('#help-content .accordion a[href=' + hash + ']');
-    }
-    if (!$accordion || !$accordion.length) {
-        $accordion = $('#help-content .accordion a').first();
-    }
-    $accordion.trigger('click');
+    window['showHelp'] = function(topic, defaultFirst) {
+        var $accordion;
+        if (topic) {
+            $accordion = $('#help-content .accordion a[href=' + topic + ']');
+        }
+        if (defaultFirst && (!$accordion || !$accordion.length)) {
+            $accordion = $('#help-content .accordion a').first();
+        }
+        if ($accordion && !$accordion.parent().hasClass('active')) {
+            $accordion.trigger('click');
+        }
+    };
+    window['showHelp'](window.location.hash, true);
 });

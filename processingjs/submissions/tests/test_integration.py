@@ -1261,14 +1261,25 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
         
         # And exhibition options (since there's >1 choice)
-        exhibition_options = self.selenium.find_elements_by_tag_name('option')
-        self.assertEqual(3, len(exhibition_options))
-        self.assertEqual('', exhibition_options[0].get_attribute('value'))
-        self.assertEqual(self.exhibition.id, long(exhibition_options[1].get_attribute('value')))
-        self.assertEqual(exhibition2.id, long(exhibition_options[2].get_attribute('value')))
+        inputs = self.selenium.find_elements_by_tag_name('input')
+        self.assertEqual(4, len(inputs))
+        self.assertEqual('hidden', inputs[0].get_attribute('type'))
+        self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
+
+        self.assertEqual('radio', inputs[1].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[1].get_attribute('name'))
+        self.assertEqual(self.exhibition.id, long(inputs[1].get_attribute('value')))
+
+        self.assertEqual('radio', inputs[2].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[2].get_attribute('name'))
+        self.assertEqual(exhibition2.id, long(inputs[2].get_attribute('value')))
+
+        self.assertEqual('hidden', inputs[3].get_attribute('type'))
+        self.assertEqual('artwork', inputs[3].get_attribute('name'))
+        self.assertEqual(self.student_artwork.id, long(inputs[3].get_attribute('value')))
 
         # Select exhibition2
-        exhibition_options[2].click()
+        inputs[2].click()
 
         # Click Save button
         with wait_for_page_load(self.selenium):
