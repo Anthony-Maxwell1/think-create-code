@@ -749,7 +749,8 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
         artwork = Artwork.objects.get(pk=artwork.id)
         self.assertEqual(artwork.shared, 0)
 
-        self.selenium.get(share_link)
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(share_link)
         error_404 = self.selenium.find_element_by_tag_name('h1')
         self.assertEqual(
             error_404.text, 'Not Found', self.selenium.page_source
