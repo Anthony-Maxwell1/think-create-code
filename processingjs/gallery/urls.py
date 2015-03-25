@@ -29,6 +29,8 @@ urlpatterns = patterns('',
     url(r'^lti/enrol', gallery.views.LTIRedirectView.as_view(),
         {'redirect_url': settings.LTI_ENROL_URL},
         name='lti-enrol'),
+    url(r'^lti/inactive', gallery.views.LTIInactiveView.as_view(),
+        name='lti-inactive'),
     url(r'^share/?$', gallery.views.ShareView.as_view(),
         name='share'),
     # N.B This /help url is used by the Nagios checks for this service.

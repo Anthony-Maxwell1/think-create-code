@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 import sys
 from urlparse import urlparse
 
-from uofa.test import UserSetUp, SeleniumTestCase, TestOverrideSettings
+from uofa.test import UserSetUp, InactiveUserSetUp, TestOverrideSettings
 from artwork.models import Artwork
 
 
@@ -172,6 +172,97 @@ class LTIEntryViewTest(UserSetUp, TestCase):
         # Ensure the updated user is still a student
         user = get_user_model().objects.get(username=self.user.username)
         self.assertFalse(user.is_staff)
+
+
+class LTIInactiveEntryViewTest(InactiveUserSetUp, TestCase):
+    """LTI Login view tests for inactive user"""
+
+    def test_inactive_auth_get(self):
+
+        '''Authenticated, inactive GET users are shown the lti-inactive page'''
+        client = Client()
+        self.assertLogin(client, user='inactive')
+
+        # Ensure lti-entry GET is redirected to lti-inactive
+        lti_login_path = reverse('lti-entry')
+        inactive_path = reverse('lti-inactive')
+        response = client.get(lti_login_path)
+        self.assertRedirects(response, inactive_path, status_code=302, target_status_code=200)
+
+        # Ensure active status is not updated
+        user = get_user_model().objects.get(username=self.inactive_user.username)
+        self.assertFalse(user.is_active)
+
+    def test_inactive_auth_post(self):
+
+        '''Authenticated, inactive POST users, without a nickname set, are shown the lti-entry page'''
+        client = Client()
+        self.assertLogin(client, user='inactive')
+
+        # Ensure lti-entry POST is redirected to lti-inactive
+        lti_login_path = reverse('lti-entry')
+        inactive_path = reverse('lti-inactive')
+        response = client.post(lti_login_path)
+        self.assertRedirects(response, inactive_path, status_code=302, target_status_code=200)
+
+        # Ensure active status is not updated
+        user = get_user_model().objects.get(username=self.inactive_user.username)
+        self.assertFalse(user.is_active)
+
+    def test_inactive_set_nickname(self):
+
+        '''Inactive users are not allowed to update their nicknames.'''
+        self.inactive_user.first_name = "MyNickname"
+        self.inactive_user.save()
+
+        client = Client()
+        self.assertLogin(client, user='inactive')
+
+        # Ensure lti-entry POST with form data is redirected to lti-inactive
+        lti_login_path = reverse('lti-entry')
+        inactive_path = reverse('lti-inactive')
+        form_data = {'first_name': 'AnotherNickname'}
+        response = client.post(lti_login_path, form_data)
+        self.assertRedirects(response, inactive_path, status_code=302, target_status_code=200)
+
+        # Ensure the nickname and active status are not updated
+        user = get_user_model().objects.get(username=self.inactive_user.username)
+        self.assertEqual(user.first_name, "MyNickname")
+        self.assertFalse(user.is_active)
+
+    def test_inactive_staff(self):
+
+        '''Ensure that even inactive staff are redirected to lti-inactive'''
+        self.inactive_user.first_name = "MyNickname"
+        self.inactive_user.save()
+
+        self.assertFalse(self.inactive_user.is_staff)
+
+        client = Client()
+        self.assertLogin(client, user='inactive')
+
+        # Fake the LTI session roles
+        session = client.session
+        session['LTI_LAUNCH'] = {
+            'roles': ['Instructor',]
+        }
+        session.save()
+
+        post_data = {
+            'first_name': 'NickName',
+        }
+        lti_login_path = reverse('lti-entry')
+        inactive_path = reverse('lti-inactive')
+        response = client.post(lti_login_path, post_data)
+
+        # Ensure the user is redirected
+        self.assertRedirects(response, inactive_path, status_code=302, target_status_code=200)
+
+        # Staff status, nickname, and inactive status remain unchanged
+        user = get_user_model().objects.get(username=self.inactive_user.username)
+        self.assertFalse(user.is_staff)
+        self.assertEqual(user.first_name, "MyNickname")
+        self.assertFalse(user.is_active)
 
 
 class LTILoginViewTest(TestOverrideSettings, TestCase):

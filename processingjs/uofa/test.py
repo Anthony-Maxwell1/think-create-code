@@ -37,7 +37,7 @@ class ExcludeAppsTestSuiteRunner(DiscoverRunner):
         return suite
     
 
-class UserSetUp:
+class UserSetUp(object):
     def setUp(self):
         # Create a basic (student) user
         self.password = 'some_password'
@@ -85,6 +85,65 @@ class UserSetUp:
 
         # go to next_path
         return client.get(next_path)
+
+
+class InactiveUserSetUp(UserSetUp):
+
+    def activateUser(self, active=True):
+        self.inactive_user.is_active = active
+        self.inactive_user.save()
+
+    def get_username(self, user='default'):
+        if user == 'inactive':
+            return self.inactive_user.username
+        return super(InactiveUserSetUp, self).get_username(user)
+
+    def get_password(self, user='default'):
+        if user == 'inactive':
+            return self.inactive_password
+        return super(InactiveUserSetUp, self).get_password(user)
+
+    def setUp(self):
+        super(InactiveUserSetUp, self).setUp()
+
+        # Create an inactive (student) user
+        self.inactive_password = 'inactive_password'
+        self.inactive_user = get_user_model().objects.create(username='inactive_user')
+        self.inactive_user.set_password(self.inactive_password)
+        self.inactive_user.is_active = False
+        self.inactive_user.save()
+
+    def assertLogin(self, *args, **kwargs):
+        '''Have to activate the inactive user so it can login'''
+        inactiveUser = False
+        if 'user' in kwargs:
+            if kwargs['user'] == 'inactive':
+                inactiveUser = True
+
+        if inactiveUser:
+            self.activateUser()
+
+        response = super(InactiveUserSetUp, self).assertLogin(*args, **kwargs)
+
+        if inactiveUser:
+            self.activateUser(False)
+        return response
+
+    def performLogin(self, *args, **kwargs):
+        '''Have to activate the inactive user so it can login'''
+        inactiveUser = False
+        if 'user' in kwargs:
+            if kwargs['user'] == 'inactive':
+                inactiveUser = True
+
+        if inactiveUser:
+            self.activateUser()
+
+        response = super(InactiveUserSetUp, self).performLogin(*args, **kwargs)
+
+        if inactiveUser:
+            self.activateUser(False)
+        return response
 
 
 class TestOverrideSettings(object):

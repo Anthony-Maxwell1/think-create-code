@@ -99,6 +99,11 @@ class LTIRedirectView(RedirectView):
         return self.redirect_url
 
 
+class LTIInactiveView(CSRFExemptMixin, TemplatePathMixin, TemplateView):
+    TemplatePathMixin.template_dir = 'gallery'
+    template_name = TemplatePathMixin.prepend_template_path('lti-inactive.html')
+
+
 class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateView):
 
     form_class = UserForm
@@ -109,7 +114,11 @@ class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
 
     def get(self, request, *args, **kwargs):
         if self.request.user.is_authenticated():
-            return super(LTIEntryView, self).get(request, *args, **kwargs)
+            if self.request.user.is_active:
+                return super(LTIEntryView, self).get(request, *args, **kwargs)
+            else:
+                return HttpResponseRedirect(reverse('lti-inactive'))
+
         return HttpResponseRedirect('%s?next=%s' % (reverse('login'), self.request.get_full_path()))
 
     def post(self, request, *args, **kwargs):
@@ -117,10 +126,13 @@ class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
            (and we're not trying to POST an update).'''
 
         self.object = self.get_object()
-        if not 'first_name' in self.request.POST and self.object.first_name:
-            return HttpResponseRedirect(self.get_success_url())
-        else:
-            return super(LTIEntryView, self).post(request, *args, **kwargs)
+        if self.request.user.is_authenticated() and self.request.user.is_active:
+            if not 'first_name' in self.request.POST and self.object.first_name:
+                return HttpResponseRedirect(self.get_success_url())
+            else:
+                return super(LTIEntryView, self).post(request, *args, **kwargs)
+
+        return HttpResponseRedirect(reverse('lti-inactive'))
 
     def get_object(self):
         '''This view's object is the current user'''

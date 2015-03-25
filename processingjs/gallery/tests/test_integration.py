@@ -8,7 +8,7 @@ from django.conf import settings
 from django.test.utils import override_settings
 from selenium.common.exceptions import NoSuchElementException
 
-from uofa.test import SeleniumTestCase, TestOverrideSettings, wait_for_page_load
+from uofa.test import SeleniumTestCase, InactiveUserSetUp, TestOverrideSettings, wait_for_page_load
 from selenium.common.exceptions import NoSuchElementException
 from gallery.views import ShareView
 from artwork.models import Artwork
@@ -573,6 +573,24 @@ class LTIEntryViewTest(SeleniumTestCase):
 
         # Ensure we're redirected to the artwork url
         self.assertEqual(self.selenium.current_url, artwork_url)
+
+
+class LTIInactiveEntryViewTest(InactiveUserSetUp, SeleniumTestCase):
+
+    def test_default_view(self):
+
+        lti_entry_path = reverse('lti-entry')
+        lti_entry = '%s%s' % (self.live_server_url, lti_entry_path)
+        inactive_url = '%s%s' % (self.live_server_url, reverse('lti-inactive'))
+
+        # login inactive user
+        self.performLogin(user="inactive")
+
+        # lti-entry redirects inactive users to lti-inactive
+        self.selenium.get(lti_entry)
+
+        # should have redirected to lti-inactive
+        self.assertEqual(self.selenium.current_url, inactive_url)
 
 
 class LTIPermissionDeniedViewTest(TestOverrideSettings, SeleniumTestCase):
