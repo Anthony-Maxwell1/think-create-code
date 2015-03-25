@@ -3,6 +3,7 @@ from uofa.models import User
 
 class UserAdmin(admin.ModelAdmin):
     readonly_fields = ('password',)
-    list_display = ('username', 'first_name',)
+    list_display = ('username', 'first_name', 'is_staff',)
+    list_filter = ('is_staff', 'is_active',)
 
 admin.site.register(User, UserAdmin)
