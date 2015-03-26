@@ -40,34 +40,39 @@
         <section class="top-bar-section">
         <ul class="title-area">
             <li>
-                <a href="{% url "artwork-studio" %}" title="view my artwork">My Studio</a>
+                <a href="{% url "artwork-studio" %}" id="nav-my-artwork" title="view my artwork">My Studio</a>
             </li>
             <li>
-                <a href="{% url "artwork-shared" %}" title="view shared artwork">Artwork</a>
+                <a href="{% url "artwork-shared" %}" id="nav-shared-artwork" title="view shared artwork">Artwork</a>
             </li>
             <li>
-                <a href="{% url "exhibition-list" %}" title="view exhibitions">Exhibitions</a>
+                <a href="{% url "exhibition-list" %}" id="nav-exhibitions" title="view exhibitions">Exhibitions</a>
             </li>
             <li>
-                <a href="{% url "help" %}" title="help links and resources">Help</a>
+                <a href="{% url "help" %}" id="nav-help" title="help links and resources">Help</a>
             </li>
             {% if user.is_staff %}
             <li>
-                <a href="{% url "admin:index" %}" title="admin view">Administer</a>
+                <a href="{% url "admin:index" %}" id="nav-admin" title="admin view">Administer</a>
             </li>
             {% endif %}
         </ul>
         </section>
-        {% if user.is_anonymous %}
         <section class="top-bar-section">
         <ul id="nav-usermenu" class="right">
+        {% if user.is_anonymous %}
         <li>
             <a href="{% url "login" %}?next={{ request.get_full_path|urlencode }}" id="nav-signin" title="sign in">Sign in
             <i class="fa fa-sign-in"></i></a>
         </li>
+        {% else %}
+        <li>
+            <a href="{% url "user-profile" %}?next={{ request.get_full_path|urlencode }}" id="nav-profile" 
+                title="update profile">{{ user }}</a>
+        </li>
+        {% endif %}
         </ul>
         </section>
-        {% endif %}
     </nav>
 
     <div class="small-12 small-centered columns">

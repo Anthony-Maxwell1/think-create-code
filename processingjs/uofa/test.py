@@ -15,6 +15,7 @@ import os
 import re
 import sys
 import time
+import urllib
 from contextlib import contextmanager
 
 
@@ -240,12 +241,17 @@ class SeleniumTestCase(UserSetUp, LiveServerTestCase):
 
         login_url = '%s%s' % (self.live_server_url, reverse(login))
         if next_path:
-            login_url = '%s?next=%s' % (login_url, next_path)
+            # Encode the few characters that django seems to care about
+            enc_next_path = next_path.replace('?', '%3F')
+            enc_next_path = enc_next_path.replace('=', '%3D')
+            login_url = '%s?next=%s' % (login_url, enc_next_path)
 
         self.assertEqual(self.selenium.current_url, login_url)
 
         if next_path:
-            self.assertEqual(self.selenium.find_element_by_name('next').get_attribute('value'), next_path)
+            self.assertEqual(
+                self.selenium.find_element_by_name('next').get_attribute('value'),
+                urllib.unquote(next_path))
 
         self.selenium.find_element_by_id('id_username').send_keys(self.get_username(user))
         self.selenium.find_element_by_id('id_password').send_keys(self.get_password(user))

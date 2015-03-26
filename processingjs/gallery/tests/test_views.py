@@ -32,8 +32,9 @@ class LTIEntryViewTest(UserSetUp, TestCase):
         response = self.assertLogin(client, lti_login_path)
 
         self.assertEqual(self.user, response.context['user'])
-        self.assertEqual(1, len(response.context['form'].fields))
+        self.assertEqual(2, len(response.context['form'].fields))
         self.assertIn('first_name', response.context['form'].fields)
+        self.assertIn('time_zone', response.context['form'].fields)
         self.assertEqual(self.user, response.context['form'].instance)
 
     def test_auth_post(self):
@@ -46,8 +47,9 @@ class LTIEntryViewTest(UserSetUp, TestCase):
         response = client.post(lti_login_path)
 
         self.assertEqual(self.user, response.context['user'])
-        self.assertEqual(1, len(response.context['form'].fields))
+        self.assertEqual(2, len(response.context['form'].fields))
         self.assertIn('first_name', response.context['form'].fields)
+        self.assertIn('time_zone', response.context['form'].fields)
         self.assertEqual(self.user, response.context['form'].instance)
 
     def test_nickname_post(self):
@@ -112,16 +114,16 @@ class LTIEntryViewTest(UserSetUp, TestCase):
         form_data = {'first_name': ''}
         response = client.post(lti_login_path, form_data)
 
-        self.assertEqual(1, len(response.context['form'].fields))
-        for field in response.context['form']:
-            self.assertEquals(u'This field is required.', field.errors[0])
+        self.assertEqual(2, len(response.context['form'].fields))
+        self.assertEquals(u'This field is required.', response.context['form']['first_name'].errors[0])
+        self.assertEquals([], response.context['form']['time_zone'].errors)
 
         form_data = {'first_name': '   '}
         response = client.post(lti_login_path, form_data)
 
-        self.assertEqual(1, len(response.context['form'].fields))
-        for field in response.context['form']:
-            self.assertEquals(u'Please enter a valid nickname.', field.errors[0])
+        self.assertEqual(2, len(response.context['form'].fields))
+        self.assertEquals(u'Please enter a valid nickname.', response.context['form']['first_name'].errors[0])
+        self.assertEquals([], response.context['form']['time_zone'].errors)
 
     def test_set_is_staff(self):
 
@@ -422,3 +424,100 @@ class ShareViewTest(TestCase):
         share_path = reverse('share')
         response = client.get(share_path)
         self.assertEqual(response.status_code, 200)
+
+
+class UserProfileViewTest(UserSetUp, TestCase):
+
+    def test_anon_view(self):
+        '''Profile View requires login'''
+        client = Client()
+        profile_path = reverse('user-profile')
+        response = client.get(profile_path)
+
+        login_path = '%s?next=%s' % (reverse('login'), profile_path)
+        self.assertRedirects(response, login_path, status_code=302, target_status_code=200)
+
+    def test_student_view(self):
+        '''Students can login'''
+        client = Client()
+        profile_path = reverse('user-profile')
+        response = self.assertLogin(client, next_path=profile_path, user='student')
+        self.assertEqual(response.context['object'], self.user)
+
+    def test_staff_view(self):
+        '''Staff can login'''
+        client = Client()
+        profile_path = reverse('user-profile')
+        response = self.assertLogin(client, next_path=profile_path, user='staff')
+        self.assertEqual(response.context['object'], self.staff_user)
+
+    def test_super_view(self):
+        '''Superuser can login'''
+        client = Client()
+        profile_path = reverse('user-profile')
+        response = self.assertLogin(client, next_path=profile_path, user='super')
+        self.assertEqual(response.context['object'], self.super_user)
+
+    def test_post_username_required(self):
+        '''Username required'''
+        client = Client()
+        profile_path = reverse('user-profile')
+        home_path = reverse('home')
+        form_data = {}
+
+        self.assertLogin(client, next_path=profile_path, user='student')
+        response = client.post(profile_path, form_data)
+        self.assertEqual(self.user, response.context['user'])
+        self.assertEqual(self.user, response.context['form'].instance)
+        self.assertEqual(2, len(response.context['form'].fields))
+        self.assertIn('first_name', response.context['form'].fields)
+        self.assertEquals(u'This field is required.', response.context['form']['first_name'].errors[0])
+        self.assertIn('time_zone', response.context['form'].fields)
+        self.assertEquals([], response.context['form']['time_zone'].errors)
+
+        form_data = {'first_name':'MyNickName'}
+        response = client.post(profile_path, form_data)
+        self.assertRedirects(response, home_path, status_code=302, target_status_code=200)
+
+        # should have set user nickname, left timezone empty
+        user = get_user_model().objects.get(username=self.get_username('student'))
+        self.assertEqual(user.first_name, form_data['first_name'])
+        self.assertEqual(user.time_zone, '')
+
+    def test_post_timezone(self):
+        '''Username required, timezone optional'''
+        client = Client()
+        profile_path = reverse('user-profile')
+        home_path = reverse('home')
+        form_data = {'first_name':'MyNickname', 'time_zone': 'Australia/Adelaide'}
+
+        self.assertLogin(client, next_path=profile_path, user='student')
+        response = client.post(profile_path, form_data)
+        self.assertRedirects(response, home_path, status_code=302, target_status_code=200)
+
+        # should have set user nickname, timezone
+        user = get_user_model().objects.get(username=self.get_username('student'))
+        self.assertEqual(user.first_name, form_data['first_name'])
+        self.assertEqual(user.time_zone, form_data['time_zone'])
+
+    def test_post_default_next(self):
+        '''Default next path is home'''
+        client = Client()
+        profile_path = reverse('user-profile')
+        home_path = reverse('home')
+        form_data = {'first_name':'MyNickName'}
+
+        self.assertLogin(client, next_path=profile_path, user='student')
+        response = client.post(profile_path, form_data)
+        self.assertRedirects(response, home_path, status_code=302, target_status_code=200)
+
+    def test_post_with_next(self):
+        '''Default next path is home'''
+        client = Client()
+        next_path = reverse('help')
+        profile_path = '%s?next=%s' % (reverse('user-profile'), next_path)
+        form_data = {'first_name':'MyNickName'}
+
+        self.assertLogin(client, next_path=profile_path, user='student')
+        response = client.post(profile_path, form_data)
+        self.assertRedirects(response, next_path, status_code=302, target_status_code=200)

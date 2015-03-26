@@ -143,6 +143,7 @@ MIDDLEWARE_CLASSES = (
     'django_auth_lti.middleware.LTIAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'csp.middleware.CSPMiddleware',
+    'uofa.middleware.TimezoneMiddleware',
 )
 
 ROOT_URLCONF = 'gallery.urls'

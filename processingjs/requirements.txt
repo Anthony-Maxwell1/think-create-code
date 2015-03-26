@@ -10,3 +10,4 @@ oauth2==1.5.211
 mock==1.0.1
 Pillow==2.6.1
 django-csp==2.0.3
+pytz==2015.2

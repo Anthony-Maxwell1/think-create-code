@@ -167,3 +167,20 @@ class UserModelFormTests(TestCase):
 
         form = UserForm(data={'first_name': 'something-else'})
         self.assertTrue(form.is_valid())
+
+    def test_time_zone(self):
+
+        # Time zone not required
+        data = {'first_name': 'name_goes@here-or-there.com'}
+        form = UserForm(data=data)
+        self.assertTrue(form.is_valid())
+
+        # Invalid time zones are allowed (enforced by form Widget, not Model)
+        data['time_zone'] = 'NOT A TIME ZONE'
+        form = UserForm(data=data)
+        self.assertTrue(form.is_valid())
+
+        # Valid time zone allowed
+        data['time_zone'] = 'Australia/Adelaide'
+        form = UserForm(data=data)
+        self.assertTrue(form.is_valid())

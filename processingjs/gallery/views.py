@@ -1,19 +1,16 @@
 import os.path
 import re
 from django.views.generic import UpdateView, TemplateView, RedirectView
-from django.shortcuts import get_object_or_404
-from django.core.urlresolvers import reverse, resolve, get_script_prefix
+from django.core.urlresolvers import reverse, get_script_prefix
 from django.http import HttpResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.utils.http import is_safe_url
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django_auth_lti.mixins import LTIUtilityMixin, LTIRoleRestrictionMixin
 import pickle
 
 from uofa.models import UserForm
-from uofa.views import TemplatePathMixin, CSRFExemptMixin
-import gallery.settings
+from uofa.views import TemplatePathMixin, CSRFExemptMixin, UserViewMixin, LoggedInMixin
 
 
 class ProbeView(TemplatePathMixin, TemplateView):
@@ -55,6 +52,11 @@ class ShareView(TemplatePathMixin, TemplateView):
         return context
 
 
+class UserProfileView(LoggedInMixin, UserViewMixin, TemplatePathMixin, UpdateView):
+    TemplatePathMixin.template_dir = 'gallery'
+    template_name = TemplatePathMixin.prepend_template_path('profile.html')
+
+
 class LTIPermissionDeniedView(TemplatePathMixin, TemplateView):
 
     TemplatePathMixin.template_dir = 'gallery'
@@ -62,7 +64,7 @@ class LTIPermissionDeniedView(TemplatePathMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(LTIPermissionDeniedView, self).get_context_data(**kwargs)
-        context['lti_link_text'] = gallery.settings.LTI_LINK_TEXT
+        context['lti_link_text'] = settings.LTI_LINK_TEXT
         context['lti_query_string'] = self.request.META.get('QUERY_STRING', '')
         if context['lti_query_string']:
             context['lti_query_string'] = '?' + context['lti_query_string']
@@ -85,11 +87,11 @@ class LTIRedirectView(RedirectView):
 
         # Store the given persistent parameters, serialized, in a cookie
         store_params = {}
-        for key in gallery.settings.LTI_PERSIST_PARAMS:
+        for key in settings.LTI_PERSIST_PARAMS:
             store_params[key] = self.request.GET.get(key)
         try:
             store_params = pickle.dumps(store_params)
-            response.set_cookie(gallery.settings.LTI_PERSIST_NAME, store_params)
+            response.set_cookie(settings.LTI_PERSIST_NAME, store_params)
         except:
             pass # ignore corrupted params or other pickling errors
 
@@ -104,10 +106,7 @@ class LTIInactiveView(CSRFExemptMixin, TemplatePathMixin, TemplateView):
     template_name = TemplatePathMixin.prepend_template_path('lti-inactive.html')
 
 
-class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateView):
-
-    form_class = UserForm
-    model = UserForm._meta.model
+class LTIEntryView(UserViewMixin, CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateView):
 
     TemplatePathMixin.template_dir = 'gallery'
     template_name = TemplatePathMixin.prepend_template_path('lti-entry.html')
@@ -134,10 +133,6 @@ class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
 
         return HttpResponseRedirect(reverse('lti-inactive'))
 
-    def get_object(self):
-        '''This view's object is the current user'''
-        return get_object_or_404(self.model, pk=self.request.user.id)
-
     def form_valid(self, form):
         '''Set is_staff setting based on LTI User roles'''
 
@@ -151,29 +146,20 @@ class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
 
         # clear out the persistent LTI parameters; 
         # they've been used by get_success_url()
-        response.delete_cookie(gallery.settings.LTI_PERSIST_NAME)
+        response.delete_cookie(settings.LTI_PERSIST_NAME)
 
         return response
 
     def get_success_url(self):
-        '''If LTIRedirectView or edX sent a 'next' query parameter, redirect there.
-           Otherwise, redirect to home.'''
-
-        url_name = 'home'
-        kwargs = {}
-        next_param = None
+        '''If LTIRedirectView or edX sent a 'custom_next' path, redirect there.'''
 
         # See if this request started from an LTIRedirectView, and so has a cookie.
-        cookie = self.request.COOKIES.get(gallery.settings.LTI_PERSIST_NAME)
+        next_param = None
+        cookie = self.request.COOKIES.get(settings.LTI_PERSIST_NAME)
         if cookie:
             try:
                 stored_params = pickle.loads(cookie)
                 next_param = stored_params.get(REDIRECT_FIELD_NAME)
-
-                # Strip leading script prefix
-                script_prefix = get_script_prefix()
-                if script_prefix:
-                    next_param = re.sub(r'^%s' % get_script_prefix(), '/', next_param)
             except:
                 pass # ignore corrupted cookies or errors during unpickling
 
@@ -181,9 +167,4 @@ class LTIEntryView(CSRFExemptMixin, LTIUtilityMixin, TemplatePathMixin, UpdateVi
         if not next_param:
             next_param = self.request.POST.get('custom_next')
 
-        if next_param and is_safe_url(url=next_param, host=self.request.get_host()):
-            resolved = resolve(next_param)
-            url_name = resolved.url_name
-            kwargs = resolved.kwargs
-
-        return reverse(url_name, kwargs=kwargs)
+        return super(LTIEntryView, self).get_success_url(next_param)

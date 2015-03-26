@@ -6,6 +6,7 @@ from urlparse import urlparse
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.test.utils import override_settings
+from django.contrib.auth import get_user_model
 from selenium.common.exceptions import NoSuchElementException
 
 from uofa.test import SeleniumTestCase, InactiveUserSetUp, TestOverrideSettings, wait_for_page_load
@@ -55,71 +56,6 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
         # 4. re-visit "add artwork", and ensure we got sent back to login
         self.selenium.get(add_url)
         self.assertEqual(self.selenium.current_url, '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('artwork-add')))
-
-    def test_public_nav_links(self):
-        base_url = self.live_server_url
-        self.selenium.get(base_url)
-
-        # My Studio
-        link = self.selenium.find_element_by_link_text('My Studio')
-        studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            studio_url
-        )
-
-        # Exhibitions
-        link = self.selenium.find_element_by_link_text('Exhibitions')
-        exhibitions_url = '%s%s' % (self.live_server_url, reverse('exhibition-list'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            exhibitions_url
-        )
-
-        # Sign in
-        link = self.selenium.find_element_by_id('nav-signin')
-        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('home'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            login_url
-        )
-
-        # No sign out
-        self.assertRaises(
-            NoSuchElementException,
-            self.selenium.find_element_by_id, ('nav-signout')
-        )
-
-    def test_user_nav_links(self):
-        self.performLogin()
-
-        # My Studio
-        link = self.selenium.find_element_by_link_text('My Studio')
-        studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            studio_url
-        )
-
-        # Exhibitions
-        link = self.selenium.find_element_by_link_text('Exhibitions')
-        exhibitions_url = '%s%s' % (self.live_server_url, reverse('exhibition-list'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            exhibitions_url
-        )
-
-        # No sign out
-        self.assertRaises(
-            NoSuchElementException,
-            self.selenium.find_element_by_id, ('nav-signout')
-        )
-
-        # No Sign in
-        self.assertRaises(
-            NoSuchElementException,
-            self.selenium.find_element_by_id, ('nav-signin')
-        )
 
 
 class GalleryStaffAdminIntegrationTests(SeleniumTestCase):
@@ -254,35 +190,45 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.selenium.get(base_url)
 
         # My Studio
-        link = self.selenium.find_element_by_link_text('My Studio')
+        link = self.selenium.find_element_by_id('nav-my-artwork')
         studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            studio_url
-        )
+        self.assertEqual(link.get_attribute('href'), studio_url)
+        self.assertEqual(link.text, 'My Studio')
+
+        # Shared Artwork
+        link = self.selenium.find_element_by_id('nav-shared-artwork')
+        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
+        self.assertEqual(link.get_attribute('href'), artwork_url)
+        self.assertEqual(link.text, 'Artwork')
 
         # Exhibitions
-        link = self.selenium.find_element_by_link_text('Exhibitions')
+        link = self.selenium.find_element_by_id('nav-exhibitions')
         exhibitions_url = '%s%s' % (self.live_server_url, reverse('exhibition-list'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            exhibitions_url
-        )
+        self.assertEqual(link.get_attribute('href'), exhibitions_url)
+        self.assertEqual(link.text, 'Exhibitions')
 
-        # Artwork
-        link = self.selenium.find_element_by_link_text('Artwork')
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            artwork_url
-        )
+        # Help
+        link = self.selenium.find_element_by_id('nav-help')
+        help_url = '%s%s' % (self.live_server_url, reverse('help'))
+        self.assertEqual(link.get_attribute('href'), help_url)
+        self.assertEqual(link.text, 'Help')
 
         # Sign in
         link = self.selenium.find_element_by_id('nav-signin')
         login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('home'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            login_url
+        self.assertEqual(link.get_attribute('href'), login_url)
+        self.assertEqual(link.text, 'Sign in')
+
+        # No Administer
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('nav-admin')
+        )
+
+        # No Profile
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('nav-profile')
         )
 
         # No sign out
@@ -291,43 +237,106 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id, ('nav-signout')
         )
 
-    def test_user_nav_links(self):
-        self.performLogin()
+    def test_student_nav_links(self):
+        self.performLogin(user='student')
 
         # My Studio
-        link = self.selenium.find_element_by_link_text('My Studio')
+        link = self.selenium.find_element_by_id('nav-my-artwork')
         studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            studio_url
-        )
+        self.assertEqual(link.get_attribute('href'), studio_url)
+        self.assertEqual(link.text, 'My Studio')
+
+        # Shared Artwork
+        link = self.selenium.find_element_by_id('nav-shared-artwork')
+        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
+        self.assertEqual(link.get_attribute('href'), artwork_url)
+        self.assertEqual(link.text, 'Artwork')
 
         # Exhibitions
-        link = self.selenium.find_element_by_link_text('Exhibitions')
+        link = self.selenium.find_element_by_id('nav-exhibitions')
         exhibitions_url = '%s%s' % (self.live_server_url, reverse('exhibition-list'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            exhibitions_url
-        )
+        self.assertEqual(link.get_attribute('href'), exhibitions_url)
+        self.assertEqual(link.text, 'Exhibitions')
 
-        # Artwork
-        link = self.selenium.find_element_by_link_text('Artwork')
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
-        self.assertEqual(
-            link.get_attribute('href'),
-            artwork_url
-        )
+        # Help
+        link = self.selenium.find_element_by_id('nav-help')
+        help_url = '%s%s' % (self.live_server_url, reverse('help'))
+        self.assertEqual(link.get_attribute('href'), help_url)
+        self.assertEqual(link.text, 'Help')
 
-        # No sign out
+        # Profile
+        link = self.selenium.find_element_by_id('nav-profile')
+        profile_url = '%s%s?next=%s' % (self.live_server_url, reverse('user-profile'), reverse('home'))
+        self.assertEqual(link.get_attribute('href'), profile_url)
+        self.assertEqual(link.text, '%s' % self.user)
+
+        # No Administer
         self.assertRaises(
             NoSuchElementException,
-            self.selenium.find_element_by_id, ('nav-signout')
+            self.selenium.find_element_by_id, ('nav-admin')
         )
 
-        # No Sign in
+        # No sign in
         self.assertRaises(
             NoSuchElementException,
             self.selenium.find_element_by_id, ('nav-signin')
+        )
+
+        # No sign out
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('nav-signout')
+        )
+
+    def test_staff_nav_links(self):
+        self.performLogin(user='staff')
+
+        # My Studio
+        link = self.selenium.find_element_by_id('nav-my-artwork')
+        studio_url = '%s%s' % (self.live_server_url, reverse('artwork-studio'))
+        self.assertEqual(link.get_attribute('href'), studio_url)
+        self.assertEqual(link.text, 'My Studio')
+
+        # Shared Artwork
+        link = self.selenium.find_element_by_id('nav-shared-artwork')
+        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
+        self.assertEqual(link.get_attribute('href'), artwork_url)
+        self.assertEqual(link.text, 'Artwork')
+
+        # Exhibitions
+        link = self.selenium.find_element_by_id('nav-exhibitions')
+        exhibitions_url = '%s%s' % (self.live_server_url, reverse('exhibition-list'))
+        self.assertEqual(link.get_attribute('href'), exhibitions_url)
+        self.assertEqual(link.text, 'Exhibitions')
+
+        # Help
+        link = self.selenium.find_element_by_id('nav-help')
+        help_url = '%s%s' % (self.live_server_url, reverse('help'))
+        self.assertEqual(link.get_attribute('href'), help_url)
+        self.assertEqual(link.text, 'Help')
+
+        # Profile
+        link = self.selenium.find_element_by_id('nav-profile')
+        profile_url = '%s%s?next=%s' % (self.live_server_url, reverse('user-profile'), reverse('home'))
+        self.assertEqual(link.get_attribute('href'), profile_url)
+        self.assertEqual(link.text, '%s' % self.staff_user)
+
+        # Administer
+        link = self.selenium.find_element_by_id('nav-admin')
+        admin_url = '%s%s' % (self.live_server_url, reverse('admin:index'))
+        self.assertEqual(link.get_attribute('href'), admin_url)
+        self.assertEqual(link.text, 'Administer')
+
+        # No sign in
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('nav-signin')
+        )
+
+        # No sign out
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('nav-signout')
         )
 
 
@@ -738,3 +747,195 @@ class LTILoginEntryViewTest(TestOverrideSettings, SeleniumTestCase):
         path = reverse('artwork-view', kwargs={'pk': private_artwork.id})
         ok = self._performRedirectTest(path)
         self.assertTrue(ok)
+
+
+class UserProfileViewTest(SeleniumTestCase):
+
+    def test_anon_view(self):
+        '''Profile View requires login'''
+        profile_path = reverse('user-profile')
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        login_path = reverse('login')
+        login_url = '%s%s?next=%s' % (self.live_server_url, login_path, profile_path)
+
+        self.selenium.get(profile_url)
+        self.assertEqual(self.selenium.current_url, login_url)
+
+    def test_student_view(self):
+        '''Students can login'''
+        profile_path = reverse('user-profile')
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        self.selenium.get(profile_url)
+        self.assertLogin(profile_path, user="student")
+        self.assertEqual(self.selenium.current_url, profile_url)
+
+        labels = self.selenium.find_elements_by_tag_name('label')
+        self.assertEqual(len(labels), 4)
+        self.assertEqual(labels[0].text, 'Nickname:')
+        self.assertEqual(labels[1].text, '')
+        self.assertEqual(labels[1].get_attribute('class'), 'error')
+        self.assertEqual(labels[2].text, 'Timezone:')
+        self.assertEqual(labels[3].text, '')
+        self.assertEqual(labels[3].get_attribute('class'), 'error')
+
+    def test_staff_view(self):
+        '''Staff can login'''
+        profile_path = reverse('user-profile')
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        self.selenium.get(profile_url)
+        self.assertLogin(profile_path, user="staff")
+        self.assertEqual(self.selenium.current_url, profile_url)
+
+        labels = self.selenium.find_elements_by_tag_name('label')
+        self.assertEqual(len(labels), 5)
+        self.assertEqual(labels[0].text, 'Staff access:')
+        self.assertEqual(labels[1].text, 'Nickname:')
+        self.assertEqual(labels[2].text, '')
+        self.assertEqual(labels[2].get_attribute('class'), 'error')
+        self.assertEqual(labels[3].text, 'Timezone:')
+        self.assertEqual(labels[4].text, '')
+        self.assertEqual(labels[4].get_attribute('class'), 'error')
+
+    def test_super_view(self):
+        '''Superuser can login'''
+        profile_path = reverse('user-profile')
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        self.selenium.get(profile_url)
+        self.assertLogin(profile_path, user="super")
+        self.assertEqual(self.selenium.current_url, profile_url)
+
+        labels = self.selenium.find_elements_by_tag_name('label')
+        self.assertEqual(len(labels), 5)
+        self.assertEqual(labels[0].text, 'Staff access:')
+        self.assertEqual(labels[1].text, 'Nickname:')
+        self.assertEqual(labels[2].text, '')
+        self.assertEqual(labels[2].get_attribute('class'), 'error')
+        self.assertEqual(labels[3].text, 'Timezone:')
+        self.assertEqual(labels[4].text, '')
+        self.assertEqual(labels[4].get_attribute('class'), 'error')
+
+    def test_post_username_required(self):
+        profile_path = reverse('user-profile')
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        home_path = reverse('home')
+        home_url = '%s%s' % (self.live_server_url, home_path)
+
+        self.selenium.get(profile_url)
+        self.assertLogin(profile_path, user="student")
+        self.assertEqual(self.selenium.current_url, profile_url)
+
+        labels = self.selenium.find_elements_by_tag_name('label')
+        self.assertEqual(len(labels), 4)
+        self.assertEqual(labels[0].text, 'Nickname:')
+        self.assertEqual(labels[1].text, '')
+        self.assertEqual(labels[1].get_attribute('class'), 'error')
+        self.assertEqual(labels[2].text, 'Timezone:')
+        self.assertEqual(labels[3].text, '')
+        self.assertEqual(labels[3].get_attribute('class'), 'error')
+
+        form_data = {}
+        for field, value in form_data.iteritems():
+            self.selenium.find_element_by_id('id_' + field).send_keys(value)
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_user').click()
+
+        labels = self.selenium.find_elements_by_tag_name('label')
+        self.assertEqual(len(labels), 4)
+        self.assertEqual(labels[0].text, 'Nickname:')
+        self.assertEqual(labels[1].text, 'This field is required.')
+        self.assertEqual(labels[1].get_attribute('class'), 'error')
+        self.assertEqual(labels[2].text, 'Timezone:')
+        self.assertEqual(labels[3].text, '')
+        self.assertEqual(labels[3].get_attribute('class'), 'error')
+
+        form_data = {'first_name': 'MyNickname'}
+        for field, value in form_data.iteritems():
+            self.selenium.find_element_by_id('id_' + field).send_keys(value)
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_user').click()
+
+        # should be redirected to home
+        self.assertEqual(self.selenium.current_url, home_url)
+
+        # POST should have set user nickname, used default timezone
+        user = get_user_model().objects.get(username=self.get_username('student'))
+        self.assertEqual(user.first_name, form_data['first_name'])
+        self.assertEqual(user.time_zone, 'UTC')
+
+    def test_post_timezone(self):
+        profile_path = reverse('user-profile')
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        home_path = reverse('home')
+        home_url = '%s%s' % (self.live_server_url, home_path)
+
+        self.selenium.get(profile_url)
+        self.assertLogin(profile_path, user="student")
+
+        form_data = {'first_name': 'MyNickname', 'time_zone': 'Australia/Adelaide'}
+        for field, value in form_data.iteritems():
+            self.selenium.find_element_by_id('id_' + field).send_keys(value)
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_user').click()
+
+        # should be redirected to home
+        self.assertEqual(self.selenium.current_url, home_url)
+
+        # POST should have set user nickname, timezone
+        user = get_user_model().objects.get(username=self.get_username('student'))
+        self.assertEqual(user.first_name, form_data['first_name'])
+        self.assertEqual(user.time_zone, form_data['time_zone'])
+
+    def test_post_with_next(self):
+        next_path = reverse('help')
+        next_url = '%s%s' % (self.live_server_url, next_path)
+
+        profile_path = '%s?next=%s' % (reverse('user-profile'), next_path)
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        self.selenium.get(profile_url)
+        self.assertLogin(profile_path, user="student")
+
+        form_data = {'first_name': 'MyNickname'}
+        for field, value in form_data.iteritems():
+            self.selenium.find_element_by_id('id_' + field).send_keys(value)
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_user').click()
+
+        # should be redirected to next_path
+        self.assertEqual(self.selenium.current_url, next_url)
+
+        # POST should have set user nickname, used default timezone
+        user = get_user_model().objects.get(username=self.get_username('student'))
+        self.assertEqual(user.first_name, form_data['first_name'])
+        self.assertEqual(user.time_zone, 'UTC')
+
+    def test_cancel_post_custom_next(self):
+        next_path = reverse('help')
+        next_url = '%s%s' % (self.live_server_url, next_path)
+
+        profile_path = '%s?next=%s' % (reverse('user-profile'), next_path)
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        self.selenium.get(profile_url)
+        self.assertLogin(profile_path, user="student")
+
+        form_data = {'first_name': 'MyNickname', 'time_zone': 'Australia/Adelaide'}
+        for field, value in form_data.iteritems():
+            self.selenium.find_element_by_id('id_' + field).send_keys(value)
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('cancel_user').click()
+
+        # should be redirected to next_path
+        self.assertEqual(self.selenium.current_url, next_url)
+
+        # POST should not have set user nickname, used default timezone
+        user = get_user_model().objects.get(username=self.get_username('student'))
+        self.assertEqual(user.first_name, '')
+        self.assertEqual(user.time_zone, None)

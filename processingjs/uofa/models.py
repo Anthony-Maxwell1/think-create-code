@@ -11,6 +11,8 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.models import UserManager
 
 from uofa.fields import NullableCharField
+from uofa.widgets import SelectTimeZoneWidget
+
 
 def staff_member_group():
     '''ID of the Staff Members permissions group, for the Admin site'''
@@ -56,6 +58,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_('Designates whether this user should be treated as '
                     'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
+    time_zone = models.CharField(_('timezone'), max_length=255,
+        blank=True, null=True, default=None,
+        help_text=_('Timezone to use when displaying dates and times.'))
 
     objects = UserManager()
 
@@ -104,7 +110,10 @@ def post_save(sender, instance=None, **kwargs):
 class UserForm(ModelForm):
     class Meta:
         model = User
-        fields = ['first_name']
+        fields = ['first_name', 'time_zone',]
+        widgets = {
+            'time_zone': SelectTimeZoneWidget,
+        }
 
     def __init__(self, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)

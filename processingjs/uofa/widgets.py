@@ -1,9 +1,11 @@
-from django.forms.widgets import Widget, RadioSelect
+from django.forms.widgets import Widget, Select, RadioSelect
 from django.forms.utils import flatatt
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.html import format_html
+from django.conf import settings
 from itertools import chain
+import pytz
 
 
 class SelectOneOrNoneWidget(RadioSelect):
@@ -48,3 +50,18 @@ class SelectOneOrNoneWidget(RadioSelect):
                         force_text(option_label)))
 
         return mark_safe('\n'.join(output))
+
+
+class SelectTimeZoneWidget(Select):
+
+    def render(self, name, value, attrs=None, choices=()):
+
+        timezones = pytz.common_timezones
+        choices = []
+        for tz in timezones:
+            choices.append((tz, tz))
+
+        if not value:
+            value = settings.TIME_ZONE
+
+        return super(SelectTimeZoneWidget, self).render(name, value, attrs, choices)

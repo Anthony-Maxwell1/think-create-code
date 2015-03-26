@@ -14,7 +14,8 @@
     </div>
 </div>
 <div class="row exhibition-detail">
-    {% if not object.released_yet %}<div class="not-available">Release date <time>{{ object.released_at|date }} {{ object.released_at|time }}</time></div>{% endif %}
+    {% if not object.released_yet %}<div class="not-available">Release date
+    <time>{{ object.released_at|date:"j M Y g:i A (T)" }}</time></div>{% endif %}
 </div>
 <!-- TODO - return 404 -->
 {% else %}

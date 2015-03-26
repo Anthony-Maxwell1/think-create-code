@@ -19,6 +19,8 @@ urlpatterns = patterns('',
 
     url(r'^$', artwork.views.ListArtworkView.as_view(),
         name='home'),
+    url(r'^profile/$', gallery.views.UserProfileView.as_view(),
+        name='user-profile'),
     url(r'^lti/$', gallery.views.LTIEntryView.as_view(),
         name='lti-entry'),
     url(r'^lti/403', gallery.views.LTIPermissionDeniedView.as_view(),

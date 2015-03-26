@@ -1,11 +1,18 @@
 import os
+import re
 from functools import wraps
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import redirect_to_login
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator, available_attrs
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.http import is_safe_url
+from django.core.urlresolvers import reverse, resolve, get_script_prefix
+from django.contrib.auth import REDIRECT_FIELD_NAME
+
+from uofa.models import UserForm
 
 
 class LoggedInMixin(object):
@@ -165,3 +172,35 @@ class JsonResponseMixin(object):
         Returns an object that will be serialized as JSON by json.dumps().
         """
         return {}
+
+
+class UserViewMixin(object):
+    form_class = UserForm
+    model = UserForm._meta.model
+
+    def get_object(self):
+        '''This view's object is the current user'''
+        return get_object_or_404(self.model, pk=self.request.user.id)
+
+    def get_success_url(self, next_param=None, default='home'):
+
+        url_name = default
+        kwargs = {}
+
+        # If no next param, try to get it from the GET request
+        if not next_param:
+            next_param = self.request.GET.get(REDIRECT_FIELD_NAME)
+
+        if next_param:
+
+            # Strip leading script prefix
+            script_prefix = get_script_prefix()
+            if script_prefix:
+                next_param = re.sub(r'^%s' % get_script_prefix(), '/', next_param)
+
+            if next_param and is_safe_url(url=next_param, host=self.request.get_host()):
+                resolved = resolve(next_param)
+                url_name = resolved.url_name
+                kwargs = resolved.kwargs
+
+        return reverse(url_name, kwargs=kwargs)
