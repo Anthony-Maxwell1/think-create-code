@@ -6,10 +6,10 @@ input {
     margin-top: 1em;
     padding: 0.5em;
 }
-#sortable { 
+.sortable { 
     list-style-type: none; 
 }
-#sortable li { 
+.sortable li { 
     cursor: move;
     padding-top: 0.25em;
 }

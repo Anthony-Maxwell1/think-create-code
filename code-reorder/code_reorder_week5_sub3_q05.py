@@ -25,12 +25,12 @@ E.g.,
 
 EXPECTED = [
 '''size(200,200);
-background(140,40,40);
-translate(50,50);
-for (int i=0; i<10; i++) {
-    rect(0,0,100,20);
-    rotate(PI/18);
-}''',
+background(140,40,40);''',
+'''translate(50,50);''',
+'''for (int i=0; i<10; i++) {''',
+'''rect(0,0,100,20);''',
+'''rotate(PI/18);''',
+'''}''',
 ]
 
 import json
