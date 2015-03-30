@@ -39,7 +39,7 @@ $(document).ready(function() {
     hljs.initHighlightingOnLoad();
 
     // Make the code sortable
-    $( '#sortable' ).sortable()
+    $( '.sortable' ).sortable()
                     .disableSelection();
 
     var $runningJs = $('#running');
@@ -55,7 +55,7 @@ $(document).ready(function() {
 
         // Collect the code text from the ul
         var code = '';
-        $('#sortable li').each(function(idx, item) {
+        $('.sortable li').each(function(idx, item) {
             code = code + "\n" + $(item).text();
         });
 
