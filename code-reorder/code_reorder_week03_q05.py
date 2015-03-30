@@ -15,9 +15,9 @@ E.g.,
        <jsinput
            height="1100"
            width="600"
-           gradefn="get_grade"
-           get_statefn="get_state"
-           set_statefn="set_state"
+           gradefn="CodeReorder.get_grade"
+           get_statefn="CodeReorder.get_state"
+           set_statefn="CodeReorder.set_state"
            html_file="/static/code_reorder_week03_q05.html" />
    </customresponse>
 </problem>

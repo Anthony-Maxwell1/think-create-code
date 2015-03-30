@@ -15,17 +15,15 @@ E.g.,
        <jsinput
            height="1100"
            width="600"
-           gradefn="get_grade"
-           get_statefn="get_state"
-           set_statefn="set_state"
+           gradefn="CodeReorder.get_grade"
+           get_statefn="CodeReorder.get_state"
+           set_statefn="CodeReorder.set_state"
            html_file="/static/code_reorder_week5_sub3_q05.html" />
    </customresponse>
 </problem>
 '''
 
 EXPECTED = [
-'''size(200,200);
-background(140,40,40);''',
 '''translate(50,50);''',
 '''for (int i=0; i<10; i++) {''',
 '''rect(0,0,100,20);''',

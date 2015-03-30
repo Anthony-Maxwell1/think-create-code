@@ -6,10 +6,12 @@ input {
     margin-top: 1em;
     padding: 0.5em;
 }
-.sortable { 
+.code {
     list-style-type: none; 
 }
-.sortable li { 
-    cursor: move;
+.code li {
     padding-top: 0.25em;
+}
+#answer li { 
+    cursor: move;
 }

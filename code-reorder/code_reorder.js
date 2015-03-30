@@ -1,46 +1,65 @@
-function get_grade() {} // placeholder for JS Input
+var CodeReorder = (function(){
 
-function get_state() {
-    var code = [];
-    $('.sortable code').each(function(idx, line) {
-        code.push($(line).text());
-    });
+    function showAnswer(answer) {
+        $('#answer').empty();
+        $(answer).each(function(idx, line) {
+            $('#answer')
+                .append($('<li>')
+                    .append($('<pre>')
+                        .append($('<code>', {'class': 'javascript', 'text': line}))));
+        });
 
-    var state = {'code': code};
-    return JSON.stringify({'code': code});
-}
-
-// Called with the user's previous response to get_state()
-function set_state(json) {
-    try {
-        var state = JSON.parse(json);
-        if (state && 'code' in state) {
-            var code = state['code'];
-            $('.sortable').empty();
-            $(code).each(function(idx, line) {
-                $('.sortable')
-                    .append($('<li>')
-                        .append($('<pre>')
-                            .append($('<code>', {'class': 'javascript', 'text': line}))));
-            });
-
-            $('pre code').each(function(i, block) {
-                hljs.highlightBlock(block);
-            });
-        }
-    } catch(e) {
-        console.error("Error parsing state", e);
+        $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+        });
     }
-}
 
+    function get_grade() {} // placeholder for JS Input
+
+    function get_state() {
+        var code = [];
+        $('#answer code').each(function(idx, line) {
+            code.push($(line).text());
+        });
+
+        var state = {'code': code};
+        return JSON.stringify({'code': code});
+    }
+
+    // Called with the user's previous response to get_state().
+    // Because this function is sometimes called prior to document.ready,
+    // we set the global value for the answer variable
+    function set_state(json) {
+        try {
+            var state = JSON.parse(json);
+            if (state && 'code' in state) {
+                var code = state['code'];
+
+                // Show the answer when the page loads
+                $(document).ready(function() {
+                    showAnswer(code);
+                });
+            }
+        } catch(e) {
+            console.error("Error parsing state", e);
+        }
+    }
+
+    return {
+        'get_grade': get_grade,
+        'get_state': get_state,
+        'set_state': set_state,
+    };
+
+}());
 
 $(document).ready(function() {
     // Use syntax highlighting
     hljs.initHighlightingOnLoad();
 
-    // Make the code sortable
-    $( '.sortable' ).sortable()
-                    .disableSelection();
+    // Make the answer code sortable
+    $('#answer').sortable()
+    $('.code').disableSelection();
 
     var $runningJs = $('#running');
     var $error = $('#error');
@@ -53,9 +72,9 @@ $(document).ready(function() {
         // Clear any previous errors
         $error.html('');
 
-        // Collect the code text from the ul
+        // Collect the code text from all the code uls
         var code = '';
-        $('.sortable li').each(function(idx, item) {
+        $('.code li').each(function(idx, item) {
             code = code + "\n" + $(item).text();
         });
 
@@ -67,5 +86,4 @@ $(document).ready(function() {
             $error.html(e.message);
         }
     });
-
 });
