@@ -5,7 +5,7 @@ file, which defines the JS functions.
 
 E.g.,
 
-<problem display_name="week03_q05">
+<problem display_name="week5_sec3_q5">
    <script type="loncapa/python">
    <![CDATA[
         # def is_correct(...) code goes here
@@ -18,37 +18,17 @@ E.g.,
            gradefn="CodeReorder.get_grade"
            get_statefn="CodeReorder.get_state"
            set_statefn="CodeReorder.set_state"
-           html_file="/static/code_reorder_week03_q05.html" />
+           html_file="/static/code_reorder_5_3_5.html" />
    </customresponse>
 </problem>
 '''
 
 EXPECTED = [
-'''
-size(250, 250);
-int red = 220;
-int blue = 180;
-int green = 100;
-int extra = 10;
-int x = 20;''',
-'''
-for (int counter=1; counter<=5; counter = counter + 1) {''',
-'''
-    green = 100;
-    extra = x;''',
-'''
-    for (int y=100; y>=20; y= y - 20) {''',
-'''
-        green = green + 35;
-        fill(red, green, blue);''',
-'''
-        ellipse(extra, y, 20, 20);''',
-'''
-        extra = extra+20;''',
-'''
-    }
-    x = x + 20;
-}''',
+'''translate(50,50);''',
+'''for (int i=0; i<10; i++) {''',
+'''rect(0,0,100,20);''',
+'''rotate(PI/18);''',
+'''}''',
 ]
 
 import json

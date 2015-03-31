@@ -2,14 +2,14 @@
 '''
 
 USAGE:
-    python -m unittest tests.test_week03_q05
+    python -m unittest tests.test_3_3_7
 
-    coverage run --include=./*.py  -m unittest tests.test_week03_q05
+    coverage run --include=./*.py  -m unittest tests.test_3_3_7
 '''
 import unittest
 import json
 
-import code_reorder_week03_q05 as code_reorder
+import code_reorder_3_3_7 as code_reorder
 
 
 class TestGradingIncorrect(unittest.TestCase):
