@@ -57,9 +57,9 @@ $(document).ready(function() {
     // Use syntax highlighting
     hljs.initHighlightingOnLoad();
 
-    // Make the answer code sortable
-    $('#answer').sortable()
-    $('.code').disableSelection();
+    // Make the lines of code sortable
+    $('.code').sortable()
+              .disableSelection();
 
     var $runningJs = $('#running');
     var $error = $('#error');

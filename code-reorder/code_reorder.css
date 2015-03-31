@@ -11,7 +11,5 @@ input {
 }
 .code li {
     padding-top: 0.25em;
-}
-#answer li { 
     cursor: move;
 }

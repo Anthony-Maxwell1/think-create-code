@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Code Ordering Example</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/css/foundation.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/css/normalize.min.css" />
+  <link rel="stylesheet" href="https://lti-adx.adelaide.edu.au/think.create.code/reorder/code_reorder.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.4.8/processing.min.js"></script>
+  <script src="https://lti-adx.adelaide.edu.au/think.create.code/reorder/code_reorder.js"></script>
+</head>
+<body>
+<div class="row">
+    <div class="columns small-5">
+    <p>If the value of the variable <code>number = 110</code>, the code below should produce the following image:<br\>
+       <img title="target drawing" alt="target drawing for number = 110"
+         src="data:image/png;base64,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"
+        /></p>
+    </div>
+    <div class="columns small-5">
+    <p>If the value of the variable <code>number = 12</code>, the code should produce the following image:<br/>
+        <img title="target drawing" alt="target drawing for number = 12"
+         src="data:image/png;base64,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"
+        /></p>
+    </div>
+    </div>
+<div class="row">
+    <p>Drag the lines of code into the correct order so that it works as we expect.
+        <br/>
+        Before submitting your answer, click <strong>Draw</strong> to see what
+        drawing your code creates.
+    </p>
+</div>
+<div class="row">
+    <ul class="code">
+        <li><pre><code class="javascript">size(200,200);
+background(255);
+int number;</code></pre></li>
+    </ul>
+    <ul class="code">
+        <li><pre><code class="javascript">number = 12;</code></pre></li>
+        <li><pre><code class="javascript">number = 50;</code></pre></li>
+        <li><pre><code class="javascript">number = 110;</code></pre></li>
+    </ul>
+    <ul id="answer" class="code">
+        <li><pre><code class="javascript">for (int i=1; i&lt;20; i+=1) {
+    line(i*10, i*10, i*10, 190);
+}</code></pre></li>
+        <li><pre><code class="javascript">ellipse(56, 46, 55, 55);</code></pre></li>
+        <li><pre><code class="javascript">rect(30,40,50,50);</code></pre></li>
+        <li><pre><code class="javascript">rect(20,20,40,40);</code></pre></li>
+        <li><pre><code class="javascript">if (number &lt; 35) {</code></pre></li>
+        <li><pre><code class="javascript">}</code></pre></li>
+        <li><pre><code class="javascript">else if (number &gt; 50) {</code></pre></li>
+        <li><pre><code class="javascript">}</code></pre></li>
+        <li><pre><code class="javascript">else {</code></pre></li>
+        <li><pre><code class="javascript">}</code></pre></li>
+</code></pre></li>
+    </ul>
+</div>
+<div class="row">
+    <canvas id="canvas" alt="your drawing" title="your drawing" width="200" height="200"></canvas>
+    <script id="running" type="text/processing" data-processing-target="canvas"></script>
+</div>
+<div class="row">
+    <input type="button" id="draw" class="check" value="Draw" />
+    <div id="error"></div>
+</div>
+</body>
+</html>
