@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Code Ordering Example</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/css/foundation.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/5.5.0/css/normalize.min.css" />
+  <link rel="stylesheet" href="https://lti-adx.adelaide.edu.au/think.create.code/reorder/code_reorder.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.4.8/processing.min.js"></script>
+  <script src="https://lti-adx.adelaide.edu.au/think.create.code/reorder/code_reorder.js"></script>
+</head>
+<body>
+<div class="row">
+    <p>
+        Drag the lines of code into the correct order to generate the image
+        shown below.
+        <br/>
+        Before submitting your answer, click <strong>Draw</strong> to see what
+        drawing your code creates.
+    </p>
+</div>
+<div class="row">
+    <ul id="answer" class="code">
+        <li><pre><code class="javascript">ellipse(50, 50, 30, 30);
+}</code></pre></li>
+        <li><pre><code class="javascript">rect(10, 10, 100, 100);
+}</code></pre></li>
+        <li><pre><code class="javascript">if (test == 10) {</code></pre></li>
+        <li><pre><code class="javascript">else {</code></pre></li>
+        <li>
+            <pre><code class="javascript">size(200, 200);
+int test = 10;</code></pre>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="columns small-6">
+        <img title="target drawing" alt="target drawing"
+        src="data:image/png;base64,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"
+        />
+    </div>
+    <div class="columns small-6">
+        <canvas id="canvas" alt="your drawing" title="your drawing" width="200" height="200"></canvas>
+        <script id="running" type="text/processing" data-processing-target="canvas"></script>
+    </div>
+</div>
+<div class="row">
+    <input type="button" id="draw" class="check" value="Draw" />
+    <div id="error"></div>
+</div>
+</body>
+</html>
