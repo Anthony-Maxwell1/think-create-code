@@ -2,6 +2,8 @@ from django.test import TestCase
 from django.utils import timezone
 from django.contrib import auth
 from django.test.client import Client
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from exceptions import Exception
 from StringIO import StringIO
 from mock import Mock
@@ -65,6 +67,8 @@ class WsgiLogErrorsTest(TestCase):
         self.request = Mock()
         self.request.META = {'wsgi.errors': StringIO()}
         self.exception = Exception('test exception', 'abc')
+        self.exception404 = Http404('test 404', 'abc')
+        self.exception403 = PermissionDenied('test 403', 'abc')
 
     def test_process_exception(self):
         self.assertEqual(self.request.META['wsgi.errors'].getvalue(), '')
@@ -74,3 +78,15 @@ class WsgiLogErrorsTest(TestCase):
             self.request.META['wsgi.errors'].getvalue(),
             "^EXCEPTION raised serving: <Mock name='mock\.build_absolute_uri\(\)' id='\d+'>"
         )
+
+    def test_skip_403(self):
+        self.assertEqual(self.request.META['wsgi.errors'].getvalue(), '')
+        response = self.wle.process_exception(self.request, self.exception403)
+        self.assertEqual(response, None)
+        self.assertEqual(self.request.META['wsgi.errors'].getvalue(), '')
+
+    def test_skip_404(self):
+        self.assertEqual(self.request.META['wsgi.errors'].getvalue(), '')
+        response = self.wle.process_exception(self.request, self.exception404)
+        self.assertEqual(response, None)
+        self.assertEqual(self.request.META['wsgi.errors'].getvalue(), '')
