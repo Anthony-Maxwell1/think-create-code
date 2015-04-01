@@ -45,7 +45,7 @@ $(document).ready(function() {
                     $canvas = $newCanvas;
 
                     // 3. Set the script contents, decoding escaped html as text
-                    var tmp = $('<div/>', { 'html' : evt.data.code });
+                    var tmp = $('<div>', { 'text' : evt.data.code });
                     $('#script-preview').html(tmp.text());
 
                     // 4. Listen for canvas resize, and send new size to parent

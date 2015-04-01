@@ -1886,6 +1886,141 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
         self.assertEqual(len(errors), 0)
 
 
+class ArtworkRenderHtmlEntities(SeleniumTestCase):
+
+    def test_artwork_with_unencoded_html_entity_spaced(self):
+        '''Testing with i< limit'''
+        code = '''
+int limit = 3;
+int go = true;
+for (int i=0; i< limit && go; i+=1) { 
+    rect(i*10,i*10,10-(i*10),10-(i*10)); 
+}
+'''
+        add_path = reverse('artwork-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+        # add redirects to login form
+        self.assertLogin(add_path)
+
+        # Send the code to the text editor
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys(code)
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(1)
+
+        # We should have no error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % '')
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % '')
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+    def test_artwork_with_unencoded_html_entity_no_space(self):
+        '''Testing with i<limit'''
+        code = '''
+int limit = 3;
+int go = true;
+for (int i=0; i<limit && go; i+=1) { 
+    rect(i*10,i*10,10-(i*10),10-(i*10)); 
+}
+'''
+        add_path = reverse('artwork-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+        # add redirects to login form
+        self.assertLogin(add_path)
+
+        # Send the code to the text editor
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys(code)
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(1)
+
+        # We should have no error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % '')
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % '')
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+    def test_artwork_with_encoded_html_entity_no_space(self):
+        '''Testing with i&lt;limit'''
+        code = '''
+int limit = 3;
+int go = true;
+for (int i=0; i&lt;limit &amp;&amp;go; i+=1) { 
+    rect(i*10,i*10,10-(i*10),10-(i*10)); 
+}
+'''
+        add_path = reverse('artwork-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+        # add redirects to login form
+        self.assertLogin(add_path)
+
+        # Send the code to the text editor
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys(code)
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(1)
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % '')
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % '')
+        self.assertEqual(error.text, 'lt is not defined')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+    def test_artwork_with_encoded_html_entity_spaced(self):
+        '''Testing with i&lt; limit'''
+        code = '''
+int limit = 3;
+int go = true;
+for (int i=0; i&lt; limit &amp;&amp; go; i+=1) { 
+    rect(i*10,i*10,10-(i*10),10-(i*10)); 
+}
+'''
+        add_path = reverse('artwork-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+        # add redirects to login form
+        self.assertLogin(add_path)
+
+        # Send the code to the text editor
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys(code)
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(1)
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % '')
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % '')
+        self.assertEqual(error.text, 'lt is not defined')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
 class ArtworkRenderCrash(SeleniumTestCase):
 
     def test_nicks_hanging_artwork(self):
@@ -1909,14 +2044,27 @@ for (<initialisation>; <test>; <update>) {
         self.selenium.find_element_by_id('play').click()
         time.sleep(1)
 
-        # Javascript exception thrown on next command
-        self.assertRaises(
-            WebDriverException,
-            self.selenium.find_element_by_id, ('paused-%s' % artwork.id)
-        )
+        # N.B we used to get a Javascript exception thrown on next command, 
+        # but after fixing ADX-133, it doesn't.  
+        # Nick's code still makes my browser loop infinitely, but the selenium
+        # browser doesn't, somehow.  Or we can't detect it.
+        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys('bad code')
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'missing ; before statement')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
 
 
-class TestOne(SeleniumTestCase):
+class ArtworkPlayPauseTests(SeleniumTestCase):
+
     def test_edit_artwork_overlay_play_pause(self):
 
         # Create artwork with bad code, and share it
