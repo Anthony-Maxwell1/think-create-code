@@ -74,7 +74,7 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            len(self.selenium.find_elements_by_css_selector('.artwork-author')),
             1
         )
         self.assertEqual(
@@ -129,7 +129,7 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            len(self.selenium.find_elements_by_css_selector('.artwork-author')),
             1
         )
         self.assertEqual(
@@ -201,7 +201,7 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            len(self.selenium.find_elements_by_css_selector('.artwork-author')),
             1
         )
         self.assertEqual(
@@ -268,7 +268,7 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            len(self.selenium.find_elements_by_css_selector('.artwork-author')),
             1
         )
         self.assertEqual(
@@ -339,7 +339,7 @@ class SubmissionShowIntegrationTests(SeleniumTestCase):
             1
         )
         self.assertEqual(
-            len(self.selenium.find_elements_by_link_text(self.artwork.author.username)),
+            len(self.selenium.find_elements_by_css_selector('.artwork-author')),
             1
         )
         self.assertEqual(

@@ -21,7 +21,7 @@
 </div>
 <div class="columns small-12">
     <div class="artwork-detail">by 
-        <a href="{% url 'artwork-author-list' object.author.id %}" 
+        <a href="{% url 'artwork-author-list' object.author.id %}" class="artwork-author"
           title="view artwork by {{ object.author }}">{{ object.author }}</a>, 
         {% if submission %}
         shared to <a href="{% url 'exhibition-view' submission.exhibition.id %}">{{ submission.exhibition }}</a>
