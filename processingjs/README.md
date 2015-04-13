@@ -4,7 +4,6 @@ processingjs gallery app
 
 Configuration
 -------------
-
 Create mysql database:
 
     mysql -u root -p < etc/00_init.sql
@@ -18,7 +17,6 @@ Install apache app configuration:
 
 Initial Setup
 -------------
-
 If you've just cloned this repo from git, you'll need to fetch the submodules:
 
     cd think-create-code
@@ -43,9 +41,25 @@ Use virtualenv to setup the initial runtime environment:
     (.virtualenv)$ touch gallery/wsgi.py # restart wsgi daemon
 
 
+Development server
+------------------
+To run the development server, connecting to the configured development database:
+
+    (.virtualenv)$ ./manage.py runserver 0.0.0.0:8000
+
+
+Run tests
+---------
+To run the tests, using the flatfile test database:
+
+    (.virtualenv)$ ./manage.py test
+
+See below for information on integration tests and test coverage.
+
+
 Create Users
 ------------
-Use the given fixture to load the users:
+Use the given fixture to load the initial staff users list:
 
     (.virtualenv)$ ./manage.py loaddata fixtures/000_staff_users.json
     Installed 6 object(s) from 1 fixture(s)
