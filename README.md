@@ -21,16 +21,4 @@ Django application which lets students create artworks using processingjs,
 store them in our database, and share them with other students and the
 general public, and get votes.
 
-If you've just cloned this repo from git, you'll need to fetch the submodules:
-
-    cd think-create-code
-    git submodule init
-    git submodule update
-
-
-Use virtualenv to setup the initial runtime environment:
-
-    cd think-create-code
-    virtualenv .virtualenv
-    source .virtualenv/bin/activate
-
+See processingjs/README.md for details on how to use it.
