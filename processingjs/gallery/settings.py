@@ -233,8 +233,6 @@ AUTHENTICATION_BACKENDS = [
 
 AUTH_USER_MODEL = 'uofa.User'
 
-# FIXME - how to manage security?
 LTI_OAUTH_CREDENTIALS = {
-    'test': 'uoa_secret',
-    'test2': 'uoa_reallysecret',
+    'code101x_2t2015': 'D8RoantdHgp0aABAGNNv',
 }
