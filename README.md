@@ -21,4 +21,12 @@ Django application which lets students create artworks using processingjs,
 store them in our database, and share them with other students and the
 general public, and get votes.
 
-See processingjs/README.md for details on how to use it.
+See processingjs/README.md for details on how to set up and modify the app.
+
+
+processingjs/static/sandbox.html
+================================
+
+This is a ProcessingJS Sandbox which depends on many of the JS/CSS files in
+processingjs/static, but can be used without running the Django application.
+It can be embedded as an iframe in MyUni courses.
