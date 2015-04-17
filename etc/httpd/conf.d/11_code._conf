@@ -1,7 +1,8 @@
 # https://gitlab-uat.adelaide.edu.au/adelaidex/think-create-code/blob/master/etc/httpd/conf.d/11_code._conf
-AliasMatch (?i)^/Think.Create.Code/reorder/?$   /var/www/adx/think-create-code/code-reorder/example.html
-AliasMatch (?i)^/Think.Create.Code/reorder/code_reorder.css /var/www/adx/think-create-code/code-reorder/code_reorder.css
-AliasMatch (?i)^/Think.Create.Code/reorder/code_reorder.js /var/www/adx/think-create-code/code-reorder/code_reorder.js
+AliasMatch /think.create.code/reorder/?$   /var/www/adx/think-create-code/code-reorder/example.html
+AliasMatch /think.create.code/reorder/code_reorder.css /var/www/adx/think-create-code/code-reorder/code_reorder.css
+AliasMatch /think.create.code/reorder/code_reorder.js /var/www/adx/think-create-code/code-reorder/code_reorder.js
+AliasMatch /think.create.code/reorder/(.*).html$   /var/www/adx/think-create-code/code-reorder/$1.html
 
 AliasMatch /think.create.code/all/js/content.js "/var/www/adx/think-create-code/all/content.js"
 AliasMatch /think.create.code/all(.*)           "/var/www/adx/course-units/all$1"

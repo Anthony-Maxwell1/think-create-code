@@ -8,8 +8,12 @@ input {
 }
 .code {
     list-style-type: none; 
+    width: 95%;
 }
 .code li {
     padding-top: 0.25em;
     cursor: move;
+}
+p code {
+    white-space: nowrap;
 }
