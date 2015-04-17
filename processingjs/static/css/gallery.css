@@ -1,3 +1,7 @@
+/* Make the body fit into iframes better */
+body {
+    height: auto;
+}
 /* Add a bit of padding between the nav and the content */
 nav {
     margin-bottom: 1em !important;
