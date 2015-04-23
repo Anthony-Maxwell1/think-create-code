@@ -23,7 +23,7 @@
         createArtworkIframe({
             target: $('#iframe-{{ object.id }}'),
             id: {{ object.id }},
-            code: "{% filter escapejs %}{{ object.code }}{% endfilter %}",
+            code: "{% autoescape off %}{% filter escapejs %}{{ object.code }}{% endfilter %}{% endautoescape %}",
             renderUrl: "{% url 'artwork-render' pk=object.id %}",
             autosize: {{ autosize|default:0 }},
             overlay: '#paused-{{ object.id }}'
@@ -31,7 +31,7 @@
         {% else %}
         createArtworkIframe({
             target: $('#iframe-{{ object.id }}'),
-            code: "{% filter escapejs %}{{ object.code }}{% endfilter %}",
+            code: "{% autoescape off %}{% filter escapejs %}{{ object.code }}{% endfilter %}{% endautoescape %}",
             renderUrl: "{% url 'artwork-render-create' %}",
             autosize: {{ autosize|default:0 }}
         });

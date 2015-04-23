@@ -2020,6 +2020,38 @@ for (int i=0; i&lt; limit &amp;&amp; go; i+=1) {
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
+    def test_artwork_with_encoded_html_entity_edit_view(self):
+        '''Testing with i&lt; limit'''
+        code = '''
+int limit = 3;
+int go = true;
+for (int i=0; i&lt; limit &amp;&amp; go; i+=1) { 
+    rect(i*10,i*10,10-(i*10),10-(i*10)); 
+}
+'''
+        artwork = Artwork.objects.create(title='Title bar', code=code, author=self.user)
+        edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        self.selenium.get('%s%s' % (self.live_server_url, edit_path))
+        # add redirects to login form
+        self.assertLogin(edit_path)
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(1)
+
+        # We should have an error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, 'lt is not defined')
+        self.selenium.switch_to.default_content()
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+
 class ArtworkRenderHtmlEntitiesWithoutEditForm(SeleniumTestCase):
 
     def test_artwork_with_unencoded_entity_unspaced_before_number(self):
@@ -2054,7 +2086,7 @@ for(var i=100;i<400;i+=10)
 
         # Push play to start the animation
         self.selenium.find_element_by_id('play').click()
-        time.sleep(4)
+        time.sleep(1)
 
         # no errors reported to the logs
         errors = self.get_browser_log(level=u'SEVERE')
@@ -2100,7 +2132,7 @@ for(var i=100;i < 400;i+=10)
 
         # Push play to start the animation
         self.selenium.find_element_by_id('play').click()
-        time.sleep(4)
+        time.sleep(1)
 
         # no errors reported to the logs
         errors = self.get_browser_log(level=u'SEVERE')
@@ -2114,7 +2146,51 @@ for(var i=100;i < 400;i+=10)
         self.assertEqual(error.text, '')
         self.selenium.switch_to.default_content()
 
+    def test_artwork_with_unencoded_entity_list_view(self):
+        '''Testing with i<400'''
+        code = '''
+size(400,300);
+for(var i=100;i<400;i+=10)
+{
+    for(var j=i-50;j<300;j+=10)
+    {
+        fill(i,j,j-i);
+        ellipse(i,j*j/300,7,8+j/15);
+        ellipse(400-i,j*j/300,7,8+j/15);
+    }
+}
+'''
+        # Create a shared Artwork so we can see non-editing view page
+        artwork = Artwork.objects.create(title='Title bar', code=code, author=self.user)
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='goes here',
+            author=self.staff_user)
+        submission = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition,
+            submitted_by=self.user)
 
+        view_path = reverse('exhibition-view', kwargs={'pk': exhibition.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+
+        self.selenium.get(view_url)
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('paused-%s' % artwork.id).click()
+        time.sleep(1)
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+        # We should have no error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
 
 
 class ArtworkRenderCrash(SeleniumTestCase):

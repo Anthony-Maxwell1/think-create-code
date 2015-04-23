@@ -67,15 +67,7 @@ $(document).ready(function() {
         callFunc("updateArtwork"+artworkId, {'animate': false});
     });
 
-    // ADX-133 re-set the editor value to fix issue with HTML element encoding.
-    {
-        var code = editor.getValue();
-
-        // If there's code in the input field, but none in the editor, use that
-        // code instead.
-        if ($input.length && $input.val()) {
-            code = $input.val();
-        } 
-        editor.setValue(code, -1);
+    if ($input.length && $input.val()) {
+        editor.setValue($input.val(), -1);
     }
 });
