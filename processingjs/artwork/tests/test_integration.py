@@ -2020,6 +2020,102 @@ for (int i=0; i&lt; limit &amp;&amp; go; i+=1) {
         errors = self.get_browser_log(level=u'SEVERE')
         self.assertEqual(len(errors), 0)
 
+class ArtworkRenderHtmlEntitiesWithoutEditForm(SeleniumTestCase):
+
+    def test_artwork_with_unencoded_entity_unspaced_before_number(self):
+        '''Testing with i<400'''
+        code = '''
+size(400,300);
+for(var i=100;i<400;i+=10)
+{
+    for(var j=i-50;j<300;j+=10)
+    {
+        fill(i,j,j-i);
+        ellipse(i,j*j/300,7,8+j/15);
+        ellipse(400-i,j*j/300,7,8+j/15);
+    }
+}
+'''
+        # Create a shared Artwork so we can see non-editing view page
+        artwork = Artwork.objects.create(title='Title bar', code=code, author=self.user)
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='goes here',
+            author=self.staff_user)
+        submission = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition,
+            submitted_by=self.user)
+
+        view_path = reverse('submission-view', kwargs={'pk': submission.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+
+        self.selenium.get(view_url)
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(4)
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+        # We should have no error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+    def test_artwork_with_unencoded_entity_spaced_before_number(self):
+        '''Testing with i < 400'''
+        code = '''
+size(400,300);
+for(var i=100;i < 400;i+=10)
+{
+    for(var j=i-50;j<300;j+=10)
+    {
+        fill(i,j,j-i);
+        ellipse(i,j*j/300,7,8+j/15);
+        ellipse(400-i,j*j/300,7,8+j/15);
+    }
+}
+'''
+        # Create a shared Artwork so we can see non-editing view page
+        artwork = Artwork.objects.create(title='Title bar', code=code, author=self.user)
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='goes here',
+            author=self.staff_user)
+        submission = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition,
+            submitted_by=self.user)
+
+        view_path = reverse('submission-view', kwargs={'pk': submission.id})
+        view_url = '%s%s' % (self.live_server_url, view_path)
+
+        self.selenium.get(view_url)
+
+        # Push play to start the animation
+        self.selenium.find_element_by_id('play').click()
+        time.sleep(4)
+
+        # no errors reported to the logs
+        errors = self.get_browser_log(level=u'SEVERE')
+        self.assertEqual(len(errors), 0)
+
+        # We should have no error shown
+        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
+        self.assertIsNotNone(iframe)
+        self.selenium.switch_to.frame(iframe)
+        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
+        self.assertEqual(error.text, '')
+        self.selenium.switch_to.default_content()
+
+
+
 
 class ArtworkRenderCrash(SeleniumTestCase):
 
@@ -2044,19 +2140,21 @@ for (<initialisation>; <test>; <update>) {
         self.selenium.find_element_by_id('play').click()
         time.sleep(1)
 
-        # N.B we used to get a Javascript exception thrown on next command, 
-        # but after fixing ADX-133, it doesn't.  
+        # We get Javascript exceptions thrown when we try to access elements.
         # Nick's code still makes my browser loop infinitely, but the selenium
         # browser doesn't, somehow.  Or we can't detect it.
-        self.selenium.find_element_by_css_selector('.ace_text-input').send_keys('bad code')
-
-        # We should have an error shown
-        iframe = self.selenium.find_element_by_css_selector("#iframe-%s iframe" % artwork.id)
-        self.assertIsNotNone(iframe)
-        self.selenium.switch_to.frame(iframe)
-        error = self.selenium.find_element_by_id('error-%s' % artwork.id)
-        self.assertEqual(error.text, 'missing ; before statement')
-        self.selenium.switch_to.default_content()
+        self.assertRaises(
+            WebDriverException,
+            self.selenium.find_element_by_id, ('ace_editor')
+        )
+        self.assertRaises(
+            WebDriverException,
+            self.selenium.find_element_by_css_selector, ('.ace_text-input')
+        )
+        self.assertRaises(
+            WebDriverException,
+            self.selenium.find_element_by_tag_name, ('iframe')
+        )
 
         # no errors reported to the logs
         errors = self.get_browser_log(level=u'SEVERE')
