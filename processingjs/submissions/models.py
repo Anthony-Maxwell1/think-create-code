@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django import forms
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from rulez import registry
 
@@ -59,15 +59,12 @@ def post_save(sender, instance=None, **kwargs):
         Artwork.objects.filter(id__exact=instance.artwork_id).update(shared=instance.id)
 
 
-@receiver(pre_delete, sender=Submission)
-def pre_delete(sender, instance=None, **kwargs):
+@receiver(post_delete, sender=Submission)
+def post_delete(sender, instance=None, **kwargs):
     '''Decrement artwork.shared, and delete existing votes.'''
     if instance:
         from artwork.models import Artwork
         Artwork.objects.filter(id__exact=instance.artwork_id).update(shared=0)
-
-        from votes.models import Vote
-        Vote.can_delete_queryset(submission=instance).delete()
 
 
 class SubmissionForm(forms.ModelForm):

@@ -184,6 +184,26 @@ class SubmissionTests(UserSetUp, TestCase):
         submission.delete()
         self.assertEqual(Vote.objects.filter(submission=submission).count(), 0)
 
+    def test_delete_votes_and_unshare(self):
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            author=self.user)
+        artwork = Artwork.objects.create(title='New Artwork', code='// code goes here', author=self.user)
+        submission = Submission.objects.create(exhibition=exhibition, artwork=artwork, submitted_by=self.user)
+        student_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.user)
+        staff_vote = Vote.objects.create(submission=submission, status=Vote.THUMBS_UP, voted_by=self.staff_user)
+
+        artwork = Artwork.objects.get(pk=artwork.id)
+        self.assertEqual(artwork.shared, submission.id)
+
+        self.assertEqual(Vote.objects.filter(submission=submission).count(), 2)
+        submission.delete()
+        self.assertEqual(Vote.objects.filter(submission=submission).count(), 0)
+
+        artwork = Artwork.objects.get(pk=artwork.id)
+        self.assertEqual(artwork.shared, 0)
+
 
 class SubmissionModelFormTests(UserSetUp, TestCase):
     """model.SubmissionForm tests."""
