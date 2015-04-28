@@ -2,9 +2,11 @@ from django.test import TestCase
 from django.db import IntegrityError
 from django.utils import timezone
 from datetime import datetime, timedelta
+from django.core import files
 
 from uofa.test import UserSetUp
 from exhibitions.models import Exhibition, ExhibitionForm
+from database_files.models import File
 
 
 class ExhibitionTests(UserSetUp, TestCase):
@@ -151,6 +153,91 @@ class ExhibitionTests(UserSetUp, TestCase):
         self.assertEqual(super_qs.all()[0].id, yesterday.id)
         self.assertEqual(super_qs.all()[1].id, today.id)
         self.assertEqual(super_qs.all()[2].id, tomorrow.id)
+
+
+class ExhibitionImageTests(UserSetUp, TestCase):
+
+    PNG_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAGUlEQVQYV2M8c+bMfwYiAOOoQnyhRP3gAQCJgSHpCB6weAAAAABJRU5ErkJggg=='
+
+    @staticmethod
+    def create_tmp_file(suffix='.txt', data=''):
+        '''Creates a new temp file.
+           Default arguments create a 10x10 gray png'''
+        tmp_file = files.temp.NamedTemporaryFile(
+            suffix=suffix,
+            dir=files.temp.gettempdir()
+        )
+        tmp_file.write(data)
+        tmp_file.seek(0)
+        return tmp_file
+
+    def test_add_image(self):
+        suffix = '.png'
+        tmp_file = self.create_tmp_file(suffix=suffix, data=self.PNG_IMAGE)
+        exhibition = Exhibition.objects.create(
+            author=self.user,
+            title='New Exhibition',
+            description='description goes here',
+            released_at=timezone.now(),
+            image=files.File(tmp_file),
+        )
+        self.assertEqual(File.objects.count(), 1)
+
+        exhibition = Exhibition.objects.get(pk=exhibition.id)
+        self.assertEqual(exhibition.image.file.name[-1*len(suffix):], suffix)
+        self.assertEqual(exhibition.image.file.read(), self.PNG_IMAGE)
+        self.assertEqual(exhibition.image.file.size, len(self.PNG_IMAGE))
+
+    def test_delete_exhibition(self):
+        suffix = '.png'
+        tmp_file = self.create_tmp_file(suffix=suffix, data=self.PNG_IMAGE)
+        exhibition = Exhibition.objects.create(
+            author=self.user,
+            title='New Exhibition',
+            description='description goes here',
+            released_at=timezone.now(),
+            image=files.File(tmp_file),
+        )
+        self.assertEqual(File.objects.count(), 1)
+
+        exhibition = Exhibition.objects.get(pk=exhibition.id)
+        exhibition.delete()
+        self.assertEqual(File.objects.count(), 0)
+
+    def test_remove_image(self):
+        suffix = '.png'
+        tmp_file = self.create_tmp_file(suffix=suffix, data=self.PNG_IMAGE)
+        exhibition = Exhibition.objects.create(
+            author=self.user,
+            title='New Exhibition',
+            description='description goes here',
+            released_at=timezone.now(),
+            image=files.File(tmp_file),
+        )
+        self.assertEqual(File.objects.count(), 1)
+
+        exhibition = Exhibition.objects.get(pk=exhibition.id)
+        exhibition.image = None
+        exhibition.save()
+        self.assertEqual(File.objects.count(), 0)
+
+    def test_change_image(self):
+        suffix = '.png'
+        tmp_file1 = self.create_tmp_file(suffix=suffix, data=self.PNG_IMAGE)
+        tmp_file2 = self.create_tmp_file(suffix=suffix, data=self.PNG_IMAGE)
+        exhibition = Exhibition.objects.create(
+            author=self.user,
+            title='New Exhibition',
+            description='description goes here',
+            released_at=timezone.now(),
+            image=files.File(tmp_file1),
+        )
+        self.assertEqual(File.objects.count(), 1)
+
+        exhibition = Exhibition.objects.get(pk=exhibition.id)
+        exhibition.image = files.File(tmp_file2)
+        exhibition.save()
+        self.assertEqual(File.objects.count(), 1)
 
 
 class ExhibitionModelFormTests(UserSetUp, TestCase):

@@ -1,10 +1,13 @@
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import post_init, post_save, post_delete
 from django.conf import settings
 from django.utils import timezone
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from django.dispatch import receiver
 from rulez import registry
+from database_files.models import File
 
 
 class Exhibition(models.Model):
@@ -23,6 +26,9 @@ class Exhibition(models.Model):
         help_text=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     modified_at = models.DateTimeField(auto_now=True, editable=False)
+
+    # Store the original image field, to track changes on save
+    __init_image = None
 
     def __unicode__(self):
         return self.title
@@ -56,6 +62,29 @@ class Exhibition(models.Model):
 
 registry.register('can_see', Exhibition)
 registry.register('can_save', Exhibition)
+
+
+@receiver(post_init, sender=Exhibition)
+def post_init(sender, instance=None, **kwargs):
+    '''Store initial image, to detect changes in post_save, post_delete'''
+    if instance:
+        instance.__init_image = instance.image
+
+@receiver(post_delete, sender=Exhibition)
+def post_delete(sender, instance=None, **kwargs):
+    '''Delete orphan image, if any'''
+    if instance:
+        if instance.__init_image:
+            instance.__init_image.storage.delete(instance.__init_image.name)
+
+@receiver(post_save, sender=Exhibition)
+def post_save(sender, instance=None, **kwargs):
+    '''Delete orphan image, if any'''
+    if instance:
+        if instance.__init_image and (
+          not instance.image 
+          or (instance.image != instance.__init_image)):
+            instance.__init_image.storage.delete(instance.__init_image.name)
 
 
 class ExhibitionForm(forms.ModelForm):
