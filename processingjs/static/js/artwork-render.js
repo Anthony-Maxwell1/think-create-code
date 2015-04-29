@@ -126,6 +126,8 @@ function createArtworkIframe(args) {
 
                 // Update the animation
                 updateArtwork({'animate': true});
+
+                return false;
             }
         };
         $overlay.show();
