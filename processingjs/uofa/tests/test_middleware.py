@@ -3,14 +3,15 @@ from django.utils import timezone
 from django.contrib import auth
 from django.test.client import Client
 from django.core.exceptions import PermissionDenied
-from django.http import Http404
+from django.conf import settings
+from django.http import Http404, HttpResponse
 from exceptions import Exception
 from StringIO import StringIO
 from mock import Mock
 import pytz
 
 from uofa.test import UserSetUp
-from uofa.middleware import TimezoneMiddleware, WsgiLogErrors
+from uofa.middleware import TimezoneMiddleware, WsgiLogErrors, P3PMiddleware
 
 class TimezoneMiddlewareTest(TestCase):
 
@@ -90,3 +91,16 @@ class WsgiLogErrorsTest(TestCase):
         response = self.wle.process_exception(self.request, self.exception404)
         self.assertEqual(response, None)
         self.assertEqual(self.request.META['wsgi.errors'].getvalue(), '')
+
+
+class P3PMiddlewareTest(TestCase):
+
+    def setUp(self):
+        super(P3PMiddlewareTest, self).setUp()
+        self.p3p = P3PMiddleware()
+        self.request = Mock()
+        self.response = HttpResponse()
+
+    def test_response_header_present(self):
+        self.p3p.process_response(self.request, self.response)
+        self.assertEqual(self.response[settings.P3P_HEADER_KEY], settings.P3P_HEADER_VALUE)

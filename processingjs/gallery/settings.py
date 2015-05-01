@@ -144,6 +144,7 @@ MIDDLEWARE_CLASSES = (
     'django_auth_lti.middleware.LTIAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'csp.middleware.CSPMiddleware',
+    'uofa.middleware.P3PMiddleware',
     'uofa.middleware.TimezoneMiddleware',
 )
 
@@ -198,6 +199,10 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'uofa.context_processors.analytics',
     'uofa.context_processors.referer',
 )
+
+# P3P header
+P3P_HEADER_KEY = 'P3P:CP'
+P3P_HEADER_VALUE = 'IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT'
 
 # Content Security Policy
 CSP_DEFAULT_SRC = (
