@@ -63,10 +63,10 @@ if ENVIRONMENT == 'production':
     LTI_LOGIN_URL = LTI_COURSE_URL
 
     # https://lti-adx.adelaide.edu.au/think.create.code/gallery/share
-    SHARE_URL = 'http://bit.ly/1A3Kdoy'
+    SHARE_URL = 'https://bit.ly/1A3Kdoy'
 
     # http://loco.services.adelaide.edu.au/think.create.code/gallery/share
-    #SHARE_URL = 'http://bit.ly/1MaoZG4'
+    #SHARE_URL = 'https://bit.ly/1MaoZG4'
 
     ALLOW_ANALYTICS = True
 
@@ -87,7 +87,7 @@ elif ENVIRONMENT == 'development':
     ALLOWED_HOSTS = []
 
     # http://loco.services.adelaide.edu.au:8000/share
-    SHARE_URL = 'http://bit.ly/1A3JLXA'
+    SHARE_URL = 'https://bit.ly/1A3JLXA'
 
     ALLOW_ANALYTICS = False
 
@@ -107,7 +107,7 @@ elif ENVIRONMENT == 'testing':
     ALLOWED_HOSTS = ['localhost']
 
     # http://0.0.0.0:8080/share
-    SHARE_URL = 'http://bit.ly/1zMTDl8'
+    SHARE_URL = 'https://bit.ly/1zMTDl8'
 
     ALLOW_ANALYTICS = False
 
