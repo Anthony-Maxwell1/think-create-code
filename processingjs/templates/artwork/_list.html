@@ -1,7 +1,6 @@
 {% if object %}
 <div class="artwork preview" id="artwork-{{ object.id }}">{% include 'artwork/_render.html' %}</div>
 <h3 class="artwork-title"><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h3>
-{% if not author %}
 <div class="artwork-detail">by 
     <a href="{% url 'artwork-author-list' object.author.id %}" 
       title="view artwork by {{ object.author }}">{{ object.author }}</a>
@@ -9,5 +8,4 @@
     <div class="artwork-votes">{% include 'submissions/_vote.html' with object=submission %}</div>
     {% endif %}
 </div>
-{% endif %}
 {% endif %}
