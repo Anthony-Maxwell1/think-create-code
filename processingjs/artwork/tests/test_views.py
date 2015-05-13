@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
 from submissions.models import Submission
+from votes.models import Vote
 from uofa.test import UserSetUp
 import re
 
@@ -188,6 +189,67 @@ class ArtworkListTests(UserSetUp, TestCase):
         response = self.assertLogin(client, list_path, user='super')
         self.assertEquals(response.context['object_list'].count(), 1)
         self.assertEquals(response.context['object_list'][0], artwork3)
+
+
+class SubmittedArtworkListTests(UserSetUp, TestCase):
+
+    def setUp(self):
+        super(SubmittedArtworkListTests, self).setUp()
+
+        self.artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        self.artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.user)
+        self.exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            author=self.user)
+        self.submission1 = Submission.objects.create(
+            artwork=self.artwork1,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+        vote1 = Vote.objects.create(submission=self.submission1,
+            status=Vote.THUMBS_UP, voted_by=self.user)
+        self.submission2 = Submission.objects.create(
+            artwork=self.artwork2,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+
+        self.artwork1 = Artwork.objects.get(id=self.artwork1.id)
+        self.artwork2 = Artwork.objects.get(id=self.artwork2.id)
+
+    def test_submitted_artwork_list(self):
+        client = Client()
+        list_path = reverse('artwork-list')
+
+        # Can see submitted artwork in list
+        response = client.get(list_path)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.context['object_list'].count(), 2)
+
+        # Can see submission URL, not artwork URL
+        self.assertEquals(response.context['object_list'][0].get_absolute_url(),
+            reverse('submission-view', kwargs={'pk': self.artwork2.shared}))
+        self.assertEquals(response.context['object_list'][1].get_absolute_url(),
+            reverse('submission-view', kwargs={'pk': self.artwork1.shared}))
+
+        # Can see submissions for both artworks
+        self.assertIn('submissions', response.context)
+        self.assertIn(self.artwork1.id, response.context['submissions'])
+        self.assertIn(self.artwork2.id, response.context['submissions'])
+
+        # Can see vote list for both submissions, with no votes for the
+        # unauthenticated user
+        self.assertIn('votes', response.context)
+        self.assertNotIn(self.submission1.id, response.context['votes'])
+        self.assertNotIn(self.submission2.id, response.context['votes'])
+
+        # Login to see user's vote for artwork1
+        logged_in = client.login(username=self.get_username(), password=self.get_password())
+        self.assertTrue(logged_in)
+        response = client.get(list_path)
+
+        self.assertIn('votes', response.context)
+        self.assertIn(self.submission1.id, response.context['votes'])
+        self.assertNotIn(self.submission2.id, response.context['votes'])
 
 
 class ArtworkViewTests(UserSetUp, TestCase):

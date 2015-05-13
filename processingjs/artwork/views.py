@@ -12,6 +12,7 @@ from artwork.models import Artwork, ArtworkForm
 
 from exhibitions.models import Exhibition
 from submissions.models import Submission
+from votes.models import Vote
 
 class ArtworkView(TemplatePathMixin):
     model = Artwork
@@ -96,6 +97,17 @@ class ListArtworkView(ArtworkView, ListView):
         context['author'] = author
 
         context['shared'] = self._get_shared()
+
+        # Fetch submissions for these artworks
+        artwork_ids = [ a.id for a in context['object_list']]
+        submissions = Submission.objects.filter(artwork__id__in=artwork_ids).all()
+        context['submissions'] = { s.artwork_id:s for s in submissions }
+
+        # Fetch votes for these submissions
+        submission_ids = [ s.id for s in submissions ]
+        votes = Vote.can_delete_queryset(user=self.request.user, submission=submission_ids).all()
+        context['votes'] = { v.submission_id:v for v in votes }
+
         return context
 
 

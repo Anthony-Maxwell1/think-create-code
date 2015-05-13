@@ -55,14 +55,17 @@ class Vote(models.Model):
     # submission or exhibition.
     # If no user given, returns none.
     @classmethod
-    def can_delete_queryset(cls, qs=None, user=None, exhibition=None, submission=None):
+    def can_delete_queryset(cls, qs=None, user=None, exhibition=None, submission=None, submissions=None):
         if not qs:
             qs = cls.objects
         if user and user.is_authenticated():
             qs = qs.filter(voted_by=user)
 
             if submission:
-                qs = qs.filter(submission=submission)
+                if isinstance(submission, (list, tuple)):
+                    qs = qs.filter(submission__id__in=submission)
+                else:
+                    qs = qs.filter(submission=submission)
             elif exhibition:
                 qs = qs.filter(submission__exhibition=exhibition)
         else:

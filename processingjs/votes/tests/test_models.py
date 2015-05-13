@@ -112,6 +112,13 @@ class VoteTests(UserSetUp, TestCase):
         self.assertEquals(student_vote2.id, student_sub2_qs.all()[0].id)
         self.assertTrue(student_sub2_qs.all()[0].can_delete(user=self.user))
 
+        student_subs_qs = Vote.can_delete_queryset(user=self.user, submission=[submission1.id, submission2.id])
+        self.assertEquals(2, len(student_subs_qs.all()))
+        self.assertEquals(student_vote1.id, student_subs_qs.all()[0].id)
+        self.assertEquals(student_vote2.id, student_subs_qs.all()[1].id)
+        self.assertTrue(student_subs_qs.all()[0].can_delete(user=self.user))
+        self.assertTrue(student_subs_qs.all()[1].can_delete(user=self.user))
+
         student_exh1_qs = Vote.can_delete_queryset(user=self.user, exhibition=exhibition1)
         self.assertEquals(1, len(student_exh1_qs.all()))
         self.assertEquals(student_vote1.id, student_exh1_qs.all()[0].id)
@@ -138,6 +145,13 @@ class VoteTests(UserSetUp, TestCase):
         self.assertEquals(staff_vote2.id, staff_sub2_qs.all()[0].id)
         self.assertTrue(staff_sub2_qs.all()[0].can_delete(user=self.staff_user))
 
+        staff_subs_qs = Vote.can_delete_queryset(user=self.staff_user, submission=[submission1.id, submission2.id])
+        self.assertEquals(2, len(staff_subs_qs.all()))
+        self.assertEquals(staff_vote1.id, staff_subs_qs.all()[0].id)
+        self.assertEquals(staff_vote2.id, staff_subs_qs.all()[1].id)
+        self.assertTrue(staff_subs_qs.all()[0].can_delete(user=self.staff_user))
+        self.assertTrue(staff_subs_qs.all()[1].can_delete(user=self.staff_user))
+
         staff_exh1_qs = Vote.can_delete_queryset(user=self.staff_user, exhibition=exhibition1)
         self.assertEquals(1, len(staff_exh1_qs.all()))
         self.assertEquals(staff_vote1.id, staff_exh1_qs.all()[0].id)
@@ -163,6 +177,13 @@ class VoteTests(UserSetUp, TestCase):
         self.assertEquals(1, len(super_sub2_qs.all()))
         self.assertEquals(super_vote2.id, super_sub2_qs.all()[0].id)
         self.assertTrue(super_sub2_qs.all()[0].can_delete(user=self.super_user))
+
+        super_subs_qs = Vote.can_delete_queryset(user=self.super_user, submission=[submission1.id, submission2.id])
+        self.assertEquals(2, len(super_subs_qs.all()))
+        self.assertEquals(super_vote1.id, super_subs_qs.all()[0].id)
+        self.assertEquals(super_vote2.id, super_subs_qs.all()[1].id)
+        self.assertTrue(super_subs_qs.all()[0].can_delete(user=self.super_user))
+        self.assertTrue(super_subs_qs.all()[1].can_delete(user=self.super_user))
 
         super_exh1_qs = Vote.can_delete_queryset(user=self.super_user, exhibition=exhibition1)
         self.assertEquals(1, len(super_exh1_qs.all()))

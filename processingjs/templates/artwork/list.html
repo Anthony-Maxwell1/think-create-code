@@ -1,8 +1,10 @@
 {% extends "base.html" %}
+{% load dict_filters %}
 
 {% block extras %}
 {% load staticfiles %}
 <script type="text/javascript" src="{% static "js/artwork-render.js" %}"></script>
+<script type="text/javascript" src="{% static "js/vote.js" %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -26,7 +28,9 @@
 <div class="small-grid-2">&nbsp;</div>
 <ul class="large-block-grid-5 medium-block-grid-3 small-block-grid-2">
     {% for artwork in object_list %}
-    <li>{% include 'artwork/_list.html' with object=artwork %}</li>
+    {% with submissions|get:artwork.id as submission %}
+    <li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
+    {% endwith %}
     {% endfor %}
 </ul>
 </div>

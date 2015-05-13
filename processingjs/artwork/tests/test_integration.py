@@ -7,6 +7,7 @@ import time
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
 from submissions.models import Submission
+from votes.models import Vote
 from uofa.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_load
 
 
@@ -317,6 +318,101 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-add')
         )
+
+
+class SubmittedArtworkListTests(SeleniumTestCase):
+
+    def setUp(self):
+        super(SubmittedArtworkListTests, self).setUp()
+
+        self.artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        self.artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.user)
+        self.exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            author=self.user)
+        self.submission1 = Submission.objects.create(
+            artwork=self.artwork1,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+        vote1 = Vote.objects.create(submission=self.submission1,
+            status=Vote.THUMBS_UP, voted_by=self.user)
+        self.submission2 = Submission.objects.create(
+            artwork=self.artwork2,
+            exhibition=self.exhibition,
+            submitted_by=self.user)
+
+        self.artwork1 = Artwork.objects.get(id=self.artwork1.id)
+        self.artwork2 = Artwork.objects.get(id=self.artwork2.id)
+
+    def test_submitted_artwork_list(self):
+        # Can see submitted artwork in list
+        list_path = reverse('artwork-list')
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            2
+        )
+
+        # Can see submission URL, not artwork URL
+        view_artwork1_url = '%s%s' % (self.live_server_url, 
+            reverse('submission-view', kwargs={'pk': self.artwork1.shared}))
+        self.assertEqual(
+            self.selenium.find_element_by_link_text(self.artwork1.title).get_attribute('href'),
+            view_artwork1_url
+        )
+        view_artwork2_url = '%s%s' % (self.live_server_url, 
+            reverse('submission-view', kwargs={'pk': self.artwork2.shared}))
+        self.assertEqual(
+            self.selenium.find_element_by_link_text(self.artwork2.title).get_attribute('href'),
+            view_artwork2_url
+        )
+
+        # Can see voting block for both artworks
+        votes = self.selenium.find_elements_by_css_selector('.artwork-votes')
+        self.assertEqual(len(votes), 2)
+
+        # anonymous users see login link
+        login_path = reverse('login')
+        login_url = '%s%s?next=%s' % (self.live_server_url, login_path, list_path)
+
+        vote1_link = self.selenium.find_element_by_id('vote-%d' % self.submission1.id)
+        self.assertEqual(vote1_link.get_attribute('href'), login_url)
+
+        vote2_link = self.selenium.find_element_by_id('vote-%d' % self.submission2.id)
+        self.assertEqual(vote1_link.get_attribute('href'), login_url)
+
+        # Click on a vote link to login and return to list
+        with wait_for_page_load(self.selenium):
+            vote1_link.click()
+        self.assertLogin(next_path=list_path)
+
+        # Vote links have been changed to like/unlike links
+        vote1_link = self.selenium.find_element_by_id('vote-%d' % self.submission1.id)
+        self.assertEqual(vote1_link.get_attribute('class'), 'post-vote unlike')
+
+        vote2_link = self.selenium.find_element_by_id('vote-%d' % self.submission2.id)
+        self.assertEqual(vote2_link.get_attribute('class'), 'post-vote like')
+
+
+        # Click both vote links to toggle the votes
+        vote1_link.click()
+        time.sleep(2)
+        self.assertEqual(vote1_link.get_attribute('class'), 'post-vote like')
+
+        vote2_link.click()
+        time.sleep(2)
+        self.assertEqual(vote2_link.get_attribute('class'), 'post-vote unlike')
+
+
+        # Reload the page to ensure the votes were updated
+        self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        vote1_link = self.selenium.find_element_by_id('vote-%d' % self.submission1.id)
+        self.assertEqual(vote1_link.get_attribute('class'), 'post-vote like')
+
+        vote2_link = self.selenium.find_element_by_id('vote-%d' % self.submission2.id)
+        self.assertEqual(vote2_link.get_attribute('class'), 'post-vote unlike')
+
 
 class ArtworkViewIntegrationTests(SeleniumTestCase):
 
