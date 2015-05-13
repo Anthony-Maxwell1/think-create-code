@@ -429,7 +429,7 @@ class ShareViewIntegrationTest(SeleniumTestCase):
         self.assertEqual(parsed_target.netloc, os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'])
         self.assertEqual(parsed_target.path, reverse('share'))
 
-        self.assertEqual(parsed_redirect.scheme, parsed_target.scheme)
+        self.assertEqual(parsed_redirect.scheme, 'https')
         self.assertEqual(parsed_redirect.query,  parsed_target.query)
         # I wish this worked.. since it's the meat of the share request.
         # But since servers don't care about fragments, we can't see it in the target :(
