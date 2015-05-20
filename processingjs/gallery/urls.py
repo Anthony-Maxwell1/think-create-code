@@ -35,12 +35,14 @@ urlpatterns = patterns('',
         name='lti-inactive'),
     url(r'^share/?$', gallery.views.ShareView.as_view(),
         name='share'),
-    # N.B This /help url is used by the Nagios checks for this service.
+    # N.B This probe.html url is used by the Nagios checks for this service.
     # PLEAE DO NOT CHANGE!
     url(r'^probe.html$', gallery.views.ProbeView.as_view(),
         name='probe'),
     url(r'^help/?$', gallery.views.HelpView.as_view(),
         name='help'),
+    url(r'^terms/?$', gallery.views.TermsView.as_view(),
+        name='terms'),
     url(r'^artwork/studio/$', artwork.views.StudioArtworkView.as_view(),
         name='artwork-studio'),
     url(r'^a/?$', artwork.views.ListArtworkView.as_view(),

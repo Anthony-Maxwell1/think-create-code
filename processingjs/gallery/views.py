@@ -23,6 +23,16 @@ class HelpView(TemplatePathMixin, TemplateView):
     template_name = TemplatePathMixin.prepend_template_path('help.html')
 
 
+class TermsView(TemplatePathMixin, TemplateView):
+    TemplatePathMixin.template_dir = 'gallery'
+    template_name = TemplatePathMixin.prepend_template_path('terms.html')
+
+    def get_context_data(self, **kwargs):
+        context = super(TermsView, self).get_context_data(**kwargs)
+        context['lti_link_text'] = settings.LTI_LINK_TEXT
+        return context
+
+
 class ShareView(TemplatePathMixin, TemplateView):
     TemplatePathMixin.template_dir = 'gallery'
     template_name = TemplatePathMixin.prepend_template_path('share.html')

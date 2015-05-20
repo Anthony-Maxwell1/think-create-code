@@ -213,6 +213,12 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(link.get_attribute('href'), help_url)
         self.assertEqual(link.text, 'Help')
 
+        # Terms
+        link = self.selenium.find_element_by_id('footer-terms')
+        terms_url = '%s%s' % (self.live_server_url, reverse('terms'))
+        self.assertEqual(link.get_attribute('href'), terms_url)
+        self.assertEqual(link.text, 'Terms of Use')
+
         # Sign in
         link = self.selenium.find_element_by_id('nav-signin')
         login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), reverse('home'))
@@ -264,6 +270,12 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(link.get_attribute('href'), help_url)
         self.assertEqual(link.text, 'Help')
 
+        # Terms
+        link = self.selenium.find_element_by_id('footer-terms')
+        terms_url = '%s%s' % (self.live_server_url, reverse('terms'))
+        self.assertEqual(link.get_attribute('href'), terms_url)
+        self.assertEqual(link.text, 'Terms of Use')
+
         # Profile
         link = self.selenium.find_element_by_id('nav-profile')
         profile_url = '%s%s?next=%s' % (self.live_server_url, reverse('user-profile'), reverse('home'))
@@ -314,6 +326,12 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         help_url = '%s%s' % (self.live_server_url, reverse('help'))
         self.assertEqual(link.get_attribute('href'), help_url)
         self.assertEqual(link.text, 'Help')
+
+        # Terms
+        link = self.selenium.find_element_by_id('footer-terms')
+        terms_url = '%s%s' % (self.live_server_url, reverse('terms'))
+        self.assertEqual(link.get_attribute('href'), terms_url)
+        self.assertEqual(link.text, 'Terms of Use')
 
         # Profile
         link = self.selenium.find_element_by_id('nav-profile')
@@ -939,3 +957,27 @@ class UserProfileViewTest(SeleniumTestCase):
         user = get_user_model().objects.get(username=self.get_username('student'))
         self.assertEqual(user.first_name, '')
         self.assertEqual(user.time_zone, None)
+
+
+class TestHelpView(SeleniumTestCase):
+    """Ensure Help page is visible to public"""
+
+    def test_public_get(self):
+        help_url = '%s%s' % (self.live_server_url, reverse('help'))
+        self.selenium.get(help_url)
+        self.assertEqual(self.selenium.current_url, help_url)
+
+        self.assertEquals(len(self.selenium.find_elements_by_id('help-content')), 1)
+        self.assertEquals(len(self.selenium.find_elements_by_tag_name('h1')), 1)
+
+
+class TestTermsView(SeleniumTestCase):
+    """Ensure Terms of Use page is visible to public"""
+
+    def test_public_get(self):
+        terms_url = '%s%s' % (self.live_server_url, reverse('terms'))
+        self.selenium.get(terms_url)
+        self.assertEqual(self.selenium.current_url, terms_url)
+
+        self.assertEquals(len(self.selenium.find_elements_by_id('terms-content')), 1)
+        self.assertEquals(len(self.selenium.find_elements_by_tag_name('h1')), 1)

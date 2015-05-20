@@ -22,6 +22,39 @@ nav #nav-logged-in {
 nav #nav-logged-in:after {
     border-color: transparent transparent transparent !important;
 }
+/* page footer */
+footer {
+    margin-top: 1em;
+    text-align: right;
+    border-top: thin solid grey;
+    margin-right: 1em;
+    margin-left: 1em;
+}
+footer #footer {
+    padding-left: 0;
+    padding-right: 0;
+}
+footer a {
+    white-space: nowrap;
+}
+footer ul {
+    list-style-type: none;
+    display: inline-block;
+    font-size: 80%;
+    line-height: 80%;
+    padding: 0;
+    margin: 0;
+}
+footer li {
+    display: inline-block;
+}
+footer li:before {
+    content: ' | ';
+}
+footer li:first-child:before {
+    content: '';
+}
+
 /* Make warning box text a bit easier to read */
 .warning.alert-box {
     color: #000;
