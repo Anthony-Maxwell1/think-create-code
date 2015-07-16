@@ -77,6 +77,9 @@ elif ENVIRONMENT == 'production-3T2015':
     LTI_COURSE_URL = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
     LTI_ENROL_URL = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
     LTI_LOGIN_URL = LTI_COURSE_URL
+    LTI_OAUTH_CREDENTIALS = {
+        'code101x_3t2015': 'ja2k9wQwAX31nfjgQafB',
+    }
 
     # https://lti-adx.adelaide.edu.au/think.create.code/3t2015/gallery/share
     SHARE_URL = 'https://bit.ly/1JjomIB'
