@@ -32,7 +32,7 @@ LTI_ENROL_URL = ''
 
 
 # Determine enviroment we're running in
-ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production-2T2015")
+ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production-3T2015")
 
 if ENVIRONMENT == 'production-2T2015':
 
@@ -57,6 +57,29 @@ if ENVIRONMENT == 'production-2T2015':
 
     # http://loco.services.adelaide.edu.au/think.create.code/gallery/share
     #SHARE_URL = 'https://bit.ly/1MaoZG4'
+
+    ALLOW_ANALYTICS = True
+
+elif ENVIRONMENT == 'production-3T2015':
+
+    DATABASES = {
+        'default': {
+             'ENGINE': 'django.db.backends.mysql',
+             'NAME': 'processingjs_gallery_3t2015',
+             'USER': 'gallery_rw',
+             'PASSWORD': 'gAll3rY-rw',
+        }
+    }
+    STATIC_URL = '/think.create.code/3t2015/static/'
+    ALLOWED_HOSTS = ['*']
+
+    # FIXME Link to a live course are contains a Code Gallery LTI unit
+    LTI_COURSE_URL = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
+    LTI_ENROL_URL = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
+    LTI_LOGIN_URL = LTI_COURSE_URL
+
+    # https://lti-adx.adelaide.edu.au/think.create.code/3t2015/gallery/share
+    SHARE_URL = 'https://bit.ly/1JjomIB'
 
     ALLOW_ANALYTICS = True
 

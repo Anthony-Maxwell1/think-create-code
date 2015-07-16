@@ -6,7 +6,7 @@ Configuration
 -------------
 Create mysql database:
 
-    mysql -u root -p < etc/00_init.sql
+    mysql -u root -p < etc/sql/00_init.sql
 
 Install apache app configuration:
 
@@ -37,8 +37,23 @@ Use virtualenv to setup the initial runtime environment:
     source ../.virtualenv/bin/activate
     (.virtualenv)$ pip install -U -r requirements.txt
     (.virtualenv)$ sudo find ../.virtualenv/lib/python2.7/site-packages -name \*.so -exec chcon -t shlib_t {} \;
-    (.virtualenv)$ ./manage.py migrate
+
+
+Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
+
+    (.virtualenv)$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py migrate
     (.virtualenv)$ touch gallery/wsgi.py # restart wsgi daemon
+
+
+Initial Data
+------------
+Use the data fixtures to load the initial staff users list:
+
+    (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/000_staff_group.json
+    Installed 1 object(s) from 1 fixture(s)
+
+    (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/001_staff_users.json
+    Installed 9 object(s) from 1 fixture(s)
 
 
 Development server
@@ -59,13 +74,8 @@ See below for information on integration tests and test coverage.
 
 Create Users
 ------------
-Use the given fixture to load the initial staff users list:
 
-    (.virtualenv)$ ./manage.py loaddata fixtures/000_staff_users.json
-    Installed 6 object(s) from 1 fixture(s)
-
-
-Or use the django shell/console to create users.
+Use the django shell/console to create users.
 
     (.virtualenv)$ ./manage.py shell
     >>> from uofa.models import User
