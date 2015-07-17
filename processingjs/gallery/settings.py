@@ -29,6 +29,7 @@ TEMPLATE_DEBUG = False
 LTI_LOGIN_URL = None
 LTI_COURSE_URL = ''
 LTI_ENROL_URL = ''
+LTI_OAUTH_CREDENTIALS = {}
 
 
 # Determine enviroment we're running in
