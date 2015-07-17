@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     if 'test' in sys.argv:
         os.environ["DJANGO_GALLERY_ENVIRONMENT"] = "testing"
-    elif 'runserver' in sys.argv:
+    elif not os.environ.get("DJANGO_GALLERY_ENVIRONMENT"):
         os.environ["DJANGO_GALLERY_ENVIRONMENT"] = "development"
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "gallery.settings")
