@@ -1,5 +1,6 @@
 import os
 from django.views.generic import DetailView, ListView, CreateView, DeleteView
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
@@ -16,6 +17,10 @@ class SubmissionView(TemplatePathMixin):
     form_class = SubmissionForm
     template_dir = 'submissions'
 
+    def get_context_data(self, **kwargs):
+        context = super(SubmissionView, self).get_context_data(**kwargs)
+        context['disqus_shortname'] = settings.DISQUS_SHORTNAME
+        return context
 
 class ShowSubmissionView(SubmissionView, DetailView):
 

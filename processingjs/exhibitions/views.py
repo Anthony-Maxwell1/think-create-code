@@ -1,5 +1,6 @@
 import os
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.decorators import method_decorator
 from csp.decorators import csp_update
@@ -65,6 +66,8 @@ class ShowExhibitionView(ObjectHasPermMixin, ExhibitionView, DetailView):
         submissions_list_view.kwargs = self.kwargs
         submissions_list_view.object_list = submissions_list_view.get_queryset()
         context['submissions'] = submissions_list_view.get_context_data()
+
+        context['disqus_shortname'] = settings.DISQUS_SHORTNAME
 
         return context
 

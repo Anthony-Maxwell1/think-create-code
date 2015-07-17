@@ -28,6 +28,11 @@ class Submission(models.Model):
     def __str__(self):
         return unicode(self).encode('utf-8')
 
+    def _disqus_identifier(self):
+        return settings.DISQUS_IDENTIFIER % self.id
+
+    disqus_identifier = property(_disqus_identifier)
+
     # Allow authenticated authors to submit their artwork 
     # to exhibitions they can see
     def can_save(self, user=None):

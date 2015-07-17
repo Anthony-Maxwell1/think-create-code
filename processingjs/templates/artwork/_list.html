@@ -6,6 +6,7 @@
       title="view artwork by {{ object.author }}">{{ object.author }}</a>
     {% if submission %}
     <div class="artwork-votes">{% include 'submissions/_vote.html' with object=submission %}</div>
+    <div class="artwork-comments">{% include 'submissions/_comment.html' with object=submission %}</div>
     {% endif %}
 </div>
 {% endif %}

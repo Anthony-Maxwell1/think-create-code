@@ -248,7 +248,7 @@ button .fa {
 .unlike:active .fa {
     color: #ababab;
 }
-.artwork-score, .artwork-votes, .inline {
+.artwork-score, .artwork-votes, .artwork-comments, .inline {
     display: inline;
 }
 

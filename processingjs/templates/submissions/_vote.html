@@ -13,6 +13,6 @@
     title="{% if voted %}unlike{% else %}like{% endif %}"
 {% endwith %}
 {% endif %}
-><i class="fa fa-thumbs-up"></i>
-  <div class="artwork-score" title="{{ object.score}} vote{% if object.score == 1 %}{% else %}s{% endif %}">{{ object.score }}</div>
+><div class="artwork-score" title="{{ object.score}} vote{% if object.score == 1 %}{% else %}s{% endif %}">{{ object.score }}</div>
+ <i class="fa fa-thumbs-up"></i>
 </a>

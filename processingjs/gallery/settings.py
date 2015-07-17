@@ -31,6 +31,9 @@ LTI_COURSE_URL = ''
 LTI_ENROL_URL = ''
 LTI_OAUTH_CREDENTIALS = {}
 
+# Disqus integration
+DISQUS_SHORTNAME = 'thinkcreatecodegallery'
+DISQUS_IDENTIFIER = 's/%d'
 
 # Determine enviroment we're running in
 ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production-3T2015")
@@ -64,6 +67,8 @@ if ENVIRONMENT == 'production-2T2015':
 
     ALLOW_ANALYTICS = True
 
+    DISQUS_IDENTIFIER = '2t2015/s/%d'
+
 elif ENVIRONMENT == 'production-3T2015':
 
     DATABASES = {
@@ -90,6 +95,8 @@ elif ENVIRONMENT == 'production-3T2015':
 
     ALLOW_ANALYTICS = True
 
+    DISQUS_IDENTIFIER = '3t2015/s/%d'
+
 elif ENVIRONMENT == 'development':
 
     # Runs via ./manage.py runserver
@@ -110,6 +117,8 @@ elif ENVIRONMENT == 'development':
     SHARE_URL = 'https://bit.ly/1A3JLXA'
 
     ALLOW_ANALYTICS = False
+
+    DISQUS_IDENTIFIER = 'dev/s/%d'
 
 elif ENVIRONMENT == 'testing':
 
@@ -234,15 +243,24 @@ CSP_SCRIPT_SRC = (
     "'self'",
     "'unsafe-inline'", # artwork/_render.html, artwork/edit.html
     "https://www.google-analytics.com",
+    "a.disquscdn.com",
+    "thinkcreatecodegallery.disqus.com",
 )
 CSP_IMG_SRC = (
     "'self'",
     "data:",
     "https://www.google-analytics.com",
+    "referrer.disqus.com", 
+    "a.disquscdn.com",
 )
 CSP_STYLE_SRC = (
     "'self'",
     "'unsafe-inline'", # modernizr.js
+    "a.disquscdn.com",
+)
+CSP_FRAME_SRC = (
+    "'self'", 
+    "disqus.com",
 )
 
 
