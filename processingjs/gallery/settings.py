@@ -34,6 +34,8 @@ LTI_OAUTH_CREDENTIALS = {}
 # Disqus integration
 DISQUS_SHORTNAME = 'thinkcreatecodegallery'
 DISQUS_IDENTIFIER = 's/%d'
+DISQUS_SECRET_KEY = 'CH2OwPJpIwukfaiE2EbBAwALZxYsHcgii3TzpqrmFbQ9cgfiaHGfXXb48k8uMItq'
+DISQUS_PUBLIC_KEY = 'jbXXUtp4uRwQwU0DAbHQnaG6X6JIk83ZHyQksEbQJ4y0AeJSFvzOY43PkSV2fPkh'
 
 # Determine enviroment we're running in
 ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production-3T2015")

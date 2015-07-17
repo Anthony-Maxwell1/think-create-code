@@ -20,6 +20,9 @@ class SubmissionView(TemplatePathMixin):
     def get_context_data(self, **kwargs):
         context = super(SubmissionView, self).get_context_data(**kwargs)
         context['disqus_shortname'] = settings.DISQUS_SHORTNAME
+
+        if self.request.user.is_authenticated():
+            context['disqus_sso'] = self.request.user.disqus_sso()
         return context
 
 class ShowSubmissionView(SubmissionView, DetailView):

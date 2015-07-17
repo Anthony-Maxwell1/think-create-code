@@ -16,6 +16,7 @@
 <div id="comments">
 <div id="disqus_thread"></div>
 </div>
+{{ disqus_sso|safe }}
 <script type="text/javascript">
     var disqus_shortname = '{{ disqus_shortname }}';
     var disqus_identifier = '{{ submission.disqus_identifier }}';

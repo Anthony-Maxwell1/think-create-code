@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
 from django.forms import ModelForm
+from django.conf import settings
 from django.core import validators
 from django.utils import timezone
 from django.utils.http import urlquote
@@ -13,7 +14,12 @@ from django.contrib.auth.models import UserManager
 from uofa.fields import NullableCharField
 from uofa.widgets import SelectTimeZoneWidget
 
-
+import base64
+import hashlib
+import hmac
+import json
+import time
+ 
 def staff_member_group():
     '''ID of the Staff Members permissions group, for the Admin site'''
     return 1
@@ -50,7 +56,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                 validators.RegexValidator(r'^[\w.@+-]+$', _('Please enter a valid nickname.'), 'invalid'),
             ])
     last_name = models.CharField(_('last name'), max_length=255, blank=True)
-    email = models.EmailField(_('email address'), blank=True)
+    email = models.EmailField(_('email address'), blank=True,
+        help_text=_('Used to create your disqus.com account (optional).'),)
     is_staff = models.BooleanField(_('staff status'), default=False,
         help_text=_('Designates whether the user can log into this admin '
                     'site and have Staff Member group permissions.'))
@@ -96,6 +103,35 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
+    def disqus_sso(self):
+        # ref https://github.com/disqus/DISQUS-API-Recipes/blob/master/sso/python/sso.py
+        # create a JSON packet of our user data attributes
+        email = self.email if self.email else '%s@edx.org' % self.username
+        data = json.dumps({
+            'id': self.username,
+            'username': self.first_name,
+            'email': email,
+        })
+        # encode the data to base64
+        message = base64.b64encode(data)
+        # generate a timestamp for signing the message
+        timestamp = int(time.time())
+        # generate our hmac signature
+        sig = hmac.HMAC(settings.DISQUS_SECRET_KEY, '%s %s' % (message, timestamp), hashlib.sha1).hexdigest()
+     
+        # return a script tag to insert the sso message
+        return """<script type="text/javascript">
+        var disqus_config = function() {
+            this.page.remote_auth_s3 = "%(message)s %(sig)s %(timestamp)s";
+            this.page.api_key = "%(pub_key)s";
+        }
+        </script>""" % dict(
+            message=message,
+            timestamp=timestamp,
+            sig=sig,
+            pub_key=settings.DISQUS_PUBLIC_KEY,
+        )
+
 
 @receiver(signals.post_save, sender=User)
 def post_save(sender, instance=None, **kwargs):
@@ -110,7 +146,7 @@ def post_save(sender, instance=None, **kwargs):
 class UserForm(ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'time_zone',]
+        fields = ['first_name', 'email', 'time_zone',]
         widgets = {
             'time_zone': SelectTimeZoneWidget,
         }
