@@ -220,6 +220,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'uofa.context_processors.analytics',
     'uofa.context_processors.referer',
+    'uofa.context_processors.base_url',
 )
 
 # P3P header
