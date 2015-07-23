@@ -13,3 +13,14 @@ def referer(request):
 
     """
     return {'HTTP_REFERER': request.META.get('HTTP_REFERER')}
+
+def base_url(request):
+    """
+    Adds the application BASE_URL to the context.
+    """
+    if request.is_secure():
+        scheme = 'https://'
+    else:
+        scheme = 'http://'
+
+    return {'BASE_URL': scheme + request.get_host(),}

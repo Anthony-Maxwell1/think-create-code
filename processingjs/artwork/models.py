@@ -29,7 +29,7 @@ class Artwork(models.Model):
         if self.shared:
             return reverse('submission-view', kwargs={'pk': self.shared})
         else:
-            return reverse('artwork-edit', kwargs={'pk': self.id})
+            return reverse('artwork-view', kwargs={'pk': self.id})
 
     # Only authors can see un-shared artwork
     def can_see(self, user=None):

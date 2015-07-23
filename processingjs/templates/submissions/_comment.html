@@ -3,7 +3,7 @@
    title="Comments via Disqus"
     href="{% url 'submission-view' pk=object.id %}#comments"
 ><span class="disqus-comment-count" 
-        data-disqus-url="{{ request.build_absolute_uri }}{{ object.get_absolute_url }}"
+        data-disqus-url="{{ BASE_URL }}{{ object.get_absolute_url }}"
     > </span>
   <i class="fa fa-comment"></i>
 </a>
