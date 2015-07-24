@@ -291,6 +291,48 @@ class ArtworkViewTests(UserSetUp, TestCase):
         self.assertEquals(response.status_code, 404)
 
 
+class ArtworkCodeViewTests(UserSetUp, TestCase):
+    """Artwork view code tests."""
+
+    def test_private_artwork(self):
+        
+        client = Client()
+
+        # Artwork is private to the author (until submitted)
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        artwork_url = reverse('artwork-code', kwargs={'pk':artwork.id})
+        response = client.get(artwork_url)
+        login_url = '%s?next=%s' % (reverse('login'), artwork_url)
+        self.assertRedirects(response, login_url, status_code=302, target_status_code=200)
+
+        # Must login to see it
+        response = self.assertLogin(client, artwork_url)
+        self.assertEquals(response.get('Content-Disposition'), 'attachment;')
+        self.assertEquals(response.context['object'].code, artwork.code)
+        self.assertEquals(response.context['object'].title, artwork.title)
+        self.assertEquals(response.context['object'].author, artwork.author)
+
+    def test_shared_artwork(self):
+        
+        client = Client()
+
+        # Shared artwork is public (no login required)
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=1, author=self.user)
+        artwork_url = reverse('artwork-code', kwargs={'pk':artwork.id})
+
+        response = client.get(artwork_url)
+        self.assertEquals(response.get('Content-Disposition'), 'attachment;')
+        self.assertEquals(response.context['object'].code, artwork.code)
+        self.assertEquals(response.context['object'].title, artwork.title)
+        self.assertEquals(response.context['object'].author, artwork.author)
+
+    def test_artwork_404(self):
+        
+        client = Client()
+        response = client.get(reverse('artwork-code', kwargs={'pk':1}))
+        self.assertEquals(response.status_code, 404)
+
+
 class ArtworkViewRenderTests(UserSetUp, TestCase):
     """Artwork view render tests."""
 

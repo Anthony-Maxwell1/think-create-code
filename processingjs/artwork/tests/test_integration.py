@@ -861,6 +861,105 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
         )
 
 
+class ArtworkCodeViewIntegrationTests(SeleniumTestCase):
+
+    def test_404_artwork_view(self):
+        code_path = reverse('artwork-code', kwargs={'pk': 1})
+        code_url = '%s%s' % (self.live_server_url, code_path)
+        self.selenium.get(code_url)
+        error_404 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_404.text, 'Not Found'
+        )
+
+    def test_own_artwork_view(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        code_path = reverse('artwork-code', kwargs={'pk': artwork.id})
+        code_url = '%s%s' % (self.live_server_url, code_path)
+
+        # Public cannot see unshared artwork
+        self.selenium.get(code_url)
+
+        # Note: we can't test the actual file download with selenium, but we can
+        # ensure we were redirected to login.
+        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), code_path)
+        self.assertEqual(self.selenium.current_url, login_url)
+
+        # Staff cannot
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(code_url)
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+        # Super cannot
+        self.performLogout()
+        self.performLogin(user="super")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(code_url)
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+    def test_shared_artwork_view(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
+        code_url = '%s%s' % (self.live_server_url, reverse('artwork-code', kwargs={'pk': artwork.id}))
+
+        self.performLogout()
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+        # Public can see shared artwork
+        # Note: we can't test the actual file download with selenium, but we can
+        # test the returned url.
+        # Note 2: Visiting a link containing a file download does not change the
+        # current URL.
+        self.selenium.get(code_url)
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+        # Owner can see it
+        self.performLogin()
+        self.selenium.get(code_url)
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+        # Staff can see it
+        self.performLogout()
+        self.performLogin(user="staff")
+        self.selenium.get(code_url)
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+        # Super can see it
+        self.performLogout()
+        self.performLogin(user="super")
+        self.selenium.get(code_url)
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+    def test_download_code_link(self):
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
+        code_url = '%s%s' % (self.live_server_url, reverse('artwork-code', kwargs={'pk': artwork.id}))
+
+        # download link showed on artwork view page
+        view_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': artwork.id}))
+        self.selenium.get(view_url)
+        self.assertEqual(
+            self.selenium.find_element_by_link_text('DOWNLOAD').get_attribute('href'),
+            code_url
+        )
+
+        # download link showed on artwork edit page
+        edit_url = '%s%s' % (self.live_server_url, reverse('artwork-edit', kwargs={'pk': artwork.id}))
+        self.selenium.get(edit_url)
+        self.assertEqual(
+            self.selenium.find_element_by_link_text('DOWNLOAD').get_attribute('href'),
+            code_url
+        )
+
+
 class ArtworkRenderViewIntegrationTests(SeleniumTestCase):
 
     def test_artwork_render(self):

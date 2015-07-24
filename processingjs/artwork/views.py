@@ -52,6 +52,19 @@ class StudioArtworkView(LoggedInMixin, RedirectView):
         return reverse('artwork-author-list', kwargs={'author': user.id, 'shared': 0})
 
 
+class ArtworkCodeView(MethodObjectHasPermMixin, ArtworkView, DetailView):
+    template_name = ArtworkView.prepend_template_path('code.pde')
+    content_type = 'text/plain'
+    content_disposition = 'attachment;'
+    method_user_perm = { 'GET': 'can_see' }
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super(ArtworkCodeView, self).render_to_response(
+                context, **response_kwargs)
+        response['Content-Disposition'] = self.content_disposition
+        return response
+
+
 class ListArtworkView(ArtworkView, ListView):
 
     template_name = ArtworkView.prepend_template_path('list.html')
