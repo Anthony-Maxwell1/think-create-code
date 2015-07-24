@@ -9,6 +9,7 @@
 
 {% block content %}
 <div id="exhibition-edit-content">
+<div class="columns small-12">
 {% if exhibition.id %}
 <h1>Edit Exhibition</h1>
 {% else %}
@@ -27,5 +28,6 @@
 </form>
 <a id="save_cancel" href="{% url "exhibition-list" %}">back to list</a>
 <div id="error"></div>
+</div>
 </div>
 {% endblock content %}

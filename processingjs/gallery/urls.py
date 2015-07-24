@@ -21,6 +21,8 @@ urlpatterns = patterns('',
         name='home'),
     url(r'^profile/$', gallery.views.UserProfileView.as_view(),
         name='user-profile'),
+
+    # LTI views
     url(r'^lti/$', gallery.views.LTIEntryView.as_view(),
         name='lti-entry'),
     url(r'^lti/403', gallery.views.LTIPermissionDeniedView.as_view(),
@@ -33,16 +35,22 @@ urlpatterns = patterns('',
         name='lti-enrol'),
     url(r'^lti/inactive', gallery.views.LTIInactiveView.as_view(),
         name='lti-inactive'),
+
+    # Share view
     url(r'^share/?$', gallery.views.ShareView.as_view(),
         name='share'),
     # N.B This probe.html url is used by the Nagios checks for this service.
     # PLEAE DO NOT CHANGE!
     url(r'^probe.html$', gallery.views.ProbeView.as_view(),
         name='probe'),
+
+    # Misc static views
     url(r'^help/?$', gallery.views.HelpView.as_view(),
         name='help'),
     url(r'^terms/?$', gallery.views.TermsView.as_view(),
         name='terms'),
+
+    # Artwork list views
     url(r'^artwork/studio/$', artwork.views.StudioArtworkView.as_view(),
         name='artwork-studio'),
     url(r'^a/?$', artwork.views.ListArtworkView.as_view(),
@@ -61,6 +69,8 @@ urlpatterns = patterns('',
         name='artwork-clone'),
     url(r'^artwork/delete/(?P<pk>\d+)/$', artwork.views.DeleteArtworkView.as_view(),
         name='artwork-delete'),
+
+    # Artwork detail views
     url(r'^a/(?P<pk>\d+)/$', artwork.views.UpdateArtworkView.as_view(),
         name='artwork-view'),
     url(r'^artwork(?P<pk>\d+).pde$', artwork.views.ArtworkCodeView.as_view(),
@@ -69,8 +79,11 @@ urlpatterns = patterns('',
         name='artwork-render'),
     url(r'^artwork/render/$', artwork.views.RenderArtworkView.as_view(),
         name='artwork-render-create'),
+
     url(r'^artwork/submit/(?P<artwork>\d+)/$', submissions.views.CreateSubmissionView.as_view(),
         name='artwork-submit'),
+
+    # Exhibition views
     url(r'^e/?$', exhibitions.views.ListExhibitionView.as_view(),
         name='exhibition-list'),
     url(r'^e/(?P<pk>\d+)/score/$', exhibitions.views.ShowExhibitionView.as_view(),
@@ -85,6 +98,8 @@ urlpatterns = patterns('',
         name='exhibition-edit'),
     url(r'^exhibition/delete/(?P<pk>\d+)/$', exhibitions.views.DeleteExhibitionView.as_view(),
         name='exhibition-delete'),
+
+    # Submission views
     url(r'^s/(?P<pk>\d+)/$', submissions.views.ShowSubmissionView.as_view(),
         name='submission-view'),
     url(r'^submission/delete/(?P<pk>\d+)/$', submissions.views.DeleteSubmissionView.as_view(),
@@ -93,6 +108,8 @@ urlpatterns = patterns('',
         name='submission-like'),
     url(r'^submission/unlike/(?P<submission>\d+)/$', votes.views.DeleteVoteView.as_view(),
         name='submission-unlike'),
+
+    # Vote views
     url(r'^vote/ok/$', votes.views.NoOpView.as_view(),
         name='vote-ok'),
     url(r'^vote/(?P<pk>\d+)$', votes.views.ShowVoteView.as_view(),

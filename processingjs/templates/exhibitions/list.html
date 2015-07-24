@@ -6,10 +6,14 @@
 
 {% if USER_CAN_SAVE %}
 <div class="columns">
-    <h4><a href="{% url 'exhibition-add' %}" id="exhibition-add">&#43; Add Exhibition</a></h4>
+    <form class="link" method="get" action="{% url 'exhibition-add' %}">
+        <button id="exhibition-add" type="submit" class="button tiny"
+            title="create new exhibition"><i class="fa fa-plus"> Exhibition</i></button>
+    </form>
 </div>
 {% endif %}
 
+<div class="columns small-12">
 <ul class="small-block-grid-1">
     {% for exhibition in object_list %}
     <li><div class="exhibition row">
@@ -30,6 +34,7 @@
     </li>
     {% endfor %}
 </ul>
+</div>
 
 </div>
 {% endblock content %}

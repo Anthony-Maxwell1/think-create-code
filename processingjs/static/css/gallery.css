@@ -54,6 +54,9 @@ footer li:before {
 footer li:first-child:before {
     content: '';
 }
+form.link {
+    display: inline-block;
+}
 
 /* Make warning box text a bit easier to read */
 .warning.alert-box {
@@ -207,16 +210,39 @@ div.ui-resizable {
 .help-link {
     text-align: right;
 }
+#help-content > ul {
+    margin-left: 0;
+}
 #help-content ol {
     padding-top: 0.5em;
     padding-bottom: 0.5em;
 }
+.accordion .accordion-navigation > a {
+    background: none;
+    border: thin solid transparent;
+}
+.accordion .accordion-navigation > a:hover,
+.accordion .accordion-navigation > a:active,
+.accordion .accordion-navigation.active > a {
+    background: none;
+    border-top: thin solid black;
+}
+.accordion .accordion-navigation.active {
+    border-bottom: thin solid black;
+}
+.accordion .accordion-navigation.active:last-child {
+    border-bottom: thin solid transparent;
+}
 .accordion-navigation h3:before {
     content: "\25B8 ";
-    padding-right: 0.1em;
+    padding-right: 0.4em;
 }
 .accordion-navigation.active h3:before {
     content: "\25BE ";
+}
+.reveal-modal .close-reveal-modal {
+    background-color: inherit;
+    padding-left: 0.5em;
 }
 button .fa {
     font-size: 150%;
