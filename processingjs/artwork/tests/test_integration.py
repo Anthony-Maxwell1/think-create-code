@@ -1286,8 +1286,8 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
 
-        # add action redirects to edit url
-        edit_path = reverse('artwork-edit', kwargs={'pk': 1})
+        # add action redirects to view/edit url
+        edit_path = reverse('artwork-view', kwargs={'pk': 1})
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
@@ -1539,6 +1539,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
 
         edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
 
         # edit redirects to login form
         self.selenium.get('%s%s' % (self.live_server_url, edit_path))
@@ -1553,7 +1554,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         # Save succeeds as author
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
 
         # Wait for iframe to load
         time.sleep(5)
@@ -1749,9 +1750,9 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_cancel').click()
 
-        # Cancel returns us to the edit page
-        edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
+        # Cancel returns us to the view page
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
 
         # edit was canceled
         artwork = Artwork.objects.get(pk=artwork.id)
@@ -1789,6 +1790,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         artwork = Artwork.objects.create(title=title, code=code, author=self.user)
 
         edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, edit_path))
 
         # edit redirects to login form
@@ -1816,7 +1818,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('save_artwork').click()
 
         # save returns us to the view page
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
 
         # ensure edit was saved
         artwork = Artwork.objects.get(pk=artwork.id)

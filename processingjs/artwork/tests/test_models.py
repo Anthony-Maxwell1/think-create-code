@@ -270,7 +270,7 @@ class ArtworkTests(UserSetUp, TestCase):
 
     def test_get_absolute_url_private(self):
         artwork = Artwork.objects.create(title='Empty code', code='// code goes here', author=self.user)
-        view_url = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        view_url = reverse('artwork-view', kwargs={'pk': artwork.id})
         abs_url = artwork.get_absolute_url()
         self.assertEqual(view_url, abs_url)
 

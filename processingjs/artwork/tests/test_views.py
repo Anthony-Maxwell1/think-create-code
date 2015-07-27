@@ -650,7 +650,7 @@ class ArtworkEditTests(UserSetUp, TestCase):
 
         # Post an update - succeeds as author
         response = client.post(edit_url, {'title': 'My overridden title', 'code': artwork.code})
-        self.assertRedirects(response, edit_url, status_code=302, target_status_code=200)
+        self.assertRedirects(response, view_url, status_code=302, target_status_code=200)
 
         # Ensure the change was saved
         response = client.get(view_url)
