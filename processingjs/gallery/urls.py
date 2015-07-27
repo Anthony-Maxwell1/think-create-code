@@ -61,6 +61,21 @@ urlpatterns = patterns('',
         name='artwork-list'),
     url(r'^a/by/(?P<author>\d+)/(?:(?P<shared>\d+)/)?$', artwork.views.ListArtworkView.as_view(),
         name='artwork-author-list'),
+
+    # Zipfile Artwork list views
+    url(r'^code.zip$', artwork.views.ListArtworkCodeZipFileView.as_view(),
+        {'shared': True},
+        name='home-zip'),
+    url(r'^a/code.zip$', artwork.views.ListArtworkCodeZipFileView.as_view(),
+        {'shared': True},
+        name='artwork-shared-zip'),
+    url(r'^a/list/code.zip$', artwork.views.ListArtworkCodeZipFileView.as_view(),
+        {'shared': False},
+        name='artwork-list-zip'),
+    url(r'^a/by/(?P<author>\d+)/(?:(?P<shared>\d+)/)?code.zip$', artwork.views.ListArtworkCodeZipFileView.as_view(),
+        name='artwork-author-list-zip'),
+
+    # Artwork editing views
     url(r'^artwork/new/$', artwork.views.CreateArtworkView.as_view(),
         name='artwork-add'),
     url(r'^artwork/edit/(?P<pk>\d+)/$', artwork.views.UpdateArtworkView.as_view(),

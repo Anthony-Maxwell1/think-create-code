@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied
 import os
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, MethodObjectHasPermMixin
+from uofa.zipfile.mixins import ZipFileViewMixin
 from gallery.views import ShareView
 from artwork.models import Artwork, ArtworkForm
 
@@ -80,7 +81,7 @@ class ListArtworkView(ArtworkView, ListView):
             shared = False
         elif shared == None:
             shared = True
-        return shared
+        return 1 if shared else 0
 
     def get_queryset(self):
         '''Show artwork authored by the given, or current, user'''
@@ -121,7 +122,21 @@ class ListArtworkView(ArtworkView, ListView):
         votes = Vote.can_delete_queryset(user=self.request.user, submission=submission_ids).all()
         context['votes'] = { v.submission_id:v for v in votes }
 
+        # Store url for downloading code zip file
+        url_name = self.request.resolver_match.url_name
+        if not 'zip' in url_name:
+            url_name = '%s-zip' % url_name
+        kwargs = self.kwargs.copy()
+        kwargs['shared'] = context['shared']
+        context['zip_file_url'] = reverse(url_name, kwargs=kwargs)
+
         return context
+
+
+class ListArtworkCodeZipFileView(ZipFileViewMixin, ListArtworkView):
+    object_template_name = ArtworkCodeView.template_name
+    object_filename = 'artwork%d.pde'
+    zip_filename = 'code.zip'
 
 
 class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):

@@ -856,9 +856,6 @@ class UserProfileViewTest(SeleniumTestCase):
         self.assertEqual(labels[3].text, '')
         self.assertEqual(labels[3].get_attribute('class'), 'error')
 
-        form_data = {}
-        for field, value in form_data.iteritems():
-            self.selenium.find_element_by_id('id_' + field).send_keys(value)
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_user').click()
 

@@ -17,7 +17,7 @@
 {% endif %}
 
 <div class="columns small-6">
-    <form class="link" method="get" action="{% url 'artwork-add' %}">
+    <form class="link" method="get" action="{% url 'artwork-add' %}" id="artwork-add-form">
         <button id="artwork-add" type="submit" class="button tiny"
             title="create new artwork"><i class="fa fa-plus"> Artwork</i></button>
     </form>
@@ -25,8 +25,12 @@
 <div class="columns small-6 align-right">
     {% if object_list.count > 1 %}
     <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
-    {% else %}
-    &nbsp;
+    {% endif %}
+    {% if object_list.count > 0 %}
+    <form class="link" method="get" action="{{ zip_file_url }}" id="download-all-form">
+        <button id="download-all" type="submit" class="button tiny"
+            title="download artwork code"><i class="fa fa-download"> Download</i></button>
+    </form>
     {% endif %}
 </div>
 
