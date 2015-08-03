@@ -13,7 +13,7 @@ from uofa.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_l
 
 class ArtworkListIntegrationTests(SeleniumTestCase):
 
-    def test_private_artwork_listed(self):
+    def test_private_artwork_list(self):
 
         artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
         artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
@@ -25,6 +25,10 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
             0
         )
 
@@ -40,8 +44,21 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork1.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-list-zip'))
+        )
 
-    def test_shared_artwork_listed(self):
+    def test_shared_artwork_list(self):
 
         list_path = reverse('artwork-list')
 
@@ -70,6 +87,19 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             artwork1.title
         )
 
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-list-zip'))
+        )
         self.assertIsNotNone(
             self.selenium.find_element_by_id('artwork-add')
         )
@@ -100,8 +130,105 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             titles[3].text,
             artwork1.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-list-zip'))
+        )
 
-    def test_private_user_artwork_listed(self):
+    def test_artwork_shared_list(self):
+
+        list_path = reverse('artwork-shared')
+
+        artwork1p = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', shared=1, author=self.user)
+        artwork2p = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', shared=4, author=self.staff_user)
+        artwork3p = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', shared=78, author=self.super_user)
+
+        # Shared artwork is visible to the public
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            titles[0].text,
+            artwork3.title
+        )
+        self.assertEqual(
+            titles[1].text,
+            artwork2.title
+        )
+        self.assertEqual(
+            titles[2].text,
+            artwork1.title
+        )
+
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-shared-zip'))
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('artwork-add')
+        )
+
+        # Shared artwork only on the Shared Artwork page
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            titles[0].text,
+            artwork3.title
+        )
+        self.assertEqual(
+            titles[1].text,
+            artwork2.title
+        )
+        self.assertEqual(
+            titles[2].text,
+            artwork1.title
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-shared-zip'))
+        )
+
+    def test_private_artwork_author_list(self):
 
         # private artwork is not visible to public
         artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
@@ -115,12 +242,20 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            0
+        )
 
         list_path = reverse('artwork-author-list', kwargs={'author': self.staff_user.id})
         with wait_for_page_load(self.selenium):
             self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
             0
         )
 
@@ -131,15 +266,20 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            0
+        )
 
-    def test_shared_user_artwork_listed(self):
+    def test_shared_artwork_author_list(self):
 
         # Shared artwork is visible to public
         artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', shared=1, author=self.user)
         artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', shared=1, author=self.staff_user)
         artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', shared=1, author=self.super_user)
 
-        list_path = reverse('artwork-author-list', kwargs={'author': self.user.id})
+        list_kwargs = {'author': self.user.id}
+        list_path = reverse('artwork-author-list', kwargs=list_kwargs)
         with wait_for_page_load(self.selenium):
             self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
@@ -150,8 +290,24 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork1.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        list_kwargs['shared'] = 1
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
-        list_path = reverse('artwork-author-list', kwargs={'author': self.staff_user.id})
+
+        list_kwargs = {'author': self.staff_user.id}
+        list_path = reverse('artwork-author-list', kwargs=list_kwargs)
         with wait_for_page_load(self.selenium):
             self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
@@ -162,8 +318,23 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork2.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        list_kwargs['shared'] = 1
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
-        list_path = reverse('artwork-author-list', kwargs={'author': self.super_user.id})
+        list_kwargs = {'author': self.super_user.id}
+        list_path = reverse('artwork-author-list', kwargs=list_kwargs)
         with wait_for_page_load(self.selenium):
             self.selenium.get('%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
@@ -174,8 +345,23 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork3.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        list_kwargs['shared'] = 1
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
-    def test_studio_artwork_listed(self):
+
+    def test_studio_artwork_list(self):
 
         artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
         artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
@@ -195,7 +381,8 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         self.performLogin(user='student')
         with wait_for_page_load(self.selenium):
             self.selenium.get(studio_url)
-        list_path = reverse('artwork-author-list', kwargs={'author': self.user.id, 'shared': 0})
+        list_kwargs = {'author': self.user.id, 'shared': 0}
+        list_path = reverse('artwork-author-list', kwargs=list_kwargs)
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
@@ -205,12 +392,26 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork1.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
         # Staff login
         self.performLogin(user='staff')
         with wait_for_page_load(self.selenium):
             self.selenium.get(studio_url)
-        list_path = reverse('artwork-author-list', kwargs={'author': self.staff_user.id, 'shared': 0})
+        list_kwargs = {'author': self.staff_user.id, 'shared': 0}
+        list_path = reverse('artwork-author-list', kwargs=list_kwargs)
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
@@ -220,12 +421,26 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork2.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
         # Super login
         self.performLogin(user='super')
         with wait_for_page_load(self.selenium):
             self.selenium.get(studio_url)
-        list_path = reverse('artwork-author-list', kwargs={'author': self.super_user.id, 'shared': 0})
+        list_kwargs = {'author': self.super_user.id, 'shared': 0}
+        list_path = reverse('artwork-author-list', kwargs=list_kwargs)
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, list_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
@@ -235,15 +450,29 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork3.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
-    def test_my_artwork_listed(self):
+    def test_my_artwork_author_list(self):
 
         artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
         artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
         artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
 
         # Author list shows only shared artwork
-        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs={'author':self.user.id}))
+        list_kwargs = {'author':self.user.id}
+        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs=list_kwargs))
 
         # Student user
         self.performLogin(user="student")
@@ -253,6 +482,11 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_css_selector('.artwork')),
             0
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            0
+        )
+
         artwork1.shared = 1
         artwork1.save()
         with wait_for_page_load(self.selenium):
@@ -265,14 +499,33 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork1.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        list_kwargs['shared'] = 1
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
         # Staff user
         self.performLogin(user="staff")
-        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs={'author':self.staff_user.id}))
+        list_kwargs = {'author':self.staff_user.id}
+        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs=list_kwargs))
         with wait_for_page_load(self.selenium):
             self.selenium.get(list_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
             0
         )
         artwork2.shared = 1
@@ -287,15 +540,34 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork2.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        list_kwargs['shared'] = 1
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
         # Super user
         self.performLogout()
         self.performLogin(user="super")
-        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs={'author':self.super_user.id}))
+        list_kwargs = {'author':self.super_user.id}
+        list_url = '%s%s' % (self.live_server_url, reverse('artwork-author-list', kwargs=list_kwargs))
         with wait_for_page_load(self.selenium):
             self.selenium.get(list_url)
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
+            0
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
             0
         )
         artwork3.shared = 1
@@ -310,8 +582,22 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.artwork-title').text,
             artwork3.title
         )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        list_kwargs['shared'] = 1
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-author-list-zip', kwargs=list_kwargs))
+        )
 
-    def test_add_artwork_linked(self):
+    def test_add_artwork_link(self):
 
         list_path = reverse('artwork-list')
         self.selenium.get('%s%s' % (self.live_server_url, list_path))
@@ -861,6 +1147,105 @@ class ArtworkViewIntegrationTests(SeleniumTestCase):
         )
 
 
+class ArtworkCodeViewIntegrationTests(SeleniumTestCase):
+
+    def test_404_artwork_view(self):
+        code_path = reverse('artwork-code', kwargs={'pk': 1})
+        code_url = '%s%s' % (self.live_server_url, code_path)
+        self.selenium.get(code_url)
+        error_404 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_404.text, 'Not Found'
+        )
+
+    def test_own_artwork_view(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        code_path = reverse('artwork-code', kwargs={'pk': artwork.id})
+        code_url = '%s%s' % (self.live_server_url, code_path)
+
+        # Public cannot see unshared artwork
+        self.selenium.get(code_url)
+
+        # Note: we can't test the actual file download with selenium, but we can
+        # ensure we were redirected to login.
+        login_url = '%s%s?next=%s' % (self.live_server_url, reverse('login'), code_path)
+        self.assertEqual(self.selenium.current_url, login_url)
+
+        # Staff cannot
+        self.performLogout()
+        self.performLogin(user="staff")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(code_url)
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+        # Super cannot
+        self.performLogout()
+        self.performLogin(user="super")
+        with wait_for_page_load(self.selenium):
+            self.selenium.get(code_url)
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+    def test_shared_artwork_view(self):
+
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
+        code_url = '%s%s' % (self.live_server_url, reverse('artwork-code', kwargs={'pk': artwork.id}))
+
+        self.performLogout()
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+        # Public can see shared artwork
+        # Note: we can't test the actual file download with selenium, but we can
+        # test the returned url.
+        # Note 2: Visiting a link containing a file download does not change the
+        # current URL.
+        self.selenium.get(code_url)
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+        # Owner can see it
+        self.performLogin()
+        self.selenium.get(code_url)
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+        # Staff can see it
+        self.performLogout()
+        self.performLogin(user="staff")
+        self.selenium.get(code_url)
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+        # Super can see it
+        self.performLogout()
+        self.performLogin(user="super")
+        self.selenium.get(code_url)
+        self.assertEqual(self.selenium.current_url, '%s/' % self.live_server_url)
+
+    def test_download_code_link(self):
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', shared=3, author=self.user)
+        code_url = '%s%s' % (self.live_server_url, reverse('artwork-code', kwargs={'pk': artwork.id}))
+
+        # download link showed on artwork view page
+        view_url = '%s%s' % (self.live_server_url, reverse('artwork-view', kwargs={'pk': artwork.id}))
+        self.selenium.get(view_url)
+        self.assertEqual(
+            self.selenium.find_element_by_link_text('DOWNLOAD').get_attribute('href'),
+            code_url
+        )
+
+        # download link showed on artwork edit page
+        edit_url = '%s%s' % (self.live_server_url, reverse('artwork-edit', kwargs={'pk': artwork.id}))
+        self.selenium.get(edit_url)
+        self.assertEqual(
+            self.selenium.find_element_by_link_text('DOWNLOAD').get_attribute('href'),
+            code_url
+        )
+
+
 class ArtworkRenderViewIntegrationTests(SeleniumTestCase):
 
     def test_artwork_render(self):
@@ -901,8 +1286,8 @@ class ArtworkAddIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
 
-        # add action redirects to edit url
-        edit_path = reverse('artwork-edit', kwargs={'pk': 1})
+        # add action redirects to view/edit url
+        edit_path = reverse('artwork-view', kwargs={'pk': 1})
         self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
         self.assertEqual(
             len(self.selenium.find_elements_by_css_selector('.artwork')),
@@ -1154,6 +1539,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
 
         edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
 
         # edit redirects to login form
         self.selenium.get('%s%s' % (self.live_server_url, edit_path))
@@ -1168,7 +1554,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         # Save succeeds as author
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_artwork').click()
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
 
         # Wait for iframe to load
         time.sleep(5)
@@ -1364,9 +1750,9 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_cancel').click()
 
-        # Cancel returns us to the edit page
-        edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
+        # Cancel returns us to the view page
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
 
         # edit was canceled
         artwork = Artwork.objects.get(pk=artwork.id)
@@ -1404,6 +1790,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
         artwork = Artwork.objects.create(title=title, code=code, author=self.user)
 
         edit_path = reverse('artwork-edit', kwargs={'pk': artwork.id})
+        view_path = reverse('artwork-view', kwargs={'pk': artwork.id})
         self.selenium.get('%s%s' % (self.live_server_url, edit_path))
 
         # edit redirects to login form
@@ -1431,7 +1818,7 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_id('save_artwork').click()
 
         # save returns us to the view page
-        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, edit_path))
+        self.assertEqual(self.selenium.current_url, '%s%s' % (self.live_server_url, view_path))
 
         # ensure edit was saved
         artwork = Artwork.objects.get(pk=artwork.id)

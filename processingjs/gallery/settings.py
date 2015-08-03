@@ -12,11 +12,6 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-# Include submodule directories in path
-import sys
-sys.path.append(os.path.join(BASE_DIR, 'harvard'))
-sys.path.append(os.path.join(BASE_DIR, 'django-database-files'))
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
@@ -36,6 +31,9 @@ DISQUS_SHORTNAME = 'thinkcreatecodegallery'
 DISQUS_IDENTIFIER = 's/%d'
 DISQUS_SECRET_KEY = 'CH2OwPJpIwukfaiE2EbBAwALZxYsHcgii3TzpqrmFbQ9cgfiaHGfXXb48k8uMItq'
 DISQUS_PUBLIC_KEY = 'jbXXUtp4uRwQwU0DAbHQnaG6X6JIk83ZHyQksEbQJ4y0AeJSFvzOY43PkSV2fPkh'
+
+# Default logging config
+LOGGING_CONFIG_FILE = os.path.join(BASE_DIR, 'gallery', 'logging-prd.conf')
 
 # Determine enviroment we're running in
 ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production-3T2015")
@@ -122,6 +120,8 @@ elif ENVIRONMENT == 'development':
 
     DISQUS_IDENTIFIER = 'dev/s/%d'
 
+    LOGGING_CONFIG_FILE = os.path.join(BASE_DIR, 'gallery', 'logging-dev.conf')
+
 elif ENVIRONMENT == 'testing':
 
     # Runs via ./manage.py test
@@ -146,6 +146,10 @@ elif ENVIRONMENT == 'testing':
 
 # else - error: no database defined
 
+
+# Configure logging
+from logging import config as logging_config
+logging_config.fileConfig(LOGGING_CONFIG_FILE)
 
 
 # Application definition

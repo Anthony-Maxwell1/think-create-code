@@ -11,28 +11,39 @@
 {% load pagination %}
 <div id="artwork-list-content">
 {% if author %}
+<div class="columns small-12">
 <h1>Artwork {% if shared %}shared{% endif %} by {{ author }}</h1>
+</div>
 {% endif %}
 
 <div class="columns small-6">
-    <h4><a href="{% url 'artwork-add' %}" id="artwork-add">&#43; New Artwork</a></h4>
+    <form class="link" method="get" action="{% url 'artwork-add' %}" id="artwork-add-form">
+        <button id="artwork-add" type="submit" class="button tiny"
+            title="create new artwork"><i class="fa fa-plus"> Artwork</i></button>
+    </form>
 </div>
 <div class="columns small-6 align-right">
     {% if object_list.count > 1 %}
     <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
-    {% else %}
-    &nbsp;
+    {% endif %}
+    {% if object_list.count > 0 %}
+    <form class="link" method="get" action="{{ zip_file_url }}" id="download-all-form">
+        <button id="download-all" type="submit" class="button tiny"
+            title="download artwork code"><i class="fa fa-download"> Download</i></button>
+    </form>
     {% endif %}
 </div>
 
-<div class="small-grid-2">&nbsp;</div>
-<ul class="large-block-grid-5 medium-block-grid-3 small-block-grid-2">
+<div class="columns small-12">
+<ul class="large-block-grid-4 medium-block-grid-3 small-block-grid-2">
     {% for artwork in object_list %}
     {% with submissions|get:artwork.id as submission %}
     <li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
     {% endwith %}
     {% endfor %}
 </ul>
+</div>
+
 </div>
 {% pagination page_obj %}
 {% include 'submissions/_disqus_count.html' %}

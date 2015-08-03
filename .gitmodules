@@ -1,6 +1,0 @@
-[submodule "processingjs/harvard"]
-	path = processingjs/harvard
-	url = git@github.com:uofajillian/django-auth-lti.git
-[submodule "processingjs/django-database-files"]
-	path = processingjs/django-database-files
-	url = git@github.com:uofajillian/django-database-files.git

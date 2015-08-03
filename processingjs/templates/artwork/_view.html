@@ -18,6 +18,7 @@
         {% endif %}
         {% endif %}
         <li><a href="{% url 'artwork-clone' pk=object.id %} " title="Clone {{ object.title }}">clone</a></li>
+        <li><a href="{% url 'artwork-code' pk=object.id %} " title="Download code for {{ object.title }}">download</a></li>
     </ul>
 </div>
 <div class="columns small-12">

@@ -8,6 +8,7 @@ from django.core.exceptions import PermissionDenied
 import os
 
 from uofa.views import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, MethodObjectHasPermMixin
+from uofa.zipfile.mixins import ZipFileViewMixin
 from gallery.views import ShareView
 from artwork.models import Artwork, ArtworkForm
 
@@ -53,6 +54,19 @@ class StudioArtworkView(LoggedInMixin, RedirectView):
         return reverse('artwork-author-list', kwargs={'author': user.id, 'shared': 0})
 
 
+class ArtworkCodeView(MethodObjectHasPermMixin, ArtworkView, DetailView):
+    template_name = ArtworkView.prepend_template_path('code.pde')
+    content_type = 'text/plain'
+    content_disposition = 'attachment;'
+    method_user_perm = { 'GET': 'can_see' }
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super(ArtworkCodeView, self).render_to_response(
+                context, **response_kwargs)
+        response['Content-Disposition'] = self.content_disposition
+        return response
+
+
 class ListArtworkView(ArtworkView, ListView):
 
     template_name = ArtworkView.prepend_template_path('list.html')
@@ -68,7 +82,7 @@ class ListArtworkView(ArtworkView, ListView):
             shared = False
         elif shared == None:
             shared = True
-        return shared
+        return 1 if shared else 0
 
     def get_queryset(self):
         '''Show artwork authored by the given, or current, user'''
@@ -111,7 +125,21 @@ class ListArtworkView(ArtworkView, ListView):
 
         context['disqus_shortname'] = settings.DISQUS_SHORTNAME
 
+        # Store url for downloading code zip file
+        url_name = self.request.resolver_match.url_name
+        if not 'zip' in url_name:
+            url_name = '%s-zip' % url_name
+        kwargs = self.kwargs.copy()
+        kwargs['shared'] = context['shared']
+        context['zip_file_url'] = reverse(url_name, kwargs=kwargs)
+
         return context
+
+
+class ListArtworkCodeZipFileView(ZipFileViewMixin, ListArtworkView):
+    object_template_name = ArtworkCodeView.template_name
+    object_filename = 'artwork%d.pde'
+    zip_filename = 'code.zip'
 
 
 class CreateArtworkView(LoggedInMixin, ArtworkView, CreateView):

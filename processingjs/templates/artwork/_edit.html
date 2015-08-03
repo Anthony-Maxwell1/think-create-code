@@ -18,10 +18,13 @@
         </li>
         {% endif %}
         <li><a href="{% url 'artwork-delete' pk=object.id %} " title="Delete {{ object.title }}">delete</a></li>
+        <li><a href="{% url 'artwork-code' pk=object.id %} " title="Download code for {{ object.title }}">download</a></li>
     </ul>
 </div>
 {% else %}
+<div class="columns columns-12">
 <h2>New Artwork</h2>
+</div>
 {% endif %}
 
 <form method="post" action="{{ action }}" enctype="multipart/form-data">

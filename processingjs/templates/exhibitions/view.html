@@ -9,6 +9,7 @@
 {% load rulez_perms %}
 {% rulez_perms can_save object as USER_CAN_SAVE %}
 <div id="exhibition-view-content">
+<div class="columns small-12">
 {% include 'exhibitions/_view.html' %}
 <div class="object-actions row">
     <ul class="breadcrumbs">
@@ -21,9 +22,9 @@
         {% endif %}
     </ul>
 </div>
-</div>
 <div id="exhibition-submissions">
 {% include 'submissions/_list.html' with object_list=submissions.object_list votes=submissions.votes page_obj=submissions.page_obj exhibition_id=exhibition.id order=submissions.order %}
+</div>
 </div>
 </div>
 {% endif %}
