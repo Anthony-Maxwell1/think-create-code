@@ -26,6 +26,9 @@ LTI_COURSE_URL = ''
 LTI_ENROL_URL = ''
 LTI_OAUTH_CREDENTIALS = {}
 
+# Default logging config
+LOGGING_CONFIG_FILE = os.path.join(BASE_DIR, 'gallery', 'logging-prd.conf')
+
 
 # Determine enviroment we're running in
 ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production-3T2015")
@@ -106,6 +109,8 @@ elif ENVIRONMENT == 'development':
 
     ALLOW_ANALYTICS = False
 
+    LOGGING_CONFIG_FILE = os.path.join(BASE_DIR, 'gallery', 'logging-dev.conf')
+
 elif ENVIRONMENT == 'testing':
 
     # Runs via ./manage.py test
@@ -130,6 +135,10 @@ elif ENVIRONMENT == 'testing':
 
 # else - error: no database defined
 
+
+# Configure logging
+from logging import config as logging_config
+logging_config.fileConfig(LOGGING_CONFIG_FILE)
 
 
 # Application definition
