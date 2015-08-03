@@ -790,13 +790,16 @@ class UserProfileViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, profile_url)
 
         labels = self.selenium.find_elements_by_tag_name('label')
-        self.assertEqual(len(labels), 4)
+        self.assertEqual(len(labels), 6)
         self.assertEqual(labels[0].text, 'Nickname:')
         self.assertEqual(labels[1].text, '')
         self.assertEqual(labels[1].get_attribute('class'), 'error')
-        self.assertEqual(labels[2].text, 'Timezone:')
+        self.assertEqual(labels[2].text, 'Email address:')
         self.assertEqual(labels[3].text, '')
         self.assertEqual(labels[3].get_attribute('class'), 'error')
+        self.assertEqual(labels[4].text, 'Timezone:')
+        self.assertEqual(labels[5].text, '')
+        self.assertEqual(labels[5].get_attribute('class'), 'error')
 
     def test_staff_view(self):
         '''Staff can login'''
@@ -808,14 +811,17 @@ class UserProfileViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, profile_url)
 
         labels = self.selenium.find_elements_by_tag_name('label')
-        self.assertEqual(len(labels), 5)
+        self.assertEqual(len(labels), 7)
         self.assertEqual(labels[0].text, 'Staff access:')
         self.assertEqual(labels[1].text, 'Nickname:')
         self.assertEqual(labels[2].text, '')
         self.assertEqual(labels[2].get_attribute('class'), 'error')
-        self.assertEqual(labels[3].text, 'Timezone:')
+        self.assertEqual(labels[3].text, 'Email address:')
         self.assertEqual(labels[4].text, '')
         self.assertEqual(labels[4].get_attribute('class'), 'error')
+        self.assertEqual(labels[5].text, 'Timezone:')
+        self.assertEqual(labels[6].text, '')
+        self.assertEqual(labels[6].get_attribute('class'), 'error')
 
     def test_super_view(self):
         '''Superuser can login'''
@@ -827,14 +833,17 @@ class UserProfileViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, profile_url)
 
         labels = self.selenium.find_elements_by_tag_name('label')
-        self.assertEqual(len(labels), 5)
+        self.assertEqual(len(labels), 7)
         self.assertEqual(labels[0].text, 'Staff access:')
         self.assertEqual(labels[1].text, 'Nickname:')
         self.assertEqual(labels[2].text, '')
         self.assertEqual(labels[2].get_attribute('class'), 'error')
-        self.assertEqual(labels[3].text, 'Timezone:')
+        self.assertEqual(labels[3].text, 'Email address:')
         self.assertEqual(labels[4].text, '')
         self.assertEqual(labels[4].get_attribute('class'), 'error')
+        self.assertEqual(labels[5].text, 'Timezone:')
+        self.assertEqual(labels[6].text, '')
+        self.assertEqual(labels[6].get_attribute('class'), 'error')
 
     def test_post_username_required(self):
         profile_path = reverse('user-profile')
@@ -848,28 +857,32 @@ class UserProfileViewTest(SeleniumTestCase):
         self.assertEqual(self.selenium.current_url, profile_url)
 
         labels = self.selenium.find_elements_by_tag_name('label')
-        self.assertEqual(len(labels), 4)
+        self.assertEqual(len(labels), 6)
         self.assertEqual(labels[0].text, 'Nickname:')
         self.assertEqual(labels[1].text, '')
         self.assertEqual(labels[1].get_attribute('class'), 'error')
-        self.assertEqual(labels[2].text, 'Timezone:')
+        self.assertEqual(labels[2].text, 'Email address:')
         self.assertEqual(labels[3].text, '')
         self.assertEqual(labels[3].get_attribute('class'), 'error')
+        self.assertEqual(labels[4].text, 'Timezone:')
+        self.assertEqual(labels[5].text, '')
+        self.assertEqual(labels[5].get_attribute('class'), 'error')
 
-        form_data = {}
-        for field, value in form_data.iteritems():
-            self.selenium.find_element_by_id('id_' + field).send_keys(value)
+
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_user').click()
 
         labels = self.selenium.find_elements_by_tag_name('label')
-        self.assertEqual(len(labels), 4)
+        self.assertEqual(len(labels), 6)
         self.assertEqual(labels[0].text, 'Nickname:')
         self.assertEqual(labels[1].text, 'This field is required.')
         self.assertEqual(labels[1].get_attribute('class'), 'error')
-        self.assertEqual(labels[2].text, 'Timezone:')
+        self.assertEqual(labels[2].text, 'Email address:')
         self.assertEqual(labels[3].text, '')
         self.assertEqual(labels[3].get_attribute('class'), 'error')
+        self.assertEqual(labels[4].text, 'Timezone:')
+        self.assertEqual(labels[5].text, '')
+        self.assertEqual(labels[5].get_attribute('class'), 'error')
 
         form_data = {'first_name': 'MyNickname'}
         for field, value in form_data.iteritems():
@@ -884,6 +897,30 @@ class UserProfileViewTest(SeleniumTestCase):
         user = get_user_model().objects.get(username=self.get_username('student'))
         self.assertEqual(user.first_name, form_data['first_name'])
         self.assertEqual(user.time_zone, 'UTC')
+
+    def test_post_eail(self):
+        profile_path = reverse('user-profile')
+        profile_url = '%s%s' % (self.live_server_url, profile_path)
+
+        home_path = reverse('home')
+        home_url = '%s%s' % (self.live_server_url, home_path)
+
+        self.selenium.get(profile_url)
+        self.assertLogin(profile_path, user="student")
+
+        form_data = {'first_name': 'MyNickname', 'email': 'someone@somewhere.net'}
+        for field, value in form_data.iteritems():
+            self.selenium.find_element_by_id('id_' + field).send_keys(value)
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_user').click()
+
+        # should be redirected to home
+        self.assertEqual(self.selenium.current_url, home_url)
+
+        # POST should have set user nickname, timezone
+        user = get_user_model().objects.get(username=self.get_username('student'))
+        self.assertEqual(user.first_name, form_data['first_name'])
+        self.assertEqual(user.email, form_data['email'])
 
     def test_post_timezone(self):
         profile_path = reverse('user-profile')

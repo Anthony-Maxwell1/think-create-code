@@ -32,8 +32,9 @@ class LTIEntryViewTest(UserSetUp, TestCase):
         response = self.assertLogin(client, lti_login_path)
 
         self.assertEqual(self.user, response.context['user'])
-        self.assertEqual(2, len(response.context['form'].fields))
+        self.assertEqual(3, len(response.context['form'].fields))
         self.assertIn('first_name', response.context['form'].fields)
+        self.assertIn('email', response.context['form'].fields)
         self.assertIn('time_zone', response.context['form'].fields)
         self.assertEqual(self.user, response.context['form'].instance)
 
@@ -47,8 +48,9 @@ class LTIEntryViewTest(UserSetUp, TestCase):
         response = client.post(lti_login_path)
 
         self.assertEqual(self.user, response.context['user'])
-        self.assertEqual(2, len(response.context['form'].fields))
+        self.assertEqual(3, len(response.context['form'].fields))
         self.assertIn('first_name', response.context['form'].fields)
+        self.assertIn('email', response.context['form'].fields)
         self.assertIn('time_zone', response.context['form'].fields)
         self.assertEqual(self.user, response.context['form'].instance)
 
@@ -114,14 +116,14 @@ class LTIEntryViewTest(UserSetUp, TestCase):
         form_data = {'first_name': ''}
         response = client.post(lti_login_path, form_data)
 
-        self.assertEqual(2, len(response.context['form'].fields))
+        self.assertEqual(3, len(response.context['form'].fields))
         self.assertEquals(u'This field is required.', response.context['form']['first_name'].errors[0])
         self.assertEquals([], response.context['form']['time_zone'].errors)
 
         form_data = {'first_name': '   '}
         response = client.post(lti_login_path, form_data)
 
-        self.assertEqual(2, len(response.context['form'].fields))
+        self.assertEqual(3, len(response.context['form'].fields))
         self.assertEquals(u'Please enter a valid nickname.', response.context['form']['first_name'].errors[0])
         self.assertEquals([], response.context['form']['time_zone'].errors)
 
@@ -469,9 +471,11 @@ class UserProfileViewTest(UserSetUp, TestCase):
         response = client.post(profile_path, form_data)
         self.assertEqual(self.user, response.context['user'])
         self.assertEqual(self.user, response.context['form'].instance)
-        self.assertEqual(2, len(response.context['form'].fields))
+        self.assertEqual(3, len(response.context['form'].fields))
         self.assertIn('first_name', response.context['form'].fields)
         self.assertEquals(u'This field is required.', response.context['form']['first_name'].errors[0])
+        self.assertIn('email', response.context['form'].fields)
+        self.assertEquals([], response.context['form']['email'].errors)
         self.assertIn('time_zone', response.context['form'].fields)
         self.assertEquals([], response.context['form']['time_zone'].errors)
 
@@ -483,6 +487,22 @@ class UserProfileViewTest(UserSetUp, TestCase):
         user = get_user_model().objects.get(username=self.get_username('student'))
         self.assertEqual(user.first_name, form_data['first_name'])
         self.assertEqual(user.time_zone, '')
+
+    def test_post_email(self):
+        '''Username required, email optional'''
+        client = Client()
+        profile_path = reverse('user-profile')
+        home_path = reverse('home')
+        form_data = {'first_name':'MyNickname', 'email': 'someone@somewhere.net'}
+
+        self.assertLogin(client, next_path=profile_path, user='student')
+        response = client.post(profile_path, form_data)
+        self.assertRedirects(response, home_path, status_code=302, target_status_code=200)
+
+        # should have set user nickname, timezone
+        user = get_user_model().objects.get(username=self.get_username('student'))
+        self.assertEqual(user.first_name, form_data['first_name'])
+        self.assertEqual(user.email, form_data['email'])
 
     def test_post_timezone(self):
         '''Username required, timezone optional'''
