@@ -35,7 +35,7 @@ Use virtualenv to setup the initial runtime environment:
 
     cd processingjs/
     source ../.virtualenv/bin/activate
-    (.virtualenv)$ pip install -U -r requirements.txt
+    (.virtualenv)$ pip install --extra-index-url=http://lti-adx.adelaide.edu.au/pypi/ -U -r requirements.txt
     (.virtualenv)$ sudo find ../.virtualenv/lib/python2.7/site-packages -name \*.so -exec chcon -t shlib_t {} \;
 
 
@@ -101,7 +101,7 @@ Test Coverage
 -------------
 Run the unit and integration tests, and get test coverage.
 
-    (.virtualenv)$ coverage run --include=./* --omit=./harvard/*,./django-database-files/*  manage.py test
+    (.virtualenv)$ coverage run --include=./* manage.py test
     (.virtualenv)$ coverage report
     Name               Stmts   Miss  Cover
     --------------------------------------

@@ -12,11 +12,6 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-# Include submodule directories in path
-import sys
-sys.path.append(os.path.join(BASE_DIR, 'harvard'))
-sys.path.append(os.path.join(BASE_DIR, 'django-database-files'))
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
