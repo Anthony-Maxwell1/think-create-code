@@ -17,24 +17,13 @@ Install apache app configuration:
 
 Initial Setup
 -------------
-If you've just cloned this repo from git, you'll need to fetch the submodules:
-
-    cd think-create-code
-    git submodule init
-    git submodule update
-
-
 Use virtualenv to setup the initial runtime environment:
 
     cd think-create-code
     virtualenv .virtualenv
     source .virtualenv/bin/activate
 
-
-Use virtualenv to setup the initial runtime environment:
-
     cd processingjs/
-    source ../.virtualenv/bin/activate
     (.virtualenv)$ pip install --extra-index-url=http://lti-adx.adelaide.edu.au/pypi/ -U -r requirements.txt
     (.virtualenv)$ sudo find ../.virtualenv/lib/python2.7/site-packages -name \*.so -exec chcon -t shlib_t {} \;
 
