@@ -29,7 +29,7 @@ class Submission(models.Model):
         return unicode(self).encode('utf-8')
 
     def _disqus_identifier(self):
-        return settings.DISQUS_IDENTIFIER % self.id
+        return settings.DISQUS_IDENTIFIER % self.artwork.id
 
     disqus_identifier = property(_disqus_identifier)
 
