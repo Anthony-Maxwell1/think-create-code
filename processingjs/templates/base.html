@@ -67,7 +67,7 @@
         </li>
         {% else %}
         <li>
-            <a href="{% url "user-profile" %}?next={{ request.get_full_path|urlencode }}" id="nav-profile" 
+            <a href="{% url "lti-user-profile" %}?next={{ request.get_full_path|urlencode }}" id="nav-profile" 
                 title="update profile">{{ user }}</a>
         </li>
         {% endif %}

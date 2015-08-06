@@ -38,10 +38,10 @@ Initial Data
 ------------
 Use the data fixtures to load the initial staff users list:
 
-    (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/000_staff_group.json
+    (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata --app django_adelaidex.lti 000_staff_group.json
     Installed 1 object(s) from 1 fixture(s)
 
-    (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/001_staff_users.json
+    (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata --app gallery 001_staff_users.json
     Installed 9 object(s) from 1 fixture(s)
 
 
@@ -67,7 +67,7 @@ Create Users
 Use the django shell/console to create users.
 
     (.virtualenv)$ ./manage.py shell
-    >>> from uofa.models import User
+    >>> from django_adelaidex.lti.models import User
     >>> jill = User.objects.create_user('jill', 'jill.vogel@adelaide.edu.au', 'l0c0gallery')
 
 
@@ -76,12 +76,12 @@ Create Artworks
 Use the django shell/console to create artwork, authored by a user.
 
     (.virtualenv)$ ./manage.py shell
-    >>> from uofa.models import User
+    >>> from django_adelaidex.lti.models import User
     >>> from artwork.models import Artwork
     >>> Artwork.objects.all()
     []
     >>> jill = User.objects.get(username='jill')
-    >>> empty =Artwork.objects.create(title="Empty", code="", author=jill, shared=False)
+    >>> empty = Artwork.objects.create(title="Empty", code="", author=jill, shared=False)
     >>> Artwork.objects.all()
     [<Artwork: Empty>]
 

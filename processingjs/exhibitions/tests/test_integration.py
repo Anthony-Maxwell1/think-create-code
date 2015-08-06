@@ -6,7 +6,7 @@ from datetime import timedelta
 import os, os.path
 
 from exhibitions.models import Exhibition
-from uofa.test import SeleniumTestCase, wait_for_page_load
+from django_adelaidex.test import SeleniumTestCase, wait_for_page_load
 
 
 class ExhibitionListIntegrationTests(SeleniumTestCase):
