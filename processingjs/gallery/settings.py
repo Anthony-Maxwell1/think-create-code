@@ -25,7 +25,6 @@ ADELAIDEX_LTI = {
     'LOGIN_URL': None,
     'COURSE_URL': '',
     'ENROL_URL': '',
-    'OAUTH_CREDENTIALS': {},
     'LINK_TEXT': 'Code101x Think.Create.Code',
     'PERSIST_NAME': 'lti-gallery',
     'PERSIST_PARAMS': ['next'],
@@ -56,7 +55,7 @@ if ENVIRONMENT == 'production-2T2015':
     ADELAIDEX_LTI['COURSE_URL'] = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
     ADELAIDEX_LTI['ENROL_URL'] = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
     ADELAIDEX_LTI['LOGIN_URL'] = ADELAIDEX_LTI['COURSE_URL']
-    ADELAIDEX_LTI['OAUTH_CREDENTIALS'] = {
+    LTI_OAUTH_CREDENTIALS = {
         'code101x_2t2015': 'D8RoantdHgp0aABAGNNv',
     }
 
@@ -69,6 +68,8 @@ if ENVIRONMENT == 'production-2T2015':
     ALLOW_ANALYTICS = True
 
 elif ENVIRONMENT == 'production-3T2015':
+
+    DEBUG=True # XXX
 
     DATABASES = {
         'default': {
@@ -85,7 +86,7 @@ elif ENVIRONMENT == 'production-3T2015':
     ADELAIDEX_LTI['COURSE_URL'] = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
     ADELAIDEX_LTI['ENROL_URL'] = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
     ADELAIDEX_LTI['LOGIN_URL'] = ADELAIDEX_LTI['COURSE_URL']
-    ADELAIDEX_LTI['OAUTH_CREDENTIALS'] = {
+    LTI_OAUTH_CREDENTIALS = {
         'code101x_3t2015': 'ja2k9wQwAX31nfjgQafB',
     }
 
