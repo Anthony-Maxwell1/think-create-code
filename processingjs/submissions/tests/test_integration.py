@@ -6,7 +6,7 @@ from artwork.models import Artwork
 from exhibitions.models import Exhibition
 from submissions.models import Submission
 from votes.models import Vote
-from django_adelaidex.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_load
+from django_adelaidex.util.test import SeleniumTestCase, NoHTML5SeleniumTestCase, wait_for_page_load
 
 
 class SubmissionShowIntegrationTests(SeleniumTestCase):

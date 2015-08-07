@@ -158,7 +158,7 @@ INSTALLED_APPS = (
 
     'rulez',
     'database_files',
-    'django_adelaidex',
+    'django_adelaidex.util',
     'django_adelaidex.lti',
     'artwork',
     'exhibitions',
@@ -167,7 +167,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'django_adelaidex.middleware.WsgiLogErrors',
+    'django_adelaidex.util.middleware.WsgiLogErrors',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -175,7 +175,7 @@ MIDDLEWARE_CLASSES = (
     'django_auth_lti.middleware.LTIAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'csp.middleware.CSPMiddleware',
-    'django_adelaidex.middleware.P3PMiddleware',
+    'django_adelaidex.util.middleware.P3PMiddleware',
     'django_adelaidex.lti.middleware.TimezoneMiddleware',
 )
 
@@ -214,8 +214,13 @@ STATICFILES_DIRS = (
 )
 
 
+VIRTUALLIB_BASE_DIR = os.path.join( BASE_DIR, '..', '.virtualenv', 'lib', 'python2.7', 'site-packages' )
+
 TEMPLATE_DIRS = (
     os.path.join( BASE_DIR, 'templates' ),
+    # TODO Hopefully fixed in Django 1.8
+    os.path.join( VIRTUALLIB_BASE_DIR, 'django_adelaidex', 'util', 'templates' ),
+    os.path.join( VIRTUALLIB_BASE_DIR, 'django_adelaidex', 'lti', 'templates' ),
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -227,9 +232,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
-    'django_adelaidex.context_processors.analytics',
-    'django_adelaidex.context_processors.referer',
-    'django_adelaidex.context_processors.base_url',
+    'django_adelaidex.util.context_processors.analytics',
+    'django_adelaidex.util.context_processors.referer',
+    'django_adelaidex.util.context_processors.base_url',
     'django_adelaidex.lti.context_processors.lti_settings',
 )
 

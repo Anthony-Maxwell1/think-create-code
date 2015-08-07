@@ -3,7 +3,7 @@ import re
 from django.views.generic import TemplateView
 from django.core.urlresolvers import reverse, get_script_prefix
 from django.conf import settings
-from django_adelaidex.mixins import TemplatePathMixin
+from django_adelaidex.util.mixins import TemplatePathMixin
 
 
 class ProbeView(TemplatePathMixin, TemplateView):

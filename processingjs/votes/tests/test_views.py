@@ -3,7 +3,7 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse, NoReverseMatch
 import json
 
-from django_adelaidex.test import UserSetUp
+from django_adelaidex.util.test import UserSetUp
 from votes.models import Vote
 from submissions.models import Submission
 from exhibitions.models import Exhibition

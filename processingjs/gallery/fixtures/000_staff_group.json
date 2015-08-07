@@ -85,17 +85,17 @@
             ],
             [
                 "add_user",
-                "django_adelaidex_lti",
+                "lti",
                 "user"
             ],
             [
                 "change_user",
-                "django_adelaidex_lti",
+                "lti",
                 "user"
             ],
             [
                 "delete_user",
-                "django_adelaidex_lti",
+                "lti",
                 "user"
             ],
             [

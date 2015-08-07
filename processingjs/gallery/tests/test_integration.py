@@ -7,8 +7,7 @@ from django.core.urlresolvers import reverse
 from django.core.management import call_command
 from django.conf import settings
 
-from django_adelaidex.test import SeleniumTestCase
-from django_adelaidex.lti.tests.test_integration import LTILoginEntryViewTest
+from django_adelaidex.util.test import SeleniumTestCase
 from selenium.common.exceptions import NoSuchElementException
 from gallery.views import ShareView
 from artwork.models import Artwork
@@ -63,7 +62,7 @@ class GalleryStaffAdminIntegrationTests(SeleniumTestCase):
         super(GalleryStaffAdminIntegrationTests, self).setUp()
 
         # Load staff group fixtures data
-        call_command("loaddata", '000_staff_group', verbosity=0)
+        call_command("loaddata", 'fixtures/000_staff_group.json', verbosity=0)
 
         self.assertEquals(0, self.user.groups.count())
         self.assertEquals(1, self.staff_user.groups.count())
@@ -499,23 +498,3 @@ class TestTermsView(SeleniumTestCase):
 
         self.assertEquals(len(self.selenium.find_elements_by_id('terms-content')), 1)
         self.assertEquals(len(self.selenium.find_elements_by_tag_name('h1')), 1)
-
-
-class TestLTIRdirectsView(LTILoginEntryViewTest):
-
-    def test_my_studio(self):
-        path = reverse('artwork-studio') # redirects to artwork-author-list
-        redirect_path = reverse('artwork-author-list', kwargs={'author': self.user.id, 'shared': 0})
-        ok = self._performRedirectTest(path, redirect_path)
-        self.assertTrue(ok)
-
-    def test_artwork_add(self):
-        path = reverse('artwork-add')
-        ok = self._performRedirectTest(path)
-        self.assertTrue(ok)
-
-    def test_private_artwork(self):
-        private_artwork = Artwork.objects.create(title='Private Artwork', code='// code goes here', author=self.user)
-        path = reverse('artwork-view', kwargs={'pk': private_artwork.id})
-        ok = self._performRedirectTest(path)
-        self.assertTrue(ok)

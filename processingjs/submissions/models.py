@@ -7,7 +7,7 @@ from rulez import registry
 
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
-from django_adelaidex.widgets import SelectOneOrNoneWidget
+from django_adelaidex.util.widgets import SelectOneOrNoneWidget
 
 
 class Submission(models.Model):

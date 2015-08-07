@@ -6,7 +6,7 @@ from csp.decorators import csp_update
 from django.core.exceptions import PermissionDenied
 import os
 
-from django_adelaidex.mixins import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, MethodObjectHasPermMixin
+from django_adelaidex.util.mixins import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, MethodObjectHasPermMixin
 from django_adelaidex.zipfile.mixins import ZipFileViewMixin
 from gallery.views import ShareView
 from artwork.models import Artwork, ArtworkForm

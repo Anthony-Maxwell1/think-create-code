@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.utils.decorators import method_decorator
 from csp.decorators import csp_update
 
-from django_adelaidex.mixins import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, ModelHasPermMixin
+from django_adelaidex.util.mixins import TemplatePathMixin, LoggedInMixin, ObjectHasPermMixin, ModelHasPermMixin
 from gallery.views import ShareView
 from exhibitions.models import Exhibition, ExhibitionForm
 

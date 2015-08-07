@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from django_adelaidex.mixins import PostOnlyMixin, CSRFExemptMixin, LoggedInMixin, JsonResponseMixin, ObjectHasPermMixin
+from django_adelaidex.util.mixins import PostOnlyMixin, CSRFExemptMixin, LoggedInMixin, JsonResponseMixin, ObjectHasPermMixin
 from votes.models import Vote, VoteForm
 
 class VoteView(JsonResponseMixin):

@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.core.urlresolvers import reverse
 
 from artwork.models import Artwork, ArtworkForm
-from django_adelaidex.test import UserSetUp
+from django_adelaidex.util.test import UserSetUp
 
 class ArtworkTests(UserSetUp, TestCase):
     """Artwork model tests."""
