@@ -9,38 +9,42 @@ import artwork.views
 import exhibitions.views
 import submissions.views
 import votes.views
+import django_adelaidex.lti.views
 from votes.models import Vote
 
 from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^admin/', include(admin.site.urls)),
-
     url(r'^$', artwork.views.ListArtworkView.as_view(),
         name='home'),
-    url(r'^profile/$', gallery.views.UserProfileView.as_view(),
-        name='user-profile'),
 
-    # LTI views
-    url(r'^lti/$', gallery.views.LTIEntryView.as_view(),
-        name='lti-entry'),
-    url(r'^lti/403', gallery.views.LTIPermissionDeniedView.as_view(),
-        name='lti-403'),
-    url(r'^lti/login', gallery.views.LTIRedirectView.as_view(),
-        {'redirect_url': settings.LTI_LOGIN_URL or settings.LOGIN_URL},
-        name='lti-login'),
-    url(r'^lti/enrol', gallery.views.LTIRedirectView.as_view(),
-        {'redirect_url': settings.LTI_ENROL_URL},
-        name='lti-enrol'),
-    url(r'^lti/inactive', gallery.views.LTIInactiveView.as_view(),
-        name='lti-inactive'),
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^lti/', include('django_adelaidex.lti.urls')),
+
+    # Decide whether to use auth login or django_adelaidex.lti as the 'login' url
+    url(r'^login/$',
+        django_adelaidex.lti.views.LTIPermissionDeniedView.as_view(),
+        name='login') if settings.ADELAIDEX_LTI.get('LOGIN_URL') 
+    else
+    url(r'^login/$', auth_views.login,
+        {'template_name': 'login.html'},
+        name='login'),
+
+    # Ensure there's always a link available for the auth login
+    url(r'^auth/login/$', auth_views.login,
+        {'template_name': 'login.html'},
+        name='auth-login'),
+
+    url(r'^logout/$', auth_views.logout,
+        {'next_page': reverse_lazy('home')},
+        name='logout'),
 
     # Share view
     url(r'^share/?$', gallery.views.ShareView.as_view(),
         name='share'),
     # N.B This probe.html url is used by the Nagios checks for this service.
-    # PLEAE DO NOT CHANGE!
+    # PLEASE DO NOT CHANGE!
     url(r'^probe.html$', gallery.views.ProbeView.as_view(),
         name='probe'),
 
@@ -129,24 +133,6 @@ urlpatterns = patterns('',
         name='vote-ok'),
     url(r'^vote/(?P<pk>\d+)$', votes.views.ShowVoteView.as_view(),
         name='vote-view'),
-
-    # Decide whether to use auth login or lti-403 as the 'login' url
-    url(r'^login/$',
-        gallery.views.LTIPermissionDeniedView.as_view(),
-        name='login') if settings.LTI_LOGIN_URL 
-    else
-    url(r'^login/$', auth_views.login,
-        {'template_name': 'login.html'},
-        name='login'),
-
-    # Ensure there's always a link available for the auth login
-    url(r'^auth/login/$', auth_views.login,
-        {'template_name': 'login.html'},
-        name='auth-login'),
-
-    url(r'^logout/$', auth_views.logout,
-        {'next_page': reverse_lazy('home')},
-        name='logout'),
 
     url(r'^media/(?P<name>.+)$', 'database_files.views.serve',
         name='database_file'),

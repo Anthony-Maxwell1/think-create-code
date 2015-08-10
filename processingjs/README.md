@@ -67,7 +67,7 @@ Create Users
 Use the django shell/console to create users.
 
     (.virtualenv)$ ./manage.py shell
-    >>> from uofa.models import User
+    >>> from django_adelaidex.lti.models import User
     >>> jill = User.objects.create_user('jill', 'jill.vogel@adelaide.edu.au', 'l0c0gallery')
 
 
@@ -76,12 +76,12 @@ Create Artworks
 Use the django shell/console to create artwork, authored by a user.
 
     (.virtualenv)$ ./manage.py shell
-    >>> from uofa.models import User
+    >>> from django_adelaidex.lti.models import User
     >>> from artwork.models import Artwork
     >>> Artwork.objects.all()
     []
     >>> jill = User.objects.get(username='jill')
-    >>> empty =Artwork.objects.create(title="Empty", code="", author=jill, shared=False)
+    >>> empty = Artwork.objects.create(title="Empty", code="", author=jill, shared=False)
     >>> Artwork.objects.all()
     [<Artwork: Empty>]
 

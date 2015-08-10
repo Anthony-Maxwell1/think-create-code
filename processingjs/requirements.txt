@@ -1,13 +1,13 @@
-Django==1.7
+Django>=1.7,<1.8
 MySQL-python==1.2.5
 WebTest==2.0.14
 selenium==2.44.0
 PyVirtualDisplay==0.1.5
 coverage==3.7.1
 django-rulez==1.0.1
-django-auth-lti==1.2.1
 django-database-files==0.1.1
-mock==1.0.1
 Pillow==2.6.1
 django-csp==2.0.3
-pytz==2015.2
+django-adelaidex-util==0.1
+django-adelaidex-lti==0.1
+django-adelaidex-zipfile==0.1

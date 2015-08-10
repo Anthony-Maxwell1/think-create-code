@@ -20,11 +20,16 @@ SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
 DEBUG = False
 TEMPLATE_DEBUG = False
 
-# LTI_*_URLs initialised per environment
-LTI_LOGIN_URL = None
-LTI_COURSE_URL = ''
-LTI_ENROL_URL = ''
-LTI_OAUTH_CREDENTIALS = {}
+# ADELAIDEX_LTI.*_URLs and OAUTH_CREDENTIALS are initialised below, per environment
+ADELAIDEX_LTI = {
+    'LOGIN_URL': None,
+    'COURSE_URL': '',
+    'ENROL_URL': '',
+    'LINK_TEXT': 'Code101x Think.Create.Code',
+    'PERSIST_NAME': 'lti-gallery',
+    'PERSIST_PARAMS': ['next'],
+    'STAFF_MEMBER_GROUP': 1,
+}
 
 # Default logging config
 LOGGING_CONFIG_FILE = os.path.join(BASE_DIR, 'gallery', 'logging-prd.conf')
@@ -47,9 +52,9 @@ if ENVIRONMENT == 'production-2T2015':
     ALLOWED_HOSTS = ['*']
 
     # Link to a live course are contains a Code Gallery LTI unit
-    LTI_COURSE_URL = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
-    LTI_ENROL_URL = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
-    LTI_LOGIN_URL = LTI_COURSE_URL
+    ADELAIDEX_LTI['COURSE_URL'] = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
+    ADELAIDEX_LTI['ENROL_URL'] = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
+    ADELAIDEX_LTI['LOGIN_URL'] = ADELAIDEX_LTI['COURSE_URL']
     LTI_OAUTH_CREDENTIALS = {
         'code101x_2t2015': 'D8RoantdHgp0aABAGNNv',
     }
@@ -64,6 +69,8 @@ if ENVIRONMENT == 'production-2T2015':
 
 elif ENVIRONMENT == 'production-3T2015':
 
+    DEBUG=True # XXX
+
     DATABASES = {
         'default': {
              'ENGINE': 'django.db.backends.mysql',
@@ -76,9 +83,9 @@ elif ENVIRONMENT == 'production-3T2015':
     ALLOWED_HOSTS = ['*']
 
     # FIXME Link to a live course are contains a Code Gallery LTI unit
-    LTI_COURSE_URL = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
-    LTI_ENROL_URL = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
-    LTI_LOGIN_URL = LTI_COURSE_URL
+    ADELAIDEX_LTI['COURSE_URL'] = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
+    ADELAIDEX_LTI['ENROL_URL'] = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
+    ADELAIDEX_LTI['LOGIN_URL'] = ADELAIDEX_LTI['COURSE_URL']
     LTI_OAUTH_CREDENTIALS = {
         'code101x_3t2015': 'ja2k9wQwAX31nfjgQafB',
     }
@@ -126,8 +133,6 @@ elif ENVIRONMENT == 'testing':
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
     ALLOWED_HOSTS = ['localhost']
 
-    LTI_ENROL_URL = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
-
     # http://0.0.0.0:8080/share
     SHARE_URL = 'https://bit.ly/1zMTDl8'
 
@@ -154,7 +159,8 @@ INSTALLED_APPS = (
 
     'rulez',
     'database_files',
-    'uofa',
+    'django_adelaidex.util',
+    'django_adelaidex.lti',
     'artwork',
     'exhibitions',
     'submissions',
@@ -162,7 +168,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'uofa.middleware.WsgiLogErrors',
+    'django_adelaidex.util.middleware.WsgiLogErrors',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -170,8 +176,8 @@ MIDDLEWARE_CLASSES = (
     'django_auth_lti.middleware.LTIAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'csp.middleware.CSPMiddleware',
-    'uofa.middleware.P3PMiddleware',
-    'uofa.middleware.TimezoneMiddleware',
+    'django_adelaidex.util.middleware.P3PMiddleware',
+    'django_adelaidex.lti.middleware.TimezoneMiddleware',
 )
 
 ROOT_URLCONF = 'gallery.urls'
@@ -209,8 +215,13 @@ STATICFILES_DIRS = (
 )
 
 
+VIRTUALLIB_BASE_DIR = os.path.join( BASE_DIR, '..', '.virtualenv', 'lib', 'python2.7', 'site-packages' )
+
 TEMPLATE_DIRS = (
     os.path.join( BASE_DIR, 'templates' ),
+    # TODO Hopefully fixed in Django 1.8
+    os.path.join( VIRTUALLIB_BASE_DIR, 'django_adelaidex', 'util', 'templates' ),
+    os.path.join( VIRTUALLIB_BASE_DIR, 'django_adelaidex', 'lti', 'templates' ),
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -222,9 +233,10 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
-    'uofa.context_processors.analytics',
-    'uofa.context_processors.referer',
-    'uofa.context_processors.base_url',
+    'django_adelaidex.util.context_processors.analytics',
+    'django_adelaidex.util.context_processors.referer',
+    'django_adelaidex.util.context_processors.base_url',
+    'django_adelaidex.lti.context_processors.lti_settings',
 )
 
 # P3P header
@@ -263,8 +275,4 @@ AUTHENTICATION_BACKENDS = [
     'rulez.backends.ObjectPermissionBackend',
 ]
 
-AUTH_USER_MODEL = 'uofa.User'
-
-LTI_LINK_TEXT = 'Code101x Think.Create.Code'
-LTI_PERSIST_NAME = 'lti-gallery'
-LTI_PERSIST_PARAMS = ['next']
+AUTH_USER_MODEL = 'lti.User'

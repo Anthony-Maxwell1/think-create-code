@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.core import files
 
-from uofa.test import UserSetUp
+from django_adelaidex.util.test import UserSetUp
 from exhibitions.models import Exhibition, ExhibitionForm
 from database_files.models import File
 
