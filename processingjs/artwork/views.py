@@ -1,8 +1,9 @@
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, TemplateView, RedirectView
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
-from csp.decorators import csp_update
+from csp.decorators import csp_replace
 from django.core.exceptions import PermissionDenied
 import os
 
@@ -28,11 +29,11 @@ class RenderArtworkView(TemplateView):
        to make them ok to allow inline and eval'd Javascript provided by students.
        We also disallow everything else, so that the rendered artwork can't include them.
     '''
-    @method_decorator(csp_update(
+    @method_decorator(csp_replace(
         # processingjs requires *.adelaide and unsafe-eval for scripts, css, and fonts
         # (have to specify *.adelaide because of iframe security)
         SCRIPT_SRC = ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*", "'unsafe-eval'",),
-        STYLE_SRC =  ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*",),
+        STYLE_SRC =  ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*", "'unsafe-inline'", ),
         FONT_SRC = ("'self'", "data:",),
         # no objects, media, frames, or XHR requests allowed during render.
         # (IMG_SRC covered by default policy)

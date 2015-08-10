@@ -28,6 +28,14 @@ class Submission(models.Model):
     def __str__(self):
         return unicode(self).encode('utf-8')
 
+    def _disqus_identifier(self):
+        return settings.ADELAIDEX_LTI_DISQUS['IDENTIFIER'] % self.artwork.id
+
+    disqus_identifier = property(_disqus_identifier)
+
+    def get_absolute_url(self):
+        return self.artwork.get_absolute_url()
+
     # Allow authenticated authors to submit their artwork 
     # to exhibitions they can see
     def can_save(self, user=None):

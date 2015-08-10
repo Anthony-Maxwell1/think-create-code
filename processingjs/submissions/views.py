@@ -1,5 +1,6 @@
 import os
 from django.views.generic import DetailView, ListView, CreateView, DeleteView
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
@@ -24,9 +25,10 @@ class ShowSubmissionView(SubmissionView, DetailView):
     def get_context_data(self, **kwargs):
 
         context = super(ShowSubmissionView, self).get_context_data(**kwargs)
+        submission = self.get_object()
 
         # Include share url
-        pk = self.get_object().id
+        pk = submission.id
         context['share_url'] = ShareView.reverse_share_url(
             'submission-view',
             kwargs={'pk': pk})
@@ -35,6 +37,10 @@ class ShowSubmissionView(SubmissionView, DetailView):
         # as a dict of submission.id:vote
         votes = Vote.can_delete_queryset(user=self.request.user, submission=pk).all()
         context['votes'] = { v.submission_id:v for v in votes }
+
+        context['DISQUS_IDENTIFIER'] = submission.disqus_identifier
+        context['DISQUS_TITLE'] = '%s' % submission
+        context['DISQUS_URL'] = self.request.build_absolute_uri(submission.get_absolute_url())
 
         return context
 

@@ -1,5 +1,6 @@
 import os
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.decorators import method_decorator
 from csp.decorators import csp_update

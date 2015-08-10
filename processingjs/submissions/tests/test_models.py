@@ -204,6 +204,18 @@ class SubmissionTests(UserSetUp, TestCase):
         artwork = Artwork.objects.get(pk=artwork.id)
         self.assertEqual(artwork.shared, 0)
 
+    def test_disqus_identifier(self):
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            author=self.user)
+        artwork = Artwork.objects.create(title='New Artwork', code='// code goes here', author=self.user)
+        submission = Submission.objects.create(exhibition=exhibition, artwork=artwork, submitted_by=self.user)
+
+        # Ensure the disqus_identifier contains the artwork id, so that it
+        # persists between submission attempts.
+        self.assertIn('%s' % artwork.id, submission.disqus_identifier)
+
 
 class SubmissionModelFormTests(UserSetUp, TestCase):
     """model.SubmissionForm tests."""

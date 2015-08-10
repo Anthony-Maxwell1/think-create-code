@@ -1,0 +1,9 @@
+<a id="comment-{{ object.id }}"
+   class="comment"
+   title="Comments via Disqus"
+    href="{% url 'submission-view' pk=object.id %}#comments"
+><span class="disqus-comment-count" 
+        data-disqus-identifier="{{ object.disqus_identifier }}"
+    > </span>
+  <i class="fa fa-comment"></i>
+</a>

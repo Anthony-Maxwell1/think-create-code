@@ -31,9 +31,17 @@ ADELAIDEX_LTI = {
     'STAFF_MEMBER_GROUP': 1,
 }
 
+# Disqus integration
+ADELAIDEX_LTI_DISQUS = {
+    'SHORTNAME': 'thinkcreatecodegallery',
+    'DEFAULT_EMAIL': '{user.username}@edx.org',
+    'IDENTIFIER': 'a/%d',
+    'SECRET_KEY': 'CH2OwPJpIwukfaiE2EbBAwALZxYsHcgii3TzpqrmFbQ9cgfiaHGfXXb48k8uMItq',
+    'PUBLIC_KEY': 'jbXXUtp4uRwQwU0DAbHQnaG6X6JIk83ZHyQksEbQJ4y0AeJSFvzOY43PkSV2fPkh',
+}
+
 # Default logging config
 LOGGING_CONFIG_FILE = os.path.join(BASE_DIR, 'gallery', 'logging-prd.conf')
-
 
 # Determine enviroment we're running in
 ENVIRONMENT = os.environ.get("DJANGO_GALLERY_ENVIRONMENT", "production-3T2015")
@@ -67,6 +75,8 @@ if ENVIRONMENT == 'production-2T2015':
 
     ALLOW_ANALYTICS = True
 
+    ADELAIDEX_LTI_DISQUS['IDENTIFIER'] = '2t2015/a/%d'
+
 elif ENVIRONMENT == 'production-3T2015':
 
     DEBUG=True # XXX
@@ -95,6 +105,8 @@ elif ENVIRONMENT == 'production-3T2015':
 
     ALLOW_ANALYTICS = True
 
+    ADELAIDEX_LTI_DISQUS['IDENTIFIER'] = '3t2015/a/%d'
+
 elif ENVIRONMENT == 'development':
 
     # Runs via ./manage.py runserver
@@ -115,6 +127,8 @@ elif ENVIRONMENT == 'development':
     SHARE_URL = 'https://bit.ly/1A3JLXA'
 
     ALLOW_ANALYTICS = False
+
+    ADELAIDEX_LTI_DISQUS['IDENTIFIER'] = 'dev/a/%d'
 
     LOGGING_CONFIG_FILE = os.path.join(BASE_DIR, 'gallery', 'logging-dev.conf')
 
@@ -237,6 +251,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django_adelaidex.util.context_processors.referer',
     'django_adelaidex.util.context_processors.base_url',
     'django_adelaidex.lti.context_processors.lti_settings',
+    'django_adelaidex.lti.context_processors.disqus_settings',
+    'django_adelaidex.lti.context_processors.disqus_sso',
 )
 
 # P3P header
@@ -251,15 +267,24 @@ CSP_SCRIPT_SRC = (
     "'self'",
     "'unsafe-inline'", # artwork/_render.html, artwork/edit.html
     "https://www.google-analytics.com",
+    "a.disquscdn.com",
+    "thinkcreatecodegallery.disqus.com",
 )
 CSP_IMG_SRC = (
     "'self'",
     "data:",
     "https://www.google-analytics.com",
+    "referrer.disqus.com", 
+    "a.disquscdn.com",
 )
 CSP_STYLE_SRC = (
     "'self'",
     "'unsafe-inline'", # modernizr.js
+    "a.disquscdn.com",
+)
+CSP_FRAME_SRC = (
+    "'self'", 
+    "disqus.com",
 )
 
 

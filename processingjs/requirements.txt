@@ -9,5 +9,5 @@ django-database-files==0.1.1
 Pillow==2.6.1
 django-csp==2.0.3
 django-adelaidex-util==0.1
-django-adelaidex-lti==0.1
+django-adelaidex-lti==0.1.1
 django-adelaidex-zipfile==0.1
