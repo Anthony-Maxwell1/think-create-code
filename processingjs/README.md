@@ -31,7 +31,7 @@ Use virtualenv to setup the initial runtime environment:
 Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
 
     (.virtualenv)$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py migrate
-    (.virtualenv)$ touch gallery/wsgi.py # restart wsgi daemon
+    (.virtualenv)$ touch gallery/wsgi.py  # restart wsgi daemon
 
 
 Initial Data
