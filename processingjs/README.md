@@ -68,7 +68,7 @@ Use the django shell/console to create users.
 
     (.virtualenv)$ ./manage.py shell
     >>> from django_adelaidex.lti.models import User
-    >>> jill = User.objects.create_user('jill', 'jill.vogel@adelaide.edu.au', 'l0c0gallery')
+    >>> jill = User.objects.create_user('jill', 'jill.vogel@adelaide.edu.au', 'password')
 
 
 Create Artworks
