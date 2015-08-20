@@ -18,7 +18,6 @@ SECRET_KEY = 'm=2w&k4)f^1-ii04p(b88%_&%$w!(s)p)%gqvh@ac498566p+s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-TEMPLATE_DEBUG = False
 
 # ADELAIDEX_LTI.*_URLs and OAUTH_CREDENTIALS are initialised below, per environment
 ADELAIDEX_LTI = {
@@ -79,8 +78,6 @@ if ENVIRONMENT == 'production-2T2015':
 
 elif ENVIRONMENT == 'production-3T2015':
 
-    DEBUG=True # XXX
-
     DATABASES = {
         'default': {
              'ENGINE': 'django.db.backends.mysql',
@@ -111,7 +108,6 @@ elif ENVIRONMENT == 'development':
 
     # Runs via ./manage.py runserver
     DEBUG = True
-    TEMPLATE_DEBUG = True
     DATABASES = {
         'default': {
              'ENGINE': 'django.db.backends.mysql',
@@ -136,7 +132,6 @@ elif ENVIRONMENT == 'testing':
 
     # Runs via ./manage.py test
     DEBUG = False
-    TEMPLATE_DEBUG = False
     DATABASES = {
         'default': {
              'ENGINE': 'django.db.backends.sqlite3',
@@ -144,7 +139,6 @@ elif ENVIRONMENT == 'testing':
         }
     }
     STATIC_URL = '/static/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
     ALLOWED_HOSTS = ['localhost']
 
     # http://0.0.0.0:8080/share
@@ -173,6 +167,7 @@ INSTALLED_APPS = (
 
     'rulez',
     'database_files',
+    'gallery',
     'django_adelaidex.util',
     'django_adelaidex.lti',
     'artwork',
@@ -218,8 +213,7 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.6/howto/static-files/
-
+# https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
@@ -228,32 +222,35 @@ STATICFILES_DIRS = (
     os.path.join( BASE_DIR, 'static' ),
 )
 
+# Note: used only during testing.
+# In production, we simply serve the static dir as-is.
+STATIC_ROOT = os.path.join( BASE_DIR, 'static', 'test' )
 
-VIRTUALLIB_BASE_DIR = os.path.join( BASE_DIR, '..', '.virtualenv', 'lib', 'python2.7', 'site-packages' )
-
-TEMPLATE_DIRS = (
-    os.path.join( BASE_DIR, 'templates' ),
-    # TODO Hopefully fixed in Django 1.8
-    os.path.join( VIRTUALLIB_BASE_DIR, 'django_adelaidex', 'util', 'templates' ),
-    os.path.join( VIRTUALLIB_BASE_DIR, 'django_adelaidex', 'lti', 'templates' ),
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.core.context_processors.tz',
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.request',
-    'django_adelaidex.util.context_processors.analytics',
-    'django_adelaidex.util.context_processors.referer',
-    'django_adelaidex.util.context_processors.base_url',
-    'django_adelaidex.lti.context_processors.lti_settings',
-    'django_adelaidex.lti.context_processors.disqus_settings',
-    'django_adelaidex.lti.context_processors.disqus_sso',
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.core.context_processors.debug',
+                'django.core.context_processors.i18n',
+                'django.core.context_processors.media',
+                'django.core.context_processors.static',
+                'django.core.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.request',
+                'django_adelaidex.util.context_processors.analytics',
+                'django_adelaidex.util.context_processors.referer',
+                'django_adelaidex.util.context_processors.base_url',
+                'django_adelaidex.lti.context_processors.lti_settings',
+                'django_adelaidex.lti.context_processors.disqus_settings',
+                'django_adelaidex.lti.context_processors.disqus_sso',
+            ],
+        },
+    },
+]
 
 # P3P header
 P3P_HEADER_KEY = 'P3P:CP'
