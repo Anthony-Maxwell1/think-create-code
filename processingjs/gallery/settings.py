@@ -138,6 +138,7 @@ elif ENVIRONMENT == 'testing':
              'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3'),
         }
     }
+    STATIC_ROOT = os.path.join( BASE_DIR, 'static', 'test' )
     STATIC_URL = '/static/'
     ALLOWED_HOSTS = ['localhost']
 
@@ -221,10 +222,6 @@ STATICFILES_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     os.path.join( BASE_DIR, 'static' ),
 )
-
-# Note: used only during testing.
-# In production, we simply serve the static dir as-is.
-STATIC_ROOT = os.path.join( BASE_DIR, 'static', 'test' )
 
 TEMPLATES = [
     {
