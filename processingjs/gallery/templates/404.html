@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="columns small-12 small-centered">
 <h1>Not Found</h1>
 <p>The page you were looking for has been moved, deleted, or does not exist.</p>
 <p>You can {% if HTTP_REFERER %}<a href="{{ HTTP_REFERER }}">go back to the page you came from</a>, 
    or {%endif %}<a href="{% url 'home' %}">try browsing from the home page</a>.
+</div>
 {% endblock content %}

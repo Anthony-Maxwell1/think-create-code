@@ -9,9 +9,9 @@
 {% load rulez_perms %}
 {% rulez_perms can_save object as USER_CAN_SAVE %}
 <div id="exhibition-view-content">
-<div class="columns small-12">
+<div class="columns">
 {% include 'exhibitions/_view.html' %}
-<div class="object-actions row">
+<div class="object-actions columns">
     <ul class="breadcrumbs">
         {% if object.released_yet %}
         <li><i class="fa fa-share-alt"></i> <span class="share-link">{{ share_url }}</span></li>
