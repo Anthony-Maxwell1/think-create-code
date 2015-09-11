@@ -90,8 +90,8 @@ elif ENVIRONMENT == 'production-3T2015':
     ALLOWED_HOSTS = ['*']
 
     # FIXME Link to a live course are contains a Code Gallery LTI unit
-    ADELAIDEX_LTI['COURSE_URL'] = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+2T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/'
-    ADELAIDEX_LTI['ENROL_URL'] = 'https://www.edx.org/course/think-create-code-adelaidex-code101x'
+    ADELAIDEX_LTI['COURSE_URL'] = 'https://courses.edx.org/courses/course-v1:AdelaideX+Code101x+3T2015/courseware/0655ee1be221492b90c043cc1d6cb648/87818d7c405143b7b642c6bbbe793bc7/1?activate_block_id=block-v1%3AAdelaideX%2BCode101x%2B3T2015%2Btype%40vertical%2Bblock%400a86d8c2c63b460c9bb02f2611f360ec'
+    ADELAIDEX_LTI['ENROL_URL'] = 'https://www.edx.org/course/think-create-code-adelaidex-code101x-1'
     ADELAIDEX_LTI['LOGIN_URL'] = ADELAIDEX_LTI['COURSE_URL']
     LTI_OAUTH_CREDENTIALS = {
         'code101x_3t2015': 'ja2k9wQwAX31nfjgQafB',
