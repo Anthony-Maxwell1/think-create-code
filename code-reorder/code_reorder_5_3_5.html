@@ -13,10 +13,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.4.8/processing.min.js"></script>
+  <script src="https://lti-adx.adelaide.edu.au/course.units/edx/js/foundation.min.js"></script>
   <script src="https://lti-adx.adelaide.edu.au/think.create.code/reorder/code_reorder.js"></script>
   <script src="https://lti-adx.adelaide.edu.au/course.units/edx/js/ga.js"></script>
 </head>
 <body>
+<div id="content" class="columns">
 <div class="row">
     <p>
         Drag the lines of code into the correct order to generate the image
@@ -55,6 +57,17 @@ background(140,40,40);</code></pre>
 <div class="row">
     <input type="button" id="draw" class="check" value="Draw" />
     <div id="error"></div>
+</div>
+<div id="footer">
+    <div class="copyright-link columns small-6">
+        <a href="http://www.adelaide.edu.au/legals/copyright.html">© The University of Adelaide</a>, 
+        <div class="usage">all rights reserved</div>
+    </div>
+    <div class="references-link columns small-6">
+        <a href="#" data-reveal-id="ref" data-reveal-ajax="ref.html">References</a>
+    </div>
+    <div id="ref" class="reveal-modal" data-reveal></div>
+</div>
 </div>
 </body>
 </html>

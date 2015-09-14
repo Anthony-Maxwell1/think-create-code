@@ -10,6 +10,11 @@ In accordance with the
 <a href="https://www.edx.org/edx-terms-service">EdX Terms of Service</a>, 
 you may only access or use User Postings in connection with your use of the Site
 for your own personal purposes.</p>
+<div id="references"></div>
 </div>
-</div>
+{% load staticfiles %}
+<script>
+    // Load static reference content, if found.
+    $('#references').load("{% static 'ref.html' %}");
+</script>
 {% endblock content %}

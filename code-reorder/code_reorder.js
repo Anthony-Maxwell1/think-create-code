@@ -54,6 +54,13 @@ var CodeReorder = (function(){
 }());
 
 $(document).ready(function() {
+
+    $(document).foundation({
+        reveal : {
+            animation : 'fade'
+        }
+    });
+
     // Use syntax highlighting
     hljs.initHighlightingOnLoad();
 

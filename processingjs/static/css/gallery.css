@@ -54,6 +54,18 @@ footer li:before {
 footer li:first-child:before {
     content: '';
 }
+footer .copyright-link {
+    padding: 0;
+    text-align: left;
+}
+footer .usage {
+    white-space: nowrap;
+    display: inline-block;
+}
+footer .references-link {
+    padding: 0;
+    text-align: right;
+}
 form.link {
     display: inline-block;
 }
@@ -303,4 +315,7 @@ button .fa {
 }
 .artwork-title {
     word-wrap: break-word;
+}
+#terms-content #close-button {
+    display: none;
 }
