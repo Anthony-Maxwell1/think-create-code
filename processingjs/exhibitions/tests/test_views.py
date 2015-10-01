@@ -129,6 +129,60 @@ class ExhibitionListTests(UserSetUp, TestCase):
         self.assertTrue(response.context['object_list'][1].released_yet)
         self.assertTrue(response.context['object_list'][2].released_yet)
 
+    def test_list_view_pk_list(self):
+        
+        client = Client()
+
+        # Create three exhibitions
+        now = timezone.now()
+        exhibition1 = Exhibition.objects.create(
+            title='Exhibition One',
+            description='description goes here',
+            released_at = now,
+            author=self.user)
+
+        exhibition2 = Exhibition.objects.create(
+            title='Exhibition Two',
+            description='description goes here',
+            released_at = now,
+            author=self.user)
+
+        exhibition3 = Exhibition.objects.create(
+            title='Exhibition Three',
+            description='description goes here',
+            released_at = now,
+            author=self.user)
+
+        pk_list = []
+        list_url = reverse('exhibition-list', kwargs={'pk_list': ','.join(map(str,pk_list))})
+        response = client.get(list_url)
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0].id, exhibition1.id)
+        self.assertEquals(response.context['object_list'][1].id, exhibition2.id)
+        self.assertEquals(response.context['object_list'][2].id, exhibition3.id)
+
+        pk_list = [exhibition1.id, exhibition3.id]
+        list_url = reverse('exhibition-list', kwargs={'pk_list': ','.join(map(str, pk_list))})
+        response = client.get(list_url)
+        self.assertEquals(response.context['object_list'].count(), 2)
+        self.assertEquals(response.context['object_list'][0].id, pk_list[0])
+        self.assertEquals(response.context['object_list'][1].id, pk_list[1])
+
+        pk_list = [exhibition1.id, exhibition2.id]
+        list_url = reverse('exhibition-list', kwargs={'pk_list': ','.join(map(str, pk_list))})
+        response = client.get(list_url)
+        self.assertEquals(response.context['object_list'].count(), 2)
+        self.assertEquals(response.context['object_list'][0].id, pk_list[0])
+        self.assertEquals(response.context['object_list'][1].id, pk_list[1])
+
+        pk_list = [exhibition1.id, exhibition2.id, exhibition3.id]
+        list_url = reverse('exhibition-list', kwargs={'pk_list': ','.join(map(str, pk_list))})
+        response = client.get(list_url)
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0].id, pk_list[0])
+        self.assertEquals(response.context['object_list'][1].id, pk_list[1])
+        self.assertEquals(response.context['object_list'][2].id, pk_list[2])
+
 
 class ExhibitionViewTests(UserSetUp, TestCase):
     """Exhibition view tests."""

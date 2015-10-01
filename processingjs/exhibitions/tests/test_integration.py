@@ -228,6 +228,66 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
         self.assertEqual(title_items[1].text, today.title)
         self.assertEqual(title_items[2].text, yesterday.title)
 
+    def test_list_pk_list(self):
+        
+        # Create three exhibitions
+        now = timezone.now()
+        exhibition1 = Exhibition.objects.create(
+            title='Exhibition One',
+            description='description goes here',
+            released_at = now,
+            author=self.user)
+
+        exhibition2 = Exhibition.objects.create(
+            title='Exhibition Two',
+            description='description goes here',
+            released_at = now,
+            author=self.user)
+
+        exhibition3 = Exhibition.objects.create(
+            title='Exhibition Three',
+            description='description goes here',
+            released_at = now,
+            author=self.user)
+
+        pk_list = []
+        list_url = '%s%s' % (self.live_server_url, reverse('exhibition-list', 
+                        kwargs={'pk_list': ','.join(map(str,pk_list))}))
+        self.selenium.get(list_url)
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(len(title_items), 3)
+        self.assertEqual(title_items[0].text, exhibition1.title)
+        self.assertEqual(title_items[1].text, exhibition2.title)
+        self.assertEqual(title_items[2].text, exhibition3.title)
+
+        pk_list = [exhibition1.id, exhibition3.id]
+        list_url = '%s%s' % (self.live_server_url, reverse('exhibition-list', 
+                        kwargs={'pk_list': ','.join(map(str,pk_list))}))
+        self.selenium.get(list_url)
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(len(title_items), 2)
+        self.assertEqual(title_items[0].text, exhibition1.title)
+        self.assertEqual(title_items[1].text, exhibition3.title)
+
+        pk_list = [exhibition1.id, exhibition2.id]
+        list_url = '%s%s' % (self.live_server_url, reverse('exhibition-list', 
+                        kwargs={'pk_list': ','.join(map(str,pk_list))}))
+        self.selenium.get(list_url)
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(len(title_items), 2)
+        self.assertEqual(title_items[0].text, exhibition1.title)
+        self.assertEqual(title_items[1].text, exhibition2.title)
+
+        pk_list = [exhibition1.id, exhibition2.id, exhibition3.id]
+        list_url = '%s%s' % (self.live_server_url, reverse('exhibition-list', 
+                        kwargs={'pk_list': ','.join(map(str,pk_list))}))
+        self.selenium.get(list_url)
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(len(title_items), 3)
+        self.assertEqual(title_items[0].text, exhibition1.title)
+        self.assertEqual(title_items[1].text, exhibition2.title)
+        self.assertEqual(title_items[2].text, exhibition3.title)
+
 
 class ExhibitionViewIntegrationTests(SeleniumTestCase):
 

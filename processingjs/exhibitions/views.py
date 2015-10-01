@@ -47,6 +47,13 @@ class ListExhibitionView(ExhibitionView, ListView):
         '''Enforce model queryset restrictions, and sort by released_at desc'''
         qs = super(ExhibitionView, self).get_queryset()
         qs = self.get_model().can_see_queryset(qs, self.request.user)
+
+        # If there's a pk_list, then restrict to those identifiers
+        pk_list = self.kwargs.get('pk_list', '')
+        if pk_list and 'separator' in self.kwargs:
+            pk_list = pk_list.split(self.kwargs['separator'])
+            qs = qs.filter(pk__in=pk_list)
+
         return qs.order_by('-released_at', 'created_at')
 
 
