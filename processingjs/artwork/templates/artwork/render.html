@@ -13,9 +13,6 @@
     <script type="text/javascript" src="{% static "js/processing.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/render.js" %}"></script>
     {% endblock js %}
-    {% if ALLOW_ANALYTICS %}
-    <script type="text/javascript" src="/course.units/edx/js/ga.js"></script>
-    {% endif %}
 </head>
 <body>
 {% block content %}
