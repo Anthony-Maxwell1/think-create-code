@@ -289,9 +289,11 @@ from django.core.urlresolvers import reverse_lazy
 LOGIN_REDIRECT_URL = reverse_lazy('home')
 
 AUTHENTICATION_BACKENDS = [
+    'django_adelaidex.lti.backends.CohortLTIAuthBackend',
     'django.contrib.auth.backends.ModelBackend', # Django's default auth backend
-    'django_auth_lti.backends.LTIAuthBackend',
     'rulez.backends.ObjectPermissionBackend',
 ]
 
 AUTH_USER_MODEL = 'lti.User'
+
+ADELAIDEX_LTI_STAFF_MEMBER_GROUP = 1
