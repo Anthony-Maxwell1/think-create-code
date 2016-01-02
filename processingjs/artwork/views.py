@@ -32,8 +32,8 @@ class RenderArtworkView(TemplateView):
     @method_decorator(csp_replace(
         # processingjs requires *.adelaide and unsafe-eval for scripts, css, and fonts
         # (have to specify *.adelaide because of iframe security)
-        SCRIPT_SRC = ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*", "'unsafe-eval'",),
-        STYLE_SRC =  ("http://*.adelaide.edu.au:*", "https://*.adelaide.edu.au:*", "'unsafe-inline'", ),
+        SCRIPT_SRC = tuple(settings.ARTWORK_CSP_SCRIPT_SRC),
+        STYLE_SRC =  tuple(settings.ARTWORK_CSP_STYLE_SRC),
         FONT_SRC = ("'self'", "data:",),
         # no objects, media, frames, or XHR requests allowed during render.
         # (IMG_SRC covered by default policy)

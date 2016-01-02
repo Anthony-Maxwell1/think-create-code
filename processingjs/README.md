@@ -10,7 +10,8 @@ Create mysql database:
 
 Install apache app configuration:
 
-    sudo cp etc/httpd/conf.d/10_processingjs._conf
+    # Assumes this statement is in your apache config: Include conf.d/*._conf
+    sudo cp etc/httpd/conf.d/10_processingjs._conf /etc/httpd/conf.d/
     sudo systemctl reload httpd
 
 
@@ -23,9 +24,15 @@ Use virtualenv to setup the initial runtime environment:
     virtualenv .virtualenv
     source .virtualenv/bin/activate
 
-    cd processingjs/
-    (.virtualenv)$ pip install --extra-index-url=http://lti-adx.adelaide.edu.au/pypi/ -U -r requirements.txt
+    (.virtualenv)$ cd processingjs/
+    (.virtualenv)$ pip install --extra-index-url=https://lti-adx.adelaide.edu.au/pypi/ -U -r requirements.txt
+    # selinux enforcing only
     (.virtualenv)$ sudo find ../.virtualenv/lib/python2.7/site-packages -name \*.so -exec chcon -t shlib_t {} \;
+
+Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
+
+    (.virtualenv)$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py migrate
+    (.virtualenv)$ touch gallery/wsgi.py # restart wsgi daemon
 
 
 Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.

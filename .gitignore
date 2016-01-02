@@ -60,3 +60,8 @@ docs/_build/
 # my diff and msg files
 diff
 msg
+
+# ignore environment-specific settings, passwords, secrets
+*.ini
+#   but not the default.ini
+!default.ini
