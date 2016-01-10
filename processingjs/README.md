@@ -48,9 +48,6 @@ Use the data fixtures to load the initial staff users list:
     (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/000_staff_group.json
     Installed 1 object(s) from 1 fixture(s)
 
-    (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/001_staff_users.json
-    Installed 9 object(s) from 1 fixture(s)
-
 
 Development server
 ------------------
