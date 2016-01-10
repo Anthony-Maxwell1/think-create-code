@@ -2,20 +2,6 @@ processingjs gallery app
 ========================
 
 
-Configuration
--------------
-Create mysql database:
-
-    mysql -u root -p < etc/sql/00_init.sql
-
-Install apache app configuration:
-
-    # Assumes this statement is in your apache config: Include conf.d/*._conf
-    sudo cp etc/httpd/conf.d/10_processingjs._conf /etc/httpd/conf.d/
-    sudo systemctl reload httpd
-
-
-
 Initial Setup
 -------------
 Use virtualenv to setup the initial runtime environment:
@@ -39,6 +25,17 @@ Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
 
     (.virtualenv)$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py migrate
     (.virtualenv)$ touch gallery/wsgi.py  # restart wsgi daemon
+
+
+Create mysql database (if required):
+
+    mysql -u root -p < etc/sql/00_init.sql
+
+Install apache app configuration:
+
+    # Assumes this statement is in your apache config: Include conf.d/*._conf
+    sudo cp etc/httpd/conf.d/10_processingjs._conf /etc/httpd/conf.d/
+    sudo systemctl reload httpd
 
 
 Initial Data
