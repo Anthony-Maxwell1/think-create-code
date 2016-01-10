@@ -1,6 +1,6 @@
 from django.conf.urls import include, url
 from django.core.urlresolvers import reverse_lazy
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.contrib.staticfiles.urls import static
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from database_files import views as database_files_views
@@ -147,4 +147,4 @@ else:
     )
 
 # n.b. Used in dev only
-urlpatterns += staticfiles_urlpatterns()
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

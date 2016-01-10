@@ -43,7 +43,7 @@ Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
 
 Initial Data
 ------------
-Use the data fixtures to load the initial staff users list:
+Use the data fixtures to load the staff permissions group:
 
     (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/000_staff_group.json
     Installed 1 object(s) from 1 fixture(s)
@@ -51,9 +51,19 @@ Use the data fixtures to load the initial staff users list:
 
 Development server
 ------------------
-To run the development server, connecting to the configured development database:
+To run the development server:
 
-    (.virtualenv)$ ./manage.py runserver 0.0.0.0:8000
+1. Configure the development environment in `env/development.ini`, e.g.
+
+        [GENERAL]
+        ENVIRONMENT=development
+        # Enable DEBUG to use static files.
+        # Always disable in production.
+        DEBUG=yes
+
+2. Run the development server:
+
+        (.virtualenv)$ ./manage.py runserver 0.0.0.0:8000
 
 
 Run tests
