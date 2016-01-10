@@ -20,6 +20,7 @@ AliasMatch (?i)^/think.create.code/3t2015/js(.*)       /var/www/adx/think-create
 AliasMatch (?i)^/think.create.code/3t2015/?$           /var/www/adx/think-create-code/processingjs/static/index.html
 WSGIScriptAlias /think.create.code/3t2015/gallery      /var/www/adx/think-create-code/processingjs/gallery/wsgi.py
 
+# WSGIDaemonProcess django-processingjs-2T2015 processes=2 threads=2
 <Directory /var/www/adx/2t2015/think-create-code/processingjs>
   WSGIProcessGroup django-processingjs-2T2015
   WSGIApplicationGroup %{GLOBAL}
@@ -32,6 +33,7 @@ WSGIScriptAlias /think.create.code/3t2015/gallery      /var/www/adx/think-create
   LimitRequestBody 4194304
 </Directory>
 
+# WSGIDaemonProcess django-processingjs processes=2 threads=2
 <Directory /var/www/adx/think-create-code/processingjs>
   WSGIProcessGroup django-processingjs
   WSGIApplicationGroup %{GLOBAL}
