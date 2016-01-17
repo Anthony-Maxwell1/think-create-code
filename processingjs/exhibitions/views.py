@@ -38,6 +38,12 @@ class ExhibitionView(TemplatePathMixin):
 
         return context
 
+    def get_form_kwargs(self):
+        # Pass the current request into the form, so it can access the current user and cohort
+        kwargs = super(ExhibitionView, self).get_form_kwargs()
+        kwargs.update({'request': self.request})
+        return kwargs
+
 
 class ListExhibitionView(ExhibitionView, ListView):
 

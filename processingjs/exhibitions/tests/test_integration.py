@@ -4,9 +4,12 @@ from selenium.common.exceptions import NoSuchElementException
 from django.utils import timezone
 from datetime import timedelta
 import os, os.path
+import re
 
 from exhibitions.models import Exhibition
+from django_adelaidex.lti.models import Cohort
 from django_adelaidex.util.test import SeleniumTestCase, wait_for_page_load
+from exhibitions.tests.test_views import CohortMixin, ExhibitionCohortMixin
 
 
 class ExhibitionListIntegrationTests(SeleniumTestCase):
@@ -289,6 +292,237 @@ class ExhibitionListIntegrationTests(SeleniumTestCase):
         self.assertEqual(title_items[2].text, exhibition3.title)
 
 
+class ExhibitionListCohortIntegrationTests(ExhibitionCohortMixin, SeleniumTestCase):
+
+    def setUp(self):
+        super(ExhibitionListCohortIntegrationTests, self).setUp()
+        self.list_url = '%s%s' % (self.live_server_url, reverse('exhibition-list'))
+
+    def test_public_list(self):
+
+        # Public sees the no-cohort and default cohort exhibitions
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            2
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            2
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort1.title)
+
+        # public doesn't see add button
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('exhibition-add')
+        )
+
+    def test_student_list(self):
+
+        # Student (with no cohort) sees the no-cohort and default cohort exhibitions
+        self.assertIsNone(self.user.cohort)
+        self.performLogin(user='student')
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            2
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            2
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort1.title)
+
+        # student doesn't see add button
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('exhibition-add')
+        )
+
+        # Move student into cohort1, and she sees no-cohort and cohort2
+        self.user.cohort = self.cohort1
+        self.user.save()
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            2
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            2
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort1.title)
+
+        # student doesn't see add button
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('exhibition-add')
+        )
+
+        # Move student into cohort2, and she sees no-cohort and cohort2
+        self.user.cohort = self.cohort2
+        self.user.save()
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            2
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            2
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort2.title)
+
+        # student doesn't see add button
+        self.assertRaises(
+            NoSuchElementException,
+            self.selenium.find_element_by_id, ('exhibition-add')
+        )
+
+    def test_staff_list(self):
+
+        # Staff (with no cohort) sees the no-cohort and default cohort exhibitions
+        self.assertIsNone(self.staff_user.cohort)
+        self.performLogin(user='staff')
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            2
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            2
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort1.title)
+
+        # staff see add button
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('exhibition-add')
+        )
+
+        # Move staff into cohort1, and she sees no-cohort and cohort2
+        self.staff_user.cohort = self.cohort1
+        self.staff_user.save()
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            2
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            2
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort1.title)
+
+        # staff see add button
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('exhibition-add')
+        )
+
+        # Move staff into cohort2, and she sees no-cohort and cohort2
+        self.staff_user.cohort = self.cohort2
+        self.staff_user.save()
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            2
+        )
+
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            2
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort2.title)
+
+        # staff see add button
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('exhibition-add')
+        )
+
+    def test_super_list(self):
+
+        # Superusers (with no cohort) see the full list of exhibitions
+        self.assertIsNone(self.super_user.cohort)
+        self.performLogin(user='super')
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            3
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            3
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort1.title)
+        self.assertEqual(title_items[2].text, self.exhibition_cohort2.title)
+
+        # superusers see add button
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('exhibition-add')
+        )
+
+        # Move superuser into cohort1, and she still sees all the exhibitions
+        self.super_user.cohort = self.cohort1
+        self.super_user.save()
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            3
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            3
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort1.title)
+        self.assertEqual(title_items[2].text, self.exhibition_cohort2.title)
+
+        # superuser see add button
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('exhibition-add')
+        )
+
+        # Move superuser into cohort2, and she still sees all the exhibitions
+        self.super_user.cohort = self.cohort2
+        self.super_user.save()
+        self.selenium.get(self.list_url)
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            3
+        )
+        title_items = self.selenium.find_elements_by_css_selector('.exhibition-title')
+        self.assertEqual(
+            len(title_items),
+            3
+        )
+        self.assertEqual(title_items[0].text, self.exhibition_no_cohort.title)
+        self.assertEqual(title_items[1].text, self.exhibition_cohort1.title)
+        self.assertEqual(title_items[2].text, self.exhibition_cohort2.title)
+
+        # superuser see add button
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('exhibition-add')
+        )
+
+
 class ExhibitionViewIntegrationTests(SeleniumTestCase):
 
     def test_view_not_found(self):
@@ -463,6 +697,131 @@ class ExhibitionViewIntegrationTests(SeleniumTestCase):
             self.selenium.find_element_by_css_selector('.not-available')
         )
 
+
+class ExhibitionViewCohortIntegrationTests(ExhibitionCohortMixin, SeleniumTestCase):
+
+    def assert_can_view(self, exhibition, can_edit=False):
+        self.selenium.get('%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': exhibition.id})))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('exhibition-view-content')),
+            1
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.exhibition-title').text,
+            exhibition.title
+        )
+        self.assertEqual(
+            self.selenium.find_element_by_css_selector('.exhibition-description').text,
+            exhibition.description
+        )
+
+        if can_edit:
+            edit_url = '%s%s' % (self.live_server_url, reverse('exhibition-edit', kwargs={'pk': exhibition.id}))
+            self.assertEqual(
+                self.selenium.find_element_by_link_text('EDIT').get_attribute('href'),
+                edit_url
+            )
+            delete_url = '%s%s' % (self.live_server_url, reverse('exhibition-delete', kwargs={'pk': exhibition.id}))
+            self.assertEqual(
+                self.selenium.find_element_by_link_text('DELETE').get_attribute('href'),
+                delete_url
+            )
+        else:
+            self.assertRaises(
+                NoSuchElementException,
+                self.selenium.find_element_by_link_text, ('EDIT')
+            )
+            self.assertRaises(
+                NoSuchElementException,
+                self.selenium.find_element_by_link_text, ('DELETE')
+            )
+
+    def assert_403(self, exhibition):
+        self.selenium.get('%s%s' % (self.live_server_url, reverse('exhibition-view', kwargs={'pk': exhibition.id})))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_id('exhibition-view-content')),
+            0
+        )
+        error_403 = self.selenium.find_element_by_tag_name('h1')
+        self.assertEqual(
+            error_403.text, '403 Forbidden'
+        )
+
+    def test_public_view(self):
+
+        # Public can see no-cohort and default cohort exhibitions
+        exhibition = self.exhibition_no_cohort
+        self.assert_can_view(self.exhibition_no_cohort)
+        self.assert_can_view(self.exhibition_cohort1)
+        self.assert_403(self.exhibition_cohort2)
+
+    def test_view_student(self):
+
+        # Students can see no-cohort and default cohort exhibitions
+        self.performLogin(user='student')
+        self.assert_can_view(self.exhibition_no_cohort)
+        self.assert_can_view(self.exhibition_cohort1)
+        self.assert_403(self.exhibition_cohort2)
+
+        # Move the student into cohort 1, no change to exhibitions viewed
+        self.user.cohort = self.cohort1
+        self.user.save()
+        self.assert_can_view(self.exhibition_no_cohort)
+        self.assert_can_view(self.exhibition_cohort1)
+        self.assert_403(self.exhibition_cohort2)
+
+        # Move the student into cohort 2, and she can't see cohort1 anymore, but can see cohort2
+        self.user.cohort = self.cohort2
+        self.user.save()
+        self.assert_can_view(self.exhibition_no_cohort)
+        self.assert_403(self.exhibition_cohort1)
+        self.assert_can_view(self.exhibition_cohort2)
+
+    def test_view_staff(self):
+
+        # Staff can see all exhibitions
+        self.performLogin(user='staff')
+        self.assert_can_view(self.exhibition_no_cohort, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort1, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort2, can_edit=True)
+
+        # Move the staff user into cohort 1, no change to exhibitions viewed
+        self.staff_user.cohort = self.cohort1
+        self.staff_user.save()
+        self.assert_can_view(self.exhibition_no_cohort, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort1, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort2, can_edit=True)
+
+        # Move the staff user into cohort 2, no change to exhibitions viewed
+        self.staff_user.cohort = self.cohort2
+        self.staff_user.save()
+        self.assert_can_view(self.exhibition_no_cohort, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort1, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort2, can_edit=True)
+
+    def test_view_super(self):
+
+        # Staff can see all exhibitions
+        self.performLogin(user='staff')
+        self.assert_can_view(self.exhibition_no_cohort, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort1, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort2, can_edit=True)
+
+        # Move the superuser into cohort 1, no change to exhibitions viewed
+        self.super_user.cohort = self.cohort1
+        self.super_user.save()
+        self.assert_can_view(self.exhibition_no_cohort, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort1, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort2, can_edit=True)
+
+        # Move the superuser into cohort 2, no change to exhibitions viewed
+        self.super_user.cohort = self.cohort2
+        self.super_user.save()
+        self.assert_can_view(self.exhibition_no_cohort, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort1, can_edit=True)
+        self.assert_can_view(self.exhibition_cohort2, can_edit=True)
+
+
 class ExhibitionViewShareLinkIntegrationTests(SeleniumTestCase):
 
     def test_view_released(self):
@@ -474,7 +833,6 @@ class ExhibitionViewShareLinkIntegrationTests(SeleniumTestCase):
             len(self.selenium.find_elements_by_id('exhibition-view-content')),
             1
         )
-
 
     def test_view_unreleased(self):
         # Public cannot see unreleased exhibition
@@ -691,6 +1049,234 @@ class ExhibitionEditIntegrationTests(SeleniumTestCase):
         # add redirects to login form, which redirects to list page
         list_path = reverse('exhibition-list')
         self.assertLoginRedirects(edit_path, redirect_path=list_path)
+
+
+class ExhibitionCreateCohortIntegrationTests(CohortMixin, SeleniumTestCase):
+
+    def test_staff_add_exhibition_form(self):
+
+        add_path = reverse('exhibition-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path, user='staff')
+
+        # login form redirects to add form
+        self.assertEquals(
+            len(self.selenium.find_elements_by_css_selector('#id_title')),
+            1
+        )
+        self.assertEquals(
+            len(self.selenium.find_elements_by_css_selector('#id_description')),
+            1
+        )
+        # Ensure all cohort options are available in the form
+        cohort_element = self.selenium.find_element_by_id('id_cohort')
+        cohort_options = cohort_element.find_elements_by_tag_name('option')
+        self.assertEquals(len(cohort_options), 3)
+        self.assertEquals(cohort_options[0].text, "Shared by all cohorts")
+        self.assertEquals(cohort_options[1].text, '%s' % self.cohort1)
+        self.assertEquals(cohort_options[2].text, '%s' % self.cohort2)
+
+        self.assertEquals(
+            len(self.selenium.find_elements_by_css_selector('#save_exhibition')),
+            1
+        )
+
+    def test_staff_add_exhibition_no_cohort(self):
+
+        add_path = reverse('exhibition-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path, user='staff')
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('test submission')
+        self.selenium.find_element_by_id('id_description').send_keys('description goes here')
+        
+        # Select "no cohort"
+        cohort_element = self.selenium.find_element_by_id('id_cohort')
+        cohort_options = cohort_element.find_elements_by_tag_name('option')
+        cohort_options[0].click()
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+
+        # ensure that "no cohort" was saved
+        match = re.search('(\d+)/$', self.selenium.current_url)
+        exhibition = Exhibition.objects.get(pk=match.group(1))
+        self.assertEquals(exhibition.cohort, None)
+
+    def test_staff_add_exhibition_default_cohort(self):
+
+        add_path = reverse('exhibition-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path, user='staff')
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('test submission')
+        self.selenium.find_element_by_id('id_description').send_keys('description goes here')
+        
+        # Click nothing: default cohort is be pre-selected
+        cohort_element = self.selenium.find_element_by_id('id_cohort')
+        cohort_options = cohort_element.find_elements_by_tag_name('option')
+        self.assertTrue(cohort_options[1].is_selected())
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+
+        # ensure that "cohort1" was saved
+        match = re.search('(\d+)/$', self.selenium.current_url)
+        exhibition = Exhibition.objects.get(pk=match.group(1))
+        self.assertEquals(exhibition.cohort, self.cohort1)
+
+    def test_staff_add_exhibition_other_cohort(self):
+
+        add_path = reverse('exhibition-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path, user='staff')
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('test submission')
+        self.selenium.find_element_by_id('id_description').send_keys('description goes here')
+        
+        # Select "cohort2"
+        cohort_element = self.selenium.find_element_by_id('id_cohort')
+        cohort_options = cohort_element.find_elements_by_tag_name('option')
+        cohort_options[2].click()
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+
+        # ensure that "cohort2" was saved
+        match = re.search('(\d+)/$', self.selenium.current_url)
+        exhibition = Exhibition.objects.get(pk=match.group(1))
+        self.assertEquals(exhibition.cohort, self.cohort2)
+
+    def test_super_add_exhibition_no_cohort(self):
+
+        add_path = reverse('exhibition-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path, user='super')
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('test submission')
+        self.selenium.find_element_by_id('id_description').send_keys('description goes here')
+        
+        # Select "no cohort"
+        cohort_element = self.selenium.find_element_by_id('id_cohort')
+        cohort_options = cohort_element.find_elements_by_tag_name('option')
+        cohort_options[0].click()
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+
+        # ensure that "no cohort" was saved
+        match = re.search('(\d+)/$', self.selenium.current_url)
+        exhibition = Exhibition.objects.get(pk=match.group(1))
+        self.assertEquals(exhibition.cohort, None)
+
+    def test_super_add_exhibition_default_cohort(self):
+
+        add_path = reverse('exhibition-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path, user='super')
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('test submission')
+        self.selenium.find_element_by_id('id_description').send_keys('description goes here')
+        
+        # Click nothing: default cohort is be pre-selected
+        cohort_element = self.selenium.find_element_by_id('id_cohort')
+        cohort_options = cohort_element.find_elements_by_tag_name('option')
+        self.assertTrue(cohort_options[1].is_selected())
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+
+        # ensure that "cohort1" was saved
+        match = re.search('(\d+)/$', self.selenium.current_url)
+        exhibition = Exhibition.objects.get(pk=match.group(1))
+        self.assertEquals(exhibition.cohort, self.cohort1)
+
+    def test_super_add_exhibition_other_cohort(self):
+
+        add_path = reverse('exhibition-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form
+        self.assertLogin(add_path, user='super')
+
+        # login form redirects to add form
+        self.selenium.find_element_by_id('id_title').send_keys('test submission')
+        self.selenium.find_element_by_id('id_description').send_keys('description goes here')
+        
+        # Select "cohort2"
+        cohort_element = self.selenium.find_element_by_id('id_cohort')
+        cohort_options = cohort_element.find_elements_by_tag_name('option')
+        cohort_options[2].click()
+
+        with wait_for_page_load(self.selenium):
+            self.selenium.find_element_by_id('save_exhibition').click()
+
+        # add action redirects to view url
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.exhibition')),
+            1
+        )
+
+        # ensure that "cohort2" was saved
+        match = re.search('(\d+)/$', self.selenium.current_url)
+        exhibition = Exhibition.objects.get(pk=match.group(1))
+        self.assertEquals(exhibition.cohort, self.cohort2)
+
+    def test_students_cannot_add_exhibition(self):
+
+        add_path = reverse('exhibition-add')
+        self.selenium.get('%s%s' % (self.live_server_url, add_path))
+
+        # add redirects to login form, which redirects to list page
+        list_path = reverse('exhibition-list')
+        self.assertLoginRedirects(add_path, redirect_path=list_path)
 
 
 class ExhibitionDeleteIntegrationTests(SeleniumTestCase):

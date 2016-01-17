@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.dispatch import receiver
 from rulez import registry
 from database_files.models import File
+from django_adelaidex.lti.models import Cohort
 
 
 class Exhibition(models.Model):
@@ -21,6 +22,7 @@ class Exhibition(models.Model):
         help_text=_('Max file size 4MB.'),
     )
     author = models.ForeignKey(settings.AUTH_USER_MODEL)
+    cohort = models.ForeignKey(Cohort, null=True, blank=True, default=None)
     released_at = models.DateTimeField(verbose_name="release date",
         null=True, blank=True, default=None,
         help_text=timezone.now)
@@ -42,22 +44,39 @@ class Exhibition(models.Model):
     released_yet = property(_released_yet)
 
     def can_see(self, user=None):
-        if self.can_save(user) or self.released_yet:
+        if self.can_save(user):
             return True
+        elif self.released_yet:
+            if self.cohort is None:
+                return True
+            else:
+                # Show exhibitions for the user's cohort
+                cohort = Cohort.objects.get_current(user)
+                return self.cohort == cohort
         return False
 
     @classmethod
     def can_save(cls, user=None):
-        if user and user.is_authenticated() and (user.is_superuser or user.is_staff):
+        if user and (user.is_superuser or user.is_staff):
             return True
         return False
 
-    # Have to be have can_save permission to see exhibitions prior to release date
+    # Have to have can_save permission to see exhibitions prior to release date.
+    # Also, filter out any exhibitions not intended for the current cohort.
     @classmethod
-    def can_see_queryset(cls, qs, user=None):
-        if cls.can_save(user):
-            return qs
-        return qs.filter(Q(released_at__isnull=True) | Q(released_at__lte=timezone.now()))
+    def can_see_queryset(cls, qs=None, user=None):
+        if not qs:
+            qs = cls.objects
+
+        if not cls.can_save(user):
+            qs = qs.filter(Q(released_at__isnull=True) | Q(released_at__lte=timezone.now()))
+
+        # Show "all cohorts" and "current cohort" exhibitions to non-superusers
+        if not user or not user.is_authenticated() or not user.is_superuser:
+            cohort = Cohort.objects.get_current(user)
+            qs = qs.filter(Q(cohort__isnull=True) | Q(cohort=cohort))
+
+        return qs
 
 
 registry.register('can_see', Exhibition)
@@ -90,4 +109,16 @@ def post_save(sender, instance=None, **kwargs):
 class ExhibitionForm(forms.ModelForm):
     class Meta:
         model = Exhibition
-        fields = ['title', 'description', 'image', 'released_at',]
+        fields = ['title', 'description', 'image', 'cohort', 'released_at',]
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(ExhibitionForm, self).__init__(*args, **kwargs)
+
+        cohort = self.fields.get('cohort')
+        cohort.empty_label = _("Shared by all cohorts")
+
+        if self.request and self.request.user:
+            current_cohort = Cohort.objects.get_current(self.request.user)
+            if current_cohort and current_cohort.id:
+                self.initial['cohort'] = current_cohort.id

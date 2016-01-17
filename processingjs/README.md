@@ -117,6 +117,16 @@ Run the unit and integration tests, and get test coverage.
     TOTAL                194      5    97%
 
 
+You can also use coverage to test that a particular set of tests cover a particular file.
+E.g. to ensure that your model tests cover all the code in your model class, run:
+
+    (.virtualenv)$ coverage run --include=./exhibitions/models.py  manage.py test exhibitions.tests.test_models
+    (.virtualenv)$ coverage report
+    Name                    Stmts   Miss  Cover
+    -------------------------------------------
+    exhibitions/models.py      83      4    95%
+
+
 Integration Tests
 -----------------
 Integration tests are run using the selenium library, which requires a browser
