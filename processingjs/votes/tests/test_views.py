@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse, NoReverseMatch
 import json
+import logging
 
 from django_adelaidex.util.test import UserSetUp
 from votes.models import Vote
@@ -103,10 +104,19 @@ class CreateVoteViewTests(VoteTests):
         client = Client()
         self.assertLogin(client)
 
+        # Quiet the django.security logger, since this request throws a 
+        # django.security.SuspiciousOperation warning
+        seq_logger = logging.getLogger('django.security')
+        seq_level = seq_logger.getEffectiveLevel()
+        seq_logger.setLevel(logging.CRITICAL)
+
         # Try to vote on a submission that doesn't exist
         bad_submission_url = self.create_vote_url(submission_id=100)
         response = client.post(bad_submission_url)
         self.assertEqual(response.status_code, 400)
+
+        # Reinstate original log level
+        seq_logger.setLevel(seq_level)
 
 
 class DeleteVoteViewTests(VoteTests):

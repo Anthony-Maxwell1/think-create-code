@@ -60,3 +60,11 @@ docs/_build/
 # my diff and msg files
 diff
 msg
+
+# ignore user fixtures
+001_staff_users.json
+
+# ignore environment-specific settings, passwords, secrets
+*.ini
+#   but not the default.ini
+!default.ini

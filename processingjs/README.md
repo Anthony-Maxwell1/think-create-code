@@ -2,19 +2,6 @@ processingjs gallery app
 ========================
 
 
-Configuration
--------------
-Create mysql database:
-
-    mysql -u root -p < etc/sql/00_init.sql
-
-Install apache app configuration:
-
-    sudo cp etc/httpd/conf.d/10_processingjs._conf
-    sudo systemctl reload httpd
-
-
-
 Initial Setup
 -------------
 Use virtualenv to setup the initial runtime environment:
@@ -23,9 +10,15 @@ Use virtualenv to setup the initial runtime environment:
     virtualenv .virtualenv
     source .virtualenv/bin/activate
 
-    cd processingjs/
-    (.virtualenv)$ pip install --extra-index-url=http://lti-adx.adelaide.edu.au/pypi/ -U -r requirements.txt
+    (.virtualenv)$ cd processingjs/
+    (.virtualenv)$ pip install --extra-index-url=https://lti-adx.adelaide.edu.au/pypi/ -U -r requirements.txt
+    # selinux enforcing only
     (.virtualenv)$ sudo find ../.virtualenv/lib/python2.7/site-packages -name \*.so -exec chcon -t shlib_t {} \;
+
+Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
+
+    (.virtualenv)$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py migrate
+    (.virtualenv)$ touch gallery/wsgi.py # restart wsgi daemon
 
 
 Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
@@ -34,22 +27,40 @@ Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
     (.virtualenv)$ touch gallery/wsgi.py  # restart wsgi daemon
 
 
+Create mysql database (if required):
+
+    mysql -u root -p < etc/sql/00_init.sql
+
+Install apache app configuration:
+
+    # Assumes this statement is in your apache config: Include conf.d/*._conf
+    sudo cp etc/httpd/conf.d/10_processingjs._conf /etc/httpd/conf.d/
+    sudo systemctl reload httpd
+
+
 Initial Data
 ------------
-Use the data fixtures to load the initial staff users list:
+Use the data fixtures to load the staff permissions group:
 
     (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/000_staff_group.json
     Installed 1 object(s) from 1 fixture(s)
 
-    (.virtualenv)loco:processingjs$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py loaddata fixtures/001_staff_users.json
-    Installed 9 object(s) from 1 fixture(s)
-
 
 Development server
 ------------------
-To run the development server, connecting to the configured development database:
+To run the development server:
 
-    (.virtualenv)$ ./manage.py runserver 0.0.0.0:8000
+1. Configure the development environment in `env/development.ini`, e.g.
+
+        [GENERAL]
+        ENVIRONMENT=development
+        # Enable DEBUG to use static files.
+        # Always disable in production.
+        DEBUG=yes
+
+2. Run the development server:
+
+        (.virtualenv)$ ./manage.py runserver 0.0.0.0:8000
 
 
 Run tests

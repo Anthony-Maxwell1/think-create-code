@@ -145,7 +145,6 @@ class ArtworkListIntegrationTests(SeleniumTestCase):
         )
 
     def test_artwork_shared_list(self):
-
         list_path = reverse('artwork-shared')
 
         artwork1p = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
@@ -1826,8 +1825,6 @@ class ArtworkEditIntegrationTests(SeleniumTestCase):
             artwork.code,
             new_code
         )
-
-
 class ArtworkDeleteIntegrationTests(SeleniumTestCase):
 
     def test_delete_artwork(self):
