@@ -6,6 +6,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from django_adelaidex.util.test import UserSetUp
+from django_adelaidex.lti.models import Cohort
 from submissions.models import Submission
 from exhibitions.models import Exhibition
 from artwork.models import Artwork
@@ -335,6 +336,69 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(len(response.context['form'].fields['exhibition'].queryset.all()), 2)
 
+    def test_cohort_choices(self):
+        client = Client()
+
+        cohort1 = Cohort.objects.create(
+            title='Cohort 1',
+            oauth_key='abc',
+            oauth_secret='abc',
+            is_default=True,
+        )
+        cohort2 = Cohort.objects.create(
+            title='Cohort 2',
+            oauth_key='def',
+            oauth_secret='def',
+        )
+        exhibition_no_cohort = Exhibition.objects.create(
+            title='Exhibition No Cohort',
+            description='description goes here',
+            author=self.user)
+        exhibition_cohort1 = Exhibition.objects.create(
+            title='Exhibition Cohort1',
+            description='description goes here',
+            cohort=cohort1,
+            author=self.user)
+        exhibition_cohort2 = Exhibition.objects.create(
+            title='Exhibition Cohort2',
+            description='description goes here',
+            cohort=cohort2,
+            author=self.user)
+
+        # User in no cohort
+        artwork = Artwork.objects.create(title='New Artwork', code='// code goes here', author=self.user)
+        create_url = reverse('artwork-submit', kwargs={'artwork': artwork.id})
+        self.assertLogin(client, create_url)
+
+        post_data = {
+            'artwork': artwork.id,
+        }
+        response = client.post(create_url, post_data)
+        self.assertEquals(response.status_code, 200)
+
+        # Exhibition choices should be "no cohort" and the default
+        exhibitions = response.context['form'].fields['exhibition'].queryset.all()
+        self.assertEquals(len(exhibitions), 2)
+        self.assertEquals(exhibitions[0], exhibition_no_cohort)
+        self.assertEquals(exhibitions[1], exhibition_cohort1)
+
+        # Move user into cohort1, no change to choices
+        self.user.cohort = cohort1
+        self.user.save()
+        response = client.post(create_url, post_data)
+        exhibitions = response.context['form'].fields['exhibition'].queryset.all()
+        self.assertEquals(len(exhibitions), 2)
+        self.assertEquals(exhibitions[0], exhibition_no_cohort)
+        self.assertEquals(exhibitions[1], exhibition_cohort1)
+
+        # Move user into cohort2, shows "no cohort" and cohort2
+        self.user.cohort = cohort2
+        self.user.save()
+        response = client.post(create_url, post_data)
+        exhibitions = response.context['form'].fields['exhibition'].queryset.all()
+        self.assertEquals(len(exhibitions), 2)
+        self.assertEquals(exhibitions[0], exhibition_no_cohort)
+        self.assertEquals(exhibitions[1], exhibition_cohort2)
 
     def test_submit_unowned_artwork(self):
         client = Client()

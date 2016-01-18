@@ -35,13 +35,11 @@
 </div>
 
 <div class="columns small-12">
-<ul class="large-block-grid-4 medium-block-grid-3 small-block-grid-2">
-    {% for artwork in object_list %}
-    {% with submissions|get:artwork.id as submission %}
-    <li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
-    {% endwith %}
-    {% endfor %}
-</ul>
+{% for artwork in object_list %}
+{% with submissions|get:artwork.id as submission %}
+{% include 'artwork/_list.html' with object=artwork submission=submission %}
+{% endwith %}
+{% endfor %}
 </div>
 
 </div>

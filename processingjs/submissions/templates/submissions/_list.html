@@ -17,15 +17,13 @@
     <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
 </div>
 {% endif %}
-<div class="small-grid-2">&nbsp;</div>
-<ul class="small-block-grid-2">
+<div class="columns small-12">
 {% for submission in object_list %}
 {% with submission.artwork as artwork %}
-<li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
+{% include 'artwork/_list.html' with object=artwork submission=submission %}
 {% endwith %}
 {% endfor %}
-</ul>
-<div class="small-grid-2">&nbsp;</div>
+</div>
 
 <a id="reveal-modal-error" href="#" data-reveal-id="modal-error" ></a>
 <div id="modal-error" class="reveal-modal" data-reveal>

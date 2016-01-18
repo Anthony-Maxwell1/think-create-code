@@ -17,7 +17,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = [
-    url(r'^$', artwork.views.ListArtworkView.as_view(),
+    url(r'^$', exhibitions.views.ListExhibitionView.as_view(),
         name='home'),
 
     url(r'^admin/', include(admin.site.urls)),

@@ -178,7 +178,7 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
 
         # home page is the exhibition list
         self.assertEqual(
-            len(self.selenium.find_elements_by_css_selector('#artwork-list-content')),
+            len(self.selenium.find_elements_by_css_selector('#exhibition-list-content')),
             1
         )
 
@@ -192,9 +192,9 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(link.get_attribute('href'), studio_url)
         self.assertEqual(link.text, 'My Studio')
 
-        # Shared Artwork
-        link = self.selenium.find_element_by_id('nav-shared-artwork')
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
+        # New Artwork
+        link = self.selenium.find_element_by_id('nav-add-artwork')
+        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-add'))
         self.assertEqual(link.get_attribute('href'), artwork_url)
         self.assertEqual(link.text, 'Artwork')
 
@@ -249,9 +249,9 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(link.get_attribute('href'), studio_url)
         self.assertEqual(link.text, 'My Studio')
 
-        # Shared Artwork
-        link = self.selenium.find_element_by_id('nav-shared-artwork')
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
+        # Add Artwork
+        link = self.selenium.find_element_by_id('nav-add-artwork')
+        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-add'))
         self.assertEqual(link.get_attribute('href'), artwork_url)
         self.assertEqual(link.text, 'Artwork')
 
@@ -306,9 +306,9 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(link.get_attribute('href'), studio_url)
         self.assertEqual(link.text, 'My Studio')
 
-        # Shared Artwork
-        link = self.selenium.find_element_by_id('nav-shared-artwork')
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
+        # New Artwork
+        link = self.selenium.find_element_by_id('nav-add-artwork')
+        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-add'))
         self.assertEqual(link.get_attribute('href'), artwork_url)
         self.assertEqual(link.text, 'Artwork')
 

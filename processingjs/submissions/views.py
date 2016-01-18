@@ -48,7 +48,7 @@ class ShowSubmissionView(SubmissionView, DetailView):
 class ListSubmissionView(SubmissionView, ListView):
     '''Rendered by ShowExhibitionView'''
     template_name = SubmissionView.prepend_template_path('_list.html')
-    paginate_by = 10
+    paginate_by = 12
     paginate_orphans = 4
 
     def _get_exhibition_id(self):

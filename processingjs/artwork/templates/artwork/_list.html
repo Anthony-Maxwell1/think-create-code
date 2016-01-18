@@ -1,12 +1,14 @@
 {% if object %}
+<div class="artwork-list">
 <div class="artwork preview" id="artwork-{{ object.id }}">{% include 'artwork/_render.html' %}</div>
-<h3 class="artwork-title"><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h3>
-<div class="artwork-detail">by 
-    <a href="{% url 'artwork-author-list' object.author.id %}" 
-      title="view artwork by {{ object.author }}">{{ object.author }}</a>
+<div class="artwork-detail">
+    <h3 class="artwork-title"><a href="{{ object.get_absolute_url }}">{{ object.title }}</a></h3>
+    <div class="artwork-by">by <a href="{% url 'artwork-author-list' object.author.id %}" 
+      title="view artwork by {{ object.author }}">{{ object.author }}</a></div>
     {% if submission %}
     <div class="artwork-votes">{% include 'submissions/_vote.html' with object=submission %}</div>
     <div class="artwork-comments">{% include 'submissions/_comment.html' with object=submission %}</div>
     {% endif %}
+</div>
 </div>
 {% endif %}

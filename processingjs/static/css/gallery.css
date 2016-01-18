@@ -10,10 +10,6 @@ nav {
 nav .title-area li a {
     font-size: 1.04rem;
 }
-/* Magnify the font-awesome nav icons */
-nav .fa {
-    font-size: 150%;
-}
 /* Shift nav icon to the right */
 nav #nav-logged-in {
     padding-right: 15px !important;
@@ -102,6 +98,14 @@ form.link {
     text-transform: none;
     font-size: 1.5em;
     font-weight: 200;
+}
+
+.artwork-list {
+    display: inline-block;
+    vertical-align: top;
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+    padding-bottom: 0.5em;
 }
 
 /* Preview the artwork in a smaller div */
@@ -286,7 +290,7 @@ button .fa {
 .unlike:active .fa {
     color: #ababab;
 }
-.artwork-score, .artwork-votes, .artwork-comments, .inline {
+.artwork-by, .artwork-score, .artwork-votes, .artwork-comments, .inline {
     display: inline;
 }
 
@@ -315,7 +319,39 @@ button .fa {
 }
 .artwork-title {
     word-wrap: break-word;
+    margin-bottom: 0;
+    line-height: 1.1em;
 }
 #terms-content #close-button {
     display: none;
+}
+#exhibition-list-content .exhibition .artwork.preview {
+    min-width: 100px;
+    min-height: 100px;
+    width: 100px;
+    height: 100px;
+}
+#exhibition-list-content .exhibition .artwork-title,
+#exhibition-list-content .exhibition .artwork-detail {
+    font-size: 100%;
+    max-width: 100px;
+    display: inline-block;
+}
+#exhibition-list-content .exhibition .artwork-votes .fa {
+    font-size: 130%;
+    line-height: 100%;
+}
+#exhibition-list-content .exhibition .pagination,
+#exhibition-list-content .exhibition .artwork-comments,
+#exhibition-list-content .exhibition #play-all {
+    display: none;
+}
+#exhibition-list-content .exhibition .order_by {
+    visibility: hidden;
+}
+#exhibition-list-content .exhibition:first-child #play-all {
+    display: inline-block;
+}
+.exhibition-description, .exhibition-link {
+    display: inline;
 }
