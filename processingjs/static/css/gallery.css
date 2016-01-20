@@ -341,17 +341,32 @@ button .fa {
     font-size: 130%;
     line-height: 100%;
 }
+#exhibition-list-content .exhibition .exhibition-footer {
+    margin-bottom: 1em;
+    text-align: right;
+    border-top: thin solid grey;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    clear:both;
+}
+#exhibition-list-content .exhibition:last-child .exhibition-footer {
+    border: none;
+    margin: 0;
+}
+
 #exhibition-list-content .exhibition .pagination,
-#exhibition-list-content .exhibition .artwork-comments,
-#exhibition-list-content .exhibition #play-all {
+#exhibition-list-content .artwork-list-content .artwork-comments,
+#exhibition-list-content .artwork-list-content .play-all,
+#exhibition-list-content .artwork-list-content .order_by {
     display: none;
-}
-#exhibition-list-content .exhibition .order_by {
-    visibility: hidden;
-}
-#exhibition-list-content .exhibition:first-child #play-all {
-    display: inline-block;
 }
 .exhibition-description, .exhibition-link {
     display: inline;
+}
+.exhibition-description, .play-all {
+    display: block;
+    clear: both;
+}
+#exhibition-list-content .exhibition .align-right {
+    text-align: left;
 }

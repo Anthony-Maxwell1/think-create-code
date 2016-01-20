@@ -27,7 +27,7 @@
           title="view artwork by {{ object.author }}">{{ object.author }}</a>, 
         {% if submission %}
         shared to <a href="{% url 'exhibition-view' submission.exhibition.id %}">{{ submission.exhibition }}</a>
-        on <time class="submission-date">{{ submission.modified_at|date }}</time>
+        on <time class="submission-date">{{ submission.created_at|date }}</time>
         {% else %}
         updated <time class="artwork-date">{{ object.modified_at|date }}</time>
         {% endif %}

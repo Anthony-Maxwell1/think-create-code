@@ -1,5 +1,5 @@
 {% load pagination %}
-<div id="artwork-list-content">
+<div class="artwork-list-content">
 {% if object_list %}
 {% if object_list.count > 1 %}
 <div class="columns small-6">
@@ -14,7 +14,7 @@
     </ul>
 </div>
 <div class="columns small-6 align-right">
-    <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
+    <button type="button" class="play-all button tiny" title="play all"><i class="fa fa-play"> All</i></button>
 </div>
 {% endif %}
 <div class="columns small-12">

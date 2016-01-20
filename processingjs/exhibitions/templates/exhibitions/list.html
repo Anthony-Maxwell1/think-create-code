@@ -2,6 +2,7 @@
 {% load dict_filters %}
 {% block extras %}
 {% load staticfiles %}
+<script type="text/javascript" src="{% static "js/exhibition-list.js" %}"></script>
 <script type="text/javascript" src="{% static "js/artwork-render.js" %}"></script>
 <script type="text/javascript" src="{% static "js/vote.js" %}"></script>
 {% endblock %}
@@ -22,7 +23,7 @@
 <div class="columns small-12">
 {% for exhibition in object_list %}
 <div class="exhibition row">
-<div class="exhibition-detail columns small-2 medium-3">
+<div class="exhibition-detail columns small-3">
     {% if exhibition.image %}
     <a href="{% url 'exhibition-view' exhibition.id %}" title="Click to view {{ exhibition.title }}">
         <img class="exhibition-image" src="{{ exhibition.image.url }}" alt="{{ exhibition.title }}" />
@@ -36,17 +37,17 @@
     <div class="exhibition-link"><a href="{% url 'exhibition-view' exhibition.id %}">all artwork</a></div>
 </div>
 
-<div class="exhibition-submissions columns small-10 medium-9">
+<div class="exhibition-submissions columns small-9">
 {% with submission_list|get:exhibition.id as submissions %}
 {% include 'submissions/_list.html' with object_list=submissions.object_list votes=submissions.votes page_obj=submissions.page_obj exhibition_id=exhibition.id order=submissions.order %}
 {% endwith %}
 </div>
 
+<div class="exhibition-footer columns small-11 small-centered"></div>
 </div>
 {% endfor %}
 </div>
 
 </div>
-{% include 'django_adelaidex_lti/disqus_count.html' %}
 {% endblock content %}
 

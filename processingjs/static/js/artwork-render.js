@@ -1,10 +1,14 @@
 // Enable the "Play all" button, if present.
 $(document).ready(function() {
-    $('#play-all').on('click', function() {
+    $('.button.play-all').on('click', function() {
         var $button = $(this);
         $button.prop('disabled', true);
         $button.addClass('disabled');
-        $('.paused a').trigger('click');
+
+        var $wrapper = $button.closest('.artwork-list-content');
+        $wrapper.find('.paused a').each(function(idx, item) {
+            $(item).trigger('click');
+        });
     });
 });
 
