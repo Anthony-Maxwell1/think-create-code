@@ -2079,7 +2079,7 @@ class ArtworkRender_HTML5Iframe_IntegrationTests(SeleniumTestCase):
         self.assertTrue(self.selenium.find_element_by_id('paused-%s' % artwork3.id).is_displayed())
 
         # Push play-all to start all animations
-        self.selenium.find_element_by_id('play-all').click()
+        self.selenium.find_element_by_css_selector('.play-all').click()
         time.sleep(1)
 
         # The paused overlays should be hidden
