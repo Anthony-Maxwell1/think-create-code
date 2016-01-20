@@ -28,41 +28,53 @@
 </head>
 <body>
     <nav class="top-bar" data-topbar role="navigation">
-        <section class="top-bar-section">
         <ul class="title-area">
-            <li>
+            <li class="name">
                 <a href="{% url "artwork-studio" %}" id="nav-my-artwork" title="view my artwork">My Studio</a>
             </li>
+            <li class="toggle-topbar menu-icon"><a href="#" title="menu"><i class="fa fa-ellipsis-v"></i></a></li>
+        </ul>
+        <section class="top-bar-section">
+            <ul class="left">
+                <li class="has-form">
+                    <div class="row collapse">
+                    <form id="artwork-search">
+                        <input type="hidden" name="action" value="https://google.com" />
+                        <input type="hidden" name="site" value="{{ BASE_URL }}{% url 'home' %}" />
+                        <div class="large-8 small-9 columns">
+                            <input type="text" name="q" placeholder="Search Artwork" />
+                        </div>
+                        <div class="large-4 small-3 columns">
+                            <button type="submit" class="search button expand"><i class="fa fa-search" title="search"></i></button>
+                        </div>
+                    </form>
+                    </div>
+                </li>
+                <li>
+                    <a href="{% url "exhibition-list" %}" id="nav-exhibitions" title="view exhibitions">Exhibitions</a>
+                </li>
+                <li>
+                    <a href="{% url "help" %}" id="nav-help" title="help links and resources">Help</a>
+                </li>
+                {% if user.is_staff %}
+                <li>
+                    <a href="{% url "admin:index" %}" id="nav-admin" title="admin view">Administer</a>
+                </li>
+                {% endif %}
+            </ul>
+            <ul id="nav-usermenu" class="right">
+            {% if user.is_anonymous %}
             <li>
-                <a href="{% url "artwork-shared" %}" id="nav-shared-artwork" title="view shared artwork">Artwork</a>
+                <a href="{% url "login" %}?next={{ request.get_full_path|urlencode }}" id="nav-signin" title="sign in">Sign in
+                <i class="fa fa-sign-in"></i></a>
             </li>
+            {% else %}
             <li>
-                <a href="{% url "exhibition-list" %}" id="nav-exhibitions" title="view exhibitions">Exhibitions</a>
-            </li>
-            <li>
-                <a href="{% url "help" %}" id="nav-help" title="help links and resources">Help</a>
-            </li>
-            {% if user.is_staff %}
-            <li>
-                <a href="{% url "admin:index" %}" id="nav-admin" title="admin view">Administer</a>
+                <a href="{% url "lti-user-profile" %}?next={{ request.get_full_path|urlencode }}" id="nav-profile" 
+                    title="update profile">{{ user }} Profile</a>
             </li>
             {% endif %}
-        </ul>
-        </section>
-        <section class="top-bar-section">
-        <ul id="nav-usermenu" class="right">
-        {% if user.is_anonymous %}
-        <li>
-            <a href="{% url "login" %}?next={{ request.get_full_path|urlencode }}" id="nav-signin" title="sign in">Sign in
-            <i class="fa fa-sign-in"></i></a>
-        </li>
-        {% else %}
-        <li>
-            <a href="{% url "lti-user-profile" %}?next={{ request.get_full_path|urlencode }}" id="nav-profile" 
-                title="update profile">{{ user }}</a>
-        </li>
-        {% endif %}
-        </ul>
+            </ul>
         </section>
     </nav>
 
