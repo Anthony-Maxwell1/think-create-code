@@ -15,21 +15,12 @@ Use virtualenv to setup the initial runtime environment:
     # selinux enforcing only
     (.virtualenv)$ sudo find ../.virtualenv/lib/python2.7/site-packages -name \*.so -exec chcon -t shlib_t {} \;
 
+
 Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
 
-    (.virtualenv)$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py migrate
+    (.virtualenv)$ DJANGO_GALLERY_ENVIRONMENT=default ./manage.py migrate
     (.virtualenv)$ touch gallery/wsgi.py # restart wsgi daemon
 
-
-Initialise the database, using the appropriate DJANGO\_GALLERY\_ENVIRONMENT.
-
-    (.virtualenv)$ DJANGO_GALLERY_ENVIRONMENT=development ./manage.py migrate
-    (.virtualenv)$ touch gallery/wsgi.py  # restart wsgi daemon
-
-
-Create mysql database (if required):
-
-    mysql -u root -p < etc/sql/00_init.sql
 
 Install apache app configuration:
 
