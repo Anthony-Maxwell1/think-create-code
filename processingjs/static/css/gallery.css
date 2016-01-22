@@ -70,6 +70,22 @@ ul.pagination {
     clear: both;
 }
 
+#lti-403-page ol {
+    font-size: 2.4rem;
+    margin-left: 4.5rem;
+    color: grey;
+}
+#lti-403-page li p {
+    color: black;
+    display: inline-block;
+    vertical-align: bottom;
+}
+#lti-403-page li p,
+#lti-403-page li p a {
+    font-size: 1rem;
+    line-height: 1rem;
+}
+
 /* Make warning box text a bit easier to read */
 .warning.alert-box {
     color: #000;
