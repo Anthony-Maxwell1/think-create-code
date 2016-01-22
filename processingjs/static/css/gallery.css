@@ -6,17 +6,23 @@ body {
 nav {
     margin-bottom: 1em !important;
 }
+nav .name a {
+    color: #fff;
+    padding: 0 0.9375rem;
+    line-height: 2.8125rem;
+    background: #333;
+}
 /* Make the title-area text bigger */
-nav .title-area li a {
-    font-size: 1.04rem;
+nav .top-bar-section li a {
+    font-size: 1rem;
 }
-/* Shift nav icon to the right */
-nav #nav-logged-in {
-    padding-right: 15px !important;
+/* Magnify the font-awesome nav icons */
+nav .fa {
+    font-size: 150%;
+    line-height: 90%;
 }
-/* Hide the drop-down arrow */
-nav #nav-logged-in:after {
-    border-color: transparent transparent transparent !important;
+nav .row.collapse .columns {
+    padding: 0;
 }
 /* page footer */
 footer {

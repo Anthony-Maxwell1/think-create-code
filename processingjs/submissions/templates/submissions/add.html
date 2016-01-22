@@ -2,7 +2,7 @@
 {% block content %}
 <div id="submission-edit-content">
 <h1>Share Artwork</h1>
-<form method="post" action="{{ action }}" enctype="multipart/form-data">
+<form id="submission-edit-form" method="post" action="{{ action }}" enctype="multipart/form-data">
     {% csrf_token %}
     <ul class="edit_fields">
     {{ form.as_ul }}

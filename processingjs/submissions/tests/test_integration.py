@@ -1347,8 +1347,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
         
         # And exhibition options (since there's >1 choice)
-        inputs = self.selenium.find_elements_by_tag_name('input')
+        form = self.selenium.find_element_by_id('submission-edit-form')
+        inputs = form.find_elements_by_tag_name('input')
         self.assertEqual(4, len(inputs))
+
         self.assertEqual('hidden', inputs[0].get_attribute('type'))
         self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
 
@@ -1402,37 +1404,47 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
-        # There's actually two forms on this page: submit artwork, and edit artwork
+        # There's actually three forms on this page: search artwork, submit artwork, and edit artwork
         inputs = self.selenium.find_elements_by_tag_name('input')
-        self.assertEqual(7, len(inputs))
+        self.assertEqual(10, len(inputs))
+
         self.assertEqual('hidden', inputs[0].get_attribute('type'))
-        self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
+        self.assertEqual('action', inputs[0].get_attribute('name'))
 
-        self.assertEqual('text', inputs[1].get_attribute('type'))
-        self.assertEqual('title', inputs[1].get_attribute('name'))
-        self.assertEqual(self.student_artwork.title, inputs[1].get_attribute('value'))
+        self.assertEqual('hidden', inputs[1].get_attribute('type'))
+        self.assertEqual('site', inputs[1].get_attribute('name'))
 
-        self.assertEqual('hidden', inputs[2].get_attribute('type'))
-        self.assertEqual('code', inputs[2].get_attribute('name'))
-        self.assertEqual(self.student_artwork.code, inputs[2].get_attribute('value'))
+        self.assertEqual('text', inputs[2].get_attribute('type'))
+        self.assertEqual('q', inputs[2].get_attribute('name'))
 
         self.assertEqual('hidden', inputs[3].get_attribute('type'))
         self.assertEqual('csrfmiddlewaretoken', inputs[3].get_attribute('name'))
 
-        self.assertEqual('hidden', inputs[4].get_attribute('type'))
-        self.assertEqual('artwork', inputs[4].get_attribute('name'))
-        self.assertEqual(self.student_artwork.id, long(inputs[4].get_attribute('value')))
+        self.assertEqual('text', inputs[4].get_attribute('type'))
+        self.assertEqual('title', inputs[4].get_attribute('name'))
+        self.assertEqual(self.student_artwork.title, inputs[4].get_attribute('value'))
 
-        self.assertEqual('radio', inputs[5].get_attribute('type'))
-        self.assertEqual('exhibition', inputs[5].get_attribute('name'))
-        self.assertEqual(self.exhibition.id, long(inputs[5].get_attribute('value')))
+        self.assertEqual('hidden', inputs[5].get_attribute('type'))
+        self.assertEqual('code', inputs[5].get_attribute('name'))
+        self.assertEqual(self.student_artwork.code, inputs[5].get_attribute('value'))
 
-        self.assertEqual('radio', inputs[6].get_attribute('type'))
-        self.assertEqual('exhibition', inputs[6].get_attribute('name'))
-        self.assertEqual(exhibition2.id, long(inputs[6].get_attribute('value')))
+        self.assertEqual('hidden', inputs[6].get_attribute('type'))
+        self.assertEqual('csrfmiddlewaretoken', inputs[6].get_attribute('name'))
+
+        self.assertEqual('hidden', inputs[7].get_attribute('type'))
+        self.assertEqual('artwork', inputs[7].get_attribute('name'))
+        self.assertEqual(self.student_artwork.id, long(inputs[7].get_attribute('value')))
+
+        self.assertEqual('radio', inputs[8].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[8].get_attribute('name'))
+        self.assertEqual(self.exhibition.id, long(inputs[8].get_attribute('value')))
+
+        self.assertEqual('radio', inputs[9].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[9].get_attribute('name'))
+        self.assertEqual(exhibition2.id, long(inputs[9].get_attribute('value')))
 
         # submit the artwork to the first exhibition
-        inputs[6].click()
+        inputs[9].click()
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 
