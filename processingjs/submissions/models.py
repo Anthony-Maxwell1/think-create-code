@@ -1,10 +1,12 @@
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django import forms
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from rulez import registry
 
+from django_adelaidex.lti.models import Cohort
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
 from django_adelaidex.util.widgets import SelectOneOrNoneWidget
@@ -36,6 +38,10 @@ class Submission(models.Model):
     def get_absolute_url(self):
         return self.artwork.get_absolute_url()
 
+    # Allow anyone to see any submission
+    def can_see(self, user=None):
+        return True
+
     # Allow authenticated authors to submit their artwork 
     # to exhibitions they can see
     def can_save(self, user=None):
@@ -55,6 +61,24 @@ class Submission(models.Model):
             return True
         return False
 
+    # Anyone can see any submission, but in list mode, 
+    # we tailer what gets shown by exhibition or cohort.
+    @classmethod
+    def can_see_queryset(cls, qs=None, user=None, exhibition=None):
+        if not qs:
+            qs = cls.objects
+
+        if exhibition:
+            if isinstance(exhibition, Exhibition):
+                exhibition = exhibition.id
+            qs = qs.filter(exhibition_id=exhibition)
+        else:
+           cohort = Cohort.objects.get_current(user=user)
+           qs = qs.filter(Q(exhibition__cohort__isnull=True) | Q(exhibition__cohort=cohort))
+
+        return qs
+
+registry.register('can_see', Submission)
 registry.register('can_save', Submission)
 registry.register('can_vote', Submission)
 

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block extras %}
+{% load staticfiles %}
+<script type="text/javascript" src="{% static "js/artwork-render.js" %}"></script>
+<script type="text/javascript" src="{% static "js/vote.js" %}"></script>
+{% endblock extras %}
+{% block content %}
+<div id="submission-list-content">
+{% include 'submissions/_list.html' with object_list=object_list votes=votes page_obj=page_obj order=order show_download=True %}
+</div>
+{% endblock content %}

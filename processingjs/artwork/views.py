@@ -70,7 +70,7 @@ class ArtworkCodeView(MethodObjectHasPermMixin, ArtworkView, DetailView):
 class ListArtworkView(ArtworkView, ListView):
 
     template_name = ArtworkView.prepend_template_path('list.html')
-    paginate_by = 16
+    paginate_by = 12
     paginate_orphans = 4
 
     def _get_author_id(self):

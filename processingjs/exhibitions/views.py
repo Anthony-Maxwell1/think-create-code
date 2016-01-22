@@ -62,22 +62,6 @@ class ListExhibitionView(ExhibitionView, ListView):
 
         return qs.order_by('-released_at', 'created_at')
 
-    def get_context_data(self, **kwargs):
-        context = super(ListExhibitionView, self).get_context_data(**kwargs)
-
-        context['submission_list'] = {}
-        for exhibition in context['object_list']:
-            # Paginate the submission_set using our kwargs
-            submissions_list_view = ListSubmissionView()
-            submissions_list_view.request = self.request
-            submissions_list_view.args = self.args
-            submissions_list_view.kwargs = self.kwargs
-            submissions_list_view.kwargs['pk'] = exhibition.id
-            submissions_list_view.object_list = submissions_list_view.get_queryset()
-            context['submission_list'][exhibition.id] = submissions_list_view.get_context_data()
-
-        return context
-
 
 class ShowExhibitionView(ObjectHasPermMixin, ExhibitionView, DetailView):
 
@@ -89,7 +73,7 @@ class ShowExhibitionView(ObjectHasPermMixin, ExhibitionView, DetailView):
         context = super(ShowExhibitionView, self).get_context_data(**kwargs)
 
         # Paginate the submission_set using our kwargs
-        submissions_list_view = ListSubmissionView()
+        submissions_list_view = ListSubmissionView(show_download=False)
         submissions_list_view.request = self.request
         submissions_list_view.args = self.args
         submissions_list_view.kwargs = self.kwargs

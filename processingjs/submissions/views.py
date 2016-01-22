@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
 from django_adelaidex.util.mixins import TemplatePathMixin, PostOnlyMixin, LoggedInMixin, ObjectHasPermMixin
+from django_adelaidex.zipfile.mixins import ZipFileViewMixin
 from submissions.models import Submission, SubmissionForm
 from artwork.models import Artwork
 from exhibitions.models import Exhibition
@@ -16,6 +17,19 @@ class SubmissionView(TemplatePathMixin):
     model = Submission
     form_class = SubmissionForm
     template_dir = 'submissions'
+
+
+class SubmissionCodeView(SubmissionView, DetailView):
+    template_name = SubmissionView.prepend_template_path('code.pde')
+    content_type = 'text/plain'
+    content_disposition = 'attachment;'
+    #method_user_perm = { 'GET': 'can_see' }
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super(SubmissionCodeView, self).render_to_response(
+                context, **response_kwargs)
+        response['Content-Disposition'] = self.content_disposition
+        return response
 
 
 class ShowSubmissionView(SubmissionView, DetailView):
@@ -47,9 +61,13 @@ class ShowSubmissionView(SubmissionView, DetailView):
 
 class ListSubmissionView(SubmissionView, ListView):
     '''Rendered by ShowExhibitionView'''
-    template_name = SubmissionView.prepend_template_path('_list.html')
-    paginate_by = 10
+    template_name = SubmissionView.prepend_template_path('list.html')
+    paginate_by = 12
     paginate_orphans = 4
+
+    def __init__(self, show_download=True, *args, **kwargs):
+        super(ListSubmissionView, self).__init__(*args, **kwargs)
+        self.show_download = show_download
 
     def _get_exhibition_id(self):
         return self.kwargs.get('pk')
@@ -59,11 +77,9 @@ class ListSubmissionView(SubmissionView, ListView):
 
     def get_queryset(self):
         '''Show submissions to the given exhibition.'''
-        qs = Submission.objects
-
-        exhibition = self._get_exhibition_id()
-        if exhibition:
-            qs = qs.filter(exhibition_id=exhibition)
+        qs = Submission.can_see_queryset(
+                user=self.request.user, 
+                exhibition=self._get_exhibition_id())
 
         # Show most recently submitted first
         order = self._get_order_by()
@@ -82,7 +98,22 @@ class ListSubmissionView(SubmissionView, ListView):
         exhibition = self._get_exhibition_id()
         votes = Vote.can_delete_queryset(user=self.request.user, exhibition=exhibition).all()
         context['votes'] = { v.submission_id:v for v in votes }
+
+        # Store url for downloading code zip file
+        if self.show_download:
+            url_name = self.request.resolver_match.url_name
+            if not 'zip' in url_name:
+                url_name = '%s-zip' % url_name
+            kwargs = self.kwargs.copy()
+            context['zip_file_url'] = reverse(url_name, kwargs=kwargs)
+
         return context
+
+
+class ListSubmissionCodeZipFileView(ZipFileViewMixin, ListSubmissionView):
+    object_template_name = SubmissionCodeView.template_name
+    object_filename = 'artwork%d.pde'
+    zip_filename = 'code.zip'
 
 
 class CreateSubmissionView(PostOnlyMixin, LoggedInMixin, SubmissionView, CreateView):

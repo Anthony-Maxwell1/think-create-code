@@ -66,6 +66,10 @@ form.link {
     display: inline-block;
 }
 
+ul.pagination {
+    clear: both;
+}
+
 /* Make warning box text a bit easier to read */
 .warning.alert-box {
     color: #000;
@@ -100,6 +104,14 @@ form.link {
     font-weight: 200;
 }
 
+#exhibition-delete-content .object-actions {
+    display: none;
+}
+
+#artwork-add {
+    margin-bottom: 0;
+}
+
 .artwork-list {
     display: inline-block;
     vertical-align: top;
@@ -116,6 +128,11 @@ form.link {
     width: 200px;
     height: 200px;
     position: relative;
+}
+.artwork-title,
+.artwork-detail {
+    max-width: 200px;
+    display: inline-block;
 }
 
 /* center the canvas/iframe inside the preview div:
@@ -267,6 +284,9 @@ button .fa {
 .not-available {
     font-weight: bold;
 }
+.exhibition-image {
+    padding-right: 1em;
+}
 /* Voting icons */
 .artwork-votes {
     white-space: nowrap;
@@ -304,9 +324,11 @@ button .fa {
 }
 .order_by {
     list-style-type: none;
-    display: inline;
+    display: inline-block;
     margin: 0;
     font-size: 85%;
+    padding-top: 1.5em;
+    clear:both;
 }
 .order_by li {
     display: inline;
@@ -324,49 +346,4 @@ button .fa {
 }
 #terms-content #close-button {
     display: none;
-}
-#exhibition-list-content .exhibition .artwork.preview {
-    min-width: 100px;
-    min-height: 100px;
-    width: 100px;
-    height: 100px;
-}
-#exhibition-list-content .exhibition .artwork-title,
-#exhibition-list-content .exhibition .artwork-detail {
-    font-size: 100%;
-    max-width: 100px;
-    display: inline-block;
-}
-#exhibition-list-content .exhibition .artwork-votes .fa {
-    font-size: 130%;
-    line-height: 100%;
-}
-#exhibition-list-content .exhibition .exhibition-footer {
-    margin-bottom: 1em;
-    text-align: right;
-    border-top: thin solid grey;
-    padding-top: 1em;
-    padding-bottom: 1em;
-    clear:both;
-}
-#exhibition-list-content .exhibition:last-child .exhibition-footer {
-    border: none;
-    margin: 0;
-}
-
-#exhibition-list-content .exhibition .pagination,
-#exhibition-list-content .artwork-list-content .artwork-comments,
-#exhibition-list-content .artwork-list-content .play-all,
-#exhibition-list-content .artwork-list-content .order_by {
-    display: none;
-}
-.exhibition-description, .exhibition-link {
-    display: inline;
-}
-.exhibition-description, .play-all {
-    display: block;
-    clear: both;
-}
-#exhibition-list-content .exhibition .align-right {
-    text-align: left;
 }

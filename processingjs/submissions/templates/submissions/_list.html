@@ -1,20 +1,41 @@
 {% load pagination %}
-<div class="artwork-list-content">
+<div id="artwork-list-content">
 {% if object_list %}
 {% if object_list.count > 1 %}
 <div class="columns small-6">
+    <form class="link" method="get" action="{% url 'artwork-add' %}" id="artwork-add-form">
+        <button id="artwork-add" type="submit" class="button alert tiny"
+            title="create new artwork"><i class="fa fa-plus"> Artwork</i></button>
+    </form>
+    <br />
     <ul class="order_by">
-        {% if order == 'score' %}
+    {% if order == 'score' %}
+        {% if exhibition_id %}
         <li><a href="{% url 'exhibition-view' pk=exhibition_id %}" title="sort submissions by most recent">Most Recent</a></li>
+        {% else %}
+        <li><a href="{% url 'artwork-shared' %}" title="sort submissions by most recent">Most Recent</a></li>
+        {% endif %}
         <li>Most Votes</li>
         {% else %}
         <li>Most Recent</li>
+        {% if exhibition_id %}
         <li><a href="{% url 'exhibition-view-score' pk=exhibition_id %}" title="sort submissions by most votes">Most Votes</a></li>
+        {% else %}
+        <li><a href="{% url 'artwork-shared-score' %}" title="sort submissions by most votes">Most Votes</a></li>
         {% endif %}
+    {% endif %}
     </ul>
 </div>
 <div class="columns small-6 align-right">
-    <button type="button" class="play-all button tiny" title="play all"><i class="fa fa-play"> All</i></button>
+    {% if object_list.count > 1 %}
+    <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
+    {% endif %}
+    {% if zip_file_url and object_list.count > 0 %}
+    <form class="link" method="get" action="{{ zip_file_url }}" id="download-all-form">
+        <button id="download-all" type="submit" class="button tiny"
+            title="download artwork code"><i class="fa fa-download"> Download</i></button>
+    </form>
+    {% endif %}
 </div>
 {% endif %}
 <div class="columns small-12">

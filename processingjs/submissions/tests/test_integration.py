@@ -932,6 +932,92 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         self.assertEqual(vote_link1.get_attribute('like-url'), like_path1)
         self.assertEquals(artwork_score1.text, '0')
 
+    def test_artwork_shared_list(self):
+        list_path = reverse('artwork-shared')
+
+        artwork1p = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        submission1 = Submission.objects.create(artwork=artwork1, exhibition=self.exhibition, submitted_by=self.user)
+        artwork2p = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', shared=1, author=self.staff_user)
+        submission2 = Submission.objects.create(artwork=artwork2, exhibition=self.exhibition, submitted_by=self.user)
+        artwork3p = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', shared=1, author=self.super_user)
+        submission3 = Submission.objects.create(artwork=artwork3, exhibition=self.exhibition, submitted_by=self.user)
+
+        # Shared artwork is visible to the public
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            titles[0].text,
+            artwork3.title
+        )
+        self.assertEqual(
+            titles[1].text,
+            artwork2.title
+        )
+        self.assertEqual(
+            titles[2].text,
+            artwork1.title
+        )
+
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-shared-zip'))
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('artwork-add')
+        )
+
+        # Shared artwork only on the Shared Artwork page
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            titles[0].text,
+            artwork3.title
+        )
+        self.assertEqual(
+            titles[1].text,
+            artwork2.title
+        )
+        self.assertEqual(
+            titles[2].text,
+            artwork1.title
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-shared-zip'))
+        )
+
 
 class SubmissionCreateIntegrationTests(SeleniumTestCase):
     """Artwork view includes Submission create."""
@@ -1767,7 +1853,7 @@ class SubmissionList_HTML5Iframe_IntegrationTests(SeleniumTestCase):
         self.assertTrue(self.selenium.find_element_by_id('paused-%s' % bad_artwork2.id).is_displayed())
 
         # Push play-all to start all animations
-        self.selenium.find_element_by_css_selector('.play-all').click()
+        self.selenium.find_element_by_id('play-all').click()
         time.sleep(1)
 
         # The paused overlays should be hidden
