@@ -16,6 +16,7 @@ import django
 django.setup()
 
 from django.apps import apps
+from django.db import connection
 from django.utils.crypto import get_random_string
 from django_adelaidex.lti.models import User, Cohort
 
@@ -134,13 +135,22 @@ for name in models:
 
                 #print "Creating %s from (%s)" % (name, fields)
                 new_obj = model.objects.create(**fields)
-                # Force update the dates
-                model.objects.filter(id=new_obj.id).update(**fields)
+
+                # Force update the date fields
+                if ('created_at' in fields) and ('modified_at' in fields):
+                    date_format = '%Y-%m-%dT%TZ'
+                    sql = "UPDATE %s SET created_at=str_to_date('%s','%s'), modified_at=str_to_date('%s','%s') WHERE id=%s" % ( 
+                        new_obj._meta.db_table,
+                        fields['created_at'], date_format,
+                        fields['modified_at'], date_format,
+                        new_obj.id,
+                    )
+                    cursor = connection.cursor()
+                    cursor.execute(sql)
 
             pk_map[name][str(obj['pk'])] = new_obj.id
 
         except Exception as e:
-            print e
             obj['exception'] = str(e)
             error_objs.append(obj)
 
