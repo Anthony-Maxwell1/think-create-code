@@ -65,12 +65,12 @@ $(document).ready(function(){
         var q = $form.find('[type=text]').val();
         if (q) {
             var action = $form.find('[name=action]').val();
-            $form.attr('action', action + '?#q=site:' + encodeURIComponent(site + ' ' + q));
-            return true;
+            action += '?#q=site:' + encodeURIComponent(site + ' ' + q);
+            window.open(action, '_blank')
         } else {
             // If no search query, redirect to site home
             window.location = site;
-            return false;
         }
+        return false;
     });
 });
