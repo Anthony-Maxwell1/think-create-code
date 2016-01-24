@@ -61,10 +61,16 @@ $(document).ready(function(){
     // Google search
     $('#artwork-search').on('submit', function() {
         var $form = $(this);
-        var q = $form.find('[type=text]').val();
         var site = $form.find('[name=site]').val();
-        var action = $form.find('[name=action]').val();
-        $form.attr('action', action + '?#q=site:' + encodeURIComponent(site + ' ' + q));
-        return true;
+        var q = $form.find('[type=text]').val();
+        if (q) {
+            var action = $form.find('[name=action]').val();
+            $form.attr('action', action + '?#q=site:' + encodeURIComponent(site + ' ' + q));
+            return true;
+        } else {
+            // If no search query, redirect to site home
+            window.location = site;
+            return false;
+        }
     });
 });

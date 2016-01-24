@@ -352,6 +352,23 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
 class GalleryArtworkSearchIntegrationTests(SeleniumTestCase):
     '''Test the artwork search form'''
 
+    def test_artwork_list(self):
+        # Visit Add Artwork page
+        self.performLogin(user='student')
+        home_url = '%s%s' % (self.live_server_url, reverse('home'))
+        add_url = '%s%s' % (self.live_server_url, reverse('artwork-add'))
+        self.selenium.get(add_url)
+
+        # Hitting search with no term redirects to home page
+        form = self.selenium.find_element_by_id('artwork-search')
+        button = form.find_element_by_css_selector('button')
+        site_url = '%s%s' % (self.live_server_url, reverse('home'))
+
+        # Ensure we're redirected to home page
+        with wait_for_page_load(self.selenium):
+            button.click()
+        self.assertEquals(home_url, self.selenium.current_url)
+
     def test_artwork_search(self):
         self.performLogin(user='student')
 
