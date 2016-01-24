@@ -139,8 +139,9 @@ urlpatterns = [
         name='database_file'),
 ]
 
-# Decide whether to use auth login or django_adelaidex.lti as the 'login' url
-if settings.ADELAIDEX_LTI.get('LOGIN_URL'):
+# Use the presence of an ENROL_URL to decide whether to use auth login or
+# django_adelaidex.lti as the 'login' page
+if settings.ADELAIDEX_LTI.get('ENROL_URL'):
     urlpatterns.append(
         url(r'^login/$', lti_views.LTIPermissionDeniedView.as_view(),
         name='login'),
