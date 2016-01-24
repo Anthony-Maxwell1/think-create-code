@@ -151,8 +151,8 @@ ul.pagination {
     height: 200px;
     position: relative;
 }
-.artwork-title,
-.artwork-detail {
+.artwork-list .artwork-title,
+.artwork-list .artwork-detail {
     max-width: 200px;
     display: inline-block;
 }
