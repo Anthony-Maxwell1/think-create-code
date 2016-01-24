@@ -101,7 +101,7 @@ urlpatterns = [
         name='artwork-submit'),
 
     # Exhibition views
-    url(r'^e/?$', exhibitions.views.ListExhibitionView.as_view(),
+    url(r'^e/list/?$', exhibitions.views.ListExhibitionView.as_view(),
         name='exhibition-list'),
     url(r'^e/(?P<pk>\d+)/score/$', exhibitions.views.ShowExhibitionView.as_view(),
         {'order': 'score'},
