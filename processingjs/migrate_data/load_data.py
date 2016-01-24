@@ -1,8 +1,9 @@
 #!/bin/env python
+import sys
+sys.path.append('.')
 from migrate_data.env import get_app_env, get_data_filename, pythonpath, models, model_fields
 import os
 import re
-import sys
 import json
 import copy
 import datetime
