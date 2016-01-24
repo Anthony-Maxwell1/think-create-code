@@ -15,6 +15,9 @@ $(document).ready(function() {
         // pass
     }
     if (!share_path) share_path = '';
+    if (share_path.indexOf('?') == 0) { 
+        share_path = share_path.substring(1); 
+    }
     $.ajax({
         url: "{{ post_share_url }}",
         method: "POST",
