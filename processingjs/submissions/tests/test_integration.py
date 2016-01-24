@@ -932,6 +932,92 @@ class SubmissionListIntegrationTests(SeleniumTestCase):
         self.assertEqual(vote_link1.get_attribute('like-url'), like_path1)
         self.assertEquals(artwork_score1.text, '0')
 
+    def test_artwork_shared_list(self):
+        list_path = reverse('artwork-shared')
+
+        artwork1p = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        submission1 = Submission.objects.create(artwork=artwork1, exhibition=self.exhibition, submitted_by=self.user)
+        artwork2p = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', shared=1, author=self.staff_user)
+        submission2 = Submission.objects.create(artwork=artwork2, exhibition=self.exhibition, submitted_by=self.user)
+        artwork3p = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', shared=1, author=self.super_user)
+        submission3 = Submission.objects.create(artwork=artwork3, exhibition=self.exhibition, submitted_by=self.user)
+
+        # Shared artwork is visible to the public
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            titles[0].text,
+            artwork3.title
+        )
+        self.assertEqual(
+            titles[1].text,
+            artwork2.title
+        )
+        self.assertEqual(
+            titles[2].text,
+            artwork1.title
+        )
+
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-shared-zip'))
+        )
+        self.assertIsNotNone(
+            self.selenium.find_element_by_id('artwork-add')
+        )
+
+        # Shared artwork only on the Shared Artwork page
+        self.performLogin()
+        with wait_for_page_load(self.selenium):
+            self.selenium.get('%s%s' % (self.live_server_url, list_path))
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('.artwork')),
+            3
+        )
+        titles = self.selenium.find_elements_by_css_selector('.artwork-title')
+        self.assertEqual(
+            titles[0].text,
+            artwork3.title
+        )
+        self.assertEqual(
+            titles[1].text,
+            artwork2.title
+        )
+        self.assertEqual(
+            titles[2].text,
+            artwork1.title
+        )
+        self.assertEqual(
+            len(self.selenium.find_elements_by_css_selector('#download-all')),
+            1
+        )
+        download_form = self.selenium.find_elements_by_css_selector('#download-all-form')
+        self.assertEqual(
+            len(download_form),
+            1
+        )
+        self.assertEqual(
+            download_form[0].get_attribute('action'),
+            '%s%s' % (self.live_server_url, reverse('artwork-shared-zip'))
+        )
+
 
 class SubmissionCreateIntegrationTests(SeleniumTestCase):
     """Artwork view includes Submission create."""
@@ -1261,8 +1347,10 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         )
         
         # And exhibition options (since there's >1 choice)
-        inputs = self.selenium.find_elements_by_tag_name('input')
+        form = self.selenium.find_element_by_id('submission-edit-form')
+        inputs = form.find_elements_by_tag_name('input')
         self.assertEqual(4, len(inputs))
+
         self.assertEqual('hidden', inputs[0].get_attribute('type'))
         self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
 
@@ -1316,37 +1404,47 @@ class SubmissionCreateIntegrationTests(SeleniumTestCase):
         self.selenium.find_element_by_link_text('SHARE').click()
         time.sleep(3)
 
-        # There's actually two forms on this page: submit artwork, and edit artwork
+        # There's actually three forms on this page: search artwork, submit artwork, and edit artwork
         inputs = self.selenium.find_elements_by_tag_name('input')
-        self.assertEqual(7, len(inputs))
+        self.assertEqual(10, len(inputs))
+
         self.assertEqual('hidden', inputs[0].get_attribute('type'))
-        self.assertEqual('csrfmiddlewaretoken', inputs[0].get_attribute('name'))
+        self.assertEqual('action', inputs[0].get_attribute('name'))
 
-        self.assertEqual('text', inputs[1].get_attribute('type'))
-        self.assertEqual('title', inputs[1].get_attribute('name'))
-        self.assertEqual(self.student_artwork.title, inputs[1].get_attribute('value'))
+        self.assertEqual('hidden', inputs[1].get_attribute('type'))
+        self.assertEqual('site', inputs[1].get_attribute('name'))
 
-        self.assertEqual('hidden', inputs[2].get_attribute('type'))
-        self.assertEqual('code', inputs[2].get_attribute('name'))
-        self.assertEqual(self.student_artwork.code, inputs[2].get_attribute('value'))
+        self.assertEqual('text', inputs[2].get_attribute('type'))
+        self.assertEqual('q', inputs[2].get_attribute('name'))
 
         self.assertEqual('hidden', inputs[3].get_attribute('type'))
         self.assertEqual('csrfmiddlewaretoken', inputs[3].get_attribute('name'))
 
-        self.assertEqual('hidden', inputs[4].get_attribute('type'))
-        self.assertEqual('artwork', inputs[4].get_attribute('name'))
-        self.assertEqual(self.student_artwork.id, long(inputs[4].get_attribute('value')))
+        self.assertEqual('text', inputs[4].get_attribute('type'))
+        self.assertEqual('title', inputs[4].get_attribute('name'))
+        self.assertEqual(self.student_artwork.title, inputs[4].get_attribute('value'))
 
-        self.assertEqual('radio', inputs[5].get_attribute('type'))
-        self.assertEqual('exhibition', inputs[5].get_attribute('name'))
-        self.assertEqual(self.exhibition.id, long(inputs[5].get_attribute('value')))
+        self.assertEqual('hidden', inputs[5].get_attribute('type'))
+        self.assertEqual('code', inputs[5].get_attribute('name'))
+        self.assertEqual(self.student_artwork.code, inputs[5].get_attribute('value'))
 
-        self.assertEqual('radio', inputs[6].get_attribute('type'))
-        self.assertEqual('exhibition', inputs[6].get_attribute('name'))
-        self.assertEqual(exhibition2.id, long(inputs[6].get_attribute('value')))
+        self.assertEqual('hidden', inputs[6].get_attribute('type'))
+        self.assertEqual('csrfmiddlewaretoken', inputs[6].get_attribute('name'))
+
+        self.assertEqual('hidden', inputs[7].get_attribute('type'))
+        self.assertEqual('artwork', inputs[7].get_attribute('name'))
+        self.assertEqual(self.student_artwork.id, long(inputs[7].get_attribute('value')))
+
+        self.assertEqual('radio', inputs[8].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[8].get_attribute('name'))
+        self.assertEqual(self.exhibition.id, long(inputs[8].get_attribute('value')))
+
+        self.assertEqual('radio', inputs[9].get_attribute('type'))
+        self.assertEqual('exhibition', inputs[9].get_attribute('name'))
+        self.assertEqual(exhibition2.id, long(inputs[9].get_attribute('value')))
 
         # submit the artwork to the first exhibition
-        inputs[6].click()
+        inputs[9].click()
         with wait_for_page_load(self.selenium):
             self.selenium.find_element_by_id('save_submission').click()
 

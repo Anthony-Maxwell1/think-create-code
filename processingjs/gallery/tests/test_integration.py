@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.core.management import call_command
 from django.conf import settings
 
-from django_adelaidex.util.test import SeleniumTestCase
+from django_adelaidex.util.test import SeleniumTestCase, wait_for_page_load
 from selenium.common.exceptions import NoSuchElementException
 from gallery.views import ShareView
 from artwork.models import Artwork
@@ -26,7 +26,7 @@ class GalleryAuthIntegrationTests(SeleniumTestCase):
 
         self.selenium.find_element_by_id('id_username').send_keys(self.get_username())
         self.selenium.find_element_by_id('id_password').send_keys('notavalid password')
-        self.selenium.find_element_by_tag_name('button').click()
+        self.selenium.find_element_by_id('login').click()
 
         # still on login page..
         self.assertEqual(self.selenium.current_url, login_url)
@@ -192,11 +192,9 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(link.get_attribute('href'), studio_url)
         self.assertEqual(link.text, 'My Studio')
 
-        # Shared Artwork
-        link = self.selenium.find_element_by_id('nav-shared-artwork')
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
-        self.assertEqual(link.get_attribute('href'), artwork_url)
-        self.assertEqual(link.text, 'Artwork')
+        # Search Artwork
+        form = self.selenium.find_elements_by_css_selector('#artwork-search')
+        self.assertEqual(len(form), 1)
 
         # Exhibitions
         link = self.selenium.find_element_by_id('nav-exhibitions')
@@ -249,11 +247,9 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(link.get_attribute('href'), studio_url)
         self.assertEqual(link.text, 'My Studio')
 
-        # Shared Artwork
-        link = self.selenium.find_element_by_id('nav-shared-artwork')
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
-        self.assertEqual(link.get_attribute('href'), artwork_url)
-        self.assertEqual(link.text, 'Artwork')
+        # Search Artwork
+        form = self.selenium.find_elements_by_css_selector('#artwork-search')
+        self.assertEqual(len(form), 1)
 
         # Exhibitions
         link = self.selenium.find_element_by_id('nav-exhibitions')
@@ -277,7 +273,7 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         link = self.selenium.find_element_by_id('nav-profile')
         profile_url = '%s%s?next=%s' % (self.live_server_url, reverse('lti-user-profile'), reverse('home'))
         self.assertEqual(link.get_attribute('href'), profile_url)
-        self.assertEqual(link.text, '%s' % self.user)
+        self.assertEqual(link.text, '%s Profile' % self.user)
 
         # No Administer
         self.assertRaises(
@@ -306,11 +302,9 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         self.assertEqual(link.get_attribute('href'), studio_url)
         self.assertEqual(link.text, 'My Studio')
 
-        # Shared Artwork
-        link = self.selenium.find_element_by_id('nav-shared-artwork')
-        artwork_url = '%s%s' % (self.live_server_url, reverse('artwork-shared'))
-        self.assertEqual(link.get_attribute('href'), artwork_url)
-        self.assertEqual(link.text, 'Artwork')
+        # Search Artwork
+        form = self.selenium.find_elements_by_css_selector('#artwork-search')
+        self.assertEqual(len(form), 1)
 
         # Exhibitions
         link = self.selenium.find_element_by_id('nav-exhibitions')
@@ -334,7 +328,7 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
         link = self.selenium.find_element_by_id('nav-profile')
         profile_url = '%s%s?next=%s' % (self.live_server_url, reverse('lti-user-profile'), reverse('home'))
         self.assertEqual(link.get_attribute('href'), profile_url)
-        self.assertEqual(link.text, '%s' % self.staff_user)
+        self.assertEqual(link.text, '%s Profile' % self.staff_user)
 
         # Administer
         link = self.selenium.find_element_by_id('nav-admin')
@@ -353,6 +347,43 @@ class GalleryHomePageIntegrationTests(SeleniumTestCase):
             NoSuchElementException,
             self.selenium.find_element_by_id, ('nav-signout')
         )
+
+
+class GalleryArtworkSearchIntegrationTests(SeleniumTestCase):
+    '''Test the artwork search form'''
+
+    def test_artwork_list(self):
+        # Visit Add Artwork page
+        self.performLogin(user='student')
+        home_url = '%s%s' % (self.live_server_url, reverse('home'))
+        add_url = '%s%s' % (self.live_server_url, reverse('artwork-add'))
+        self.selenium.get(add_url)
+
+        # Hitting search with no term redirects to home page
+        form = self.selenium.find_element_by_id('artwork-search')
+        button = form.find_element_by_css_selector('button')
+        site_url = '%s%s' % (self.live_server_url, reverse('home'))
+
+        # Ensure we're redirected to home page
+        with wait_for_page_load(self.selenium):
+            button.click()
+        self.assertEquals(home_url, self.selenium.current_url)
+
+    def test_artwork_search(self):
+        self.performLogin(user='student')
+
+        form = self.selenium.find_element_by_id('artwork-search')
+        q = form.find_element_by_css_selector('[name=q]')
+        q.send_keys('game')
+        button = form.find_element_by_css_selector('button')
+        site_url = '%s%s' % (self.live_server_url, reverse('home'))
+
+        # Ensure we're redirected to google.com with the correct params set in url
+        with wait_for_page_load(self.selenium):
+            button.click()
+        self.assertIn('google.com', self.selenium.current_url)
+        q_str = 'q=site:%s' % urllib.quote('%s game' % site_url, '')
+        self.assertIn(q_str, self.selenium.current_url)
 
 
 class ShareViewIntegrationTest(SeleniumTestCase):

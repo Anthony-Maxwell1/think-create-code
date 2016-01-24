@@ -38,6 +38,12 @@ class ExhibitionView(TemplatePathMixin):
 
         return context
 
+    def get_form_kwargs(self):
+        # Pass the current request into the form, so it can access the current user and cohort
+        kwargs = super(ExhibitionView, self).get_form_kwargs()
+        kwargs.update({'request': self.request})
+        return kwargs
+
 
 class ListExhibitionView(ExhibitionView, ListView):
 
@@ -67,7 +73,7 @@ class ShowExhibitionView(ObjectHasPermMixin, ExhibitionView, DetailView):
         context = super(ShowExhibitionView, self).get_context_data(**kwargs)
 
         # Paginate the submission_set using our kwargs
-        submissions_list_view = ListSubmissionView()
+        submissions_list_view = ListSubmissionView(show_download=False)
         submissions_list_view.request = self.request
         submissions_list_view.args = self.args
         submissions_list_view.kwargs = self.kwargs

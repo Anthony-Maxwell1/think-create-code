@@ -84,6 +84,21 @@
                 "submission"
             ],
             [
+                "add_cohort",
+                "lti",
+                "cohort"
+            ],
+            [
+                "change_cohort",
+                "lti",
+                "cohort"
+            ],
+            [
+                "delete_cohort",
+                "lti",
+                "cohort"
+            ],
+            [
                 "add_user",
                 "lti",
                 "user"

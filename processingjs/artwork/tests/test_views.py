@@ -67,51 +67,6 @@ class ArtworkListTests(UserSetUp, TestCase):
         self.assertEquals(response.context['object_list'][3], artwork1)
         self.assertEquals(response.context['zip_file_url'], reverse('artwork-list-zip'))
 
-    def test_artwork_shared_list(self):
-        
-        client = Client()
-        list_path = reverse('artwork-shared')
-        response = client.get(list_path)
-
-        self.assertEquals(list(response.context['object_list']), [])
-
-        artwork1p = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
-        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', shared=1, author=self.user)
-        artwork2p = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
-        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', shared=1, author=self.staff_user)
-        artwork3p = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
-        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', shared=1, author=self.super_user)
-
-        # Shared artwork is visible to public
-        response = client.get(list_path)
-        self.assertEquals(response.context['object_list'].count(), 3)
-        self.assertEquals(response.context['object_list'][0], artwork3)
-        self.assertEquals(response.context['object_list'][1], artwork2)
-        self.assertEquals(response.context['object_list'][2], artwork1)
-        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-zip'))
-
-        # Only shared artwork is visible to logged-in users in artwork-shared view
-        response = self.assertLogin(client, list_path)
-        self.assertEquals(response.context['object_list'].count(), 3)
-        self.assertEquals(response.context['object_list'][0], artwork3)
-        self.assertEquals(response.context['object_list'][1], artwork2)
-        self.assertEquals(response.context['object_list'][2], artwork1)
-        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-zip'))
-
-        response = self.assertLogin(client, list_path, user='staff')
-        self.assertEquals(response.context['object_list'].count(), 3)
-        self.assertEquals(response.context['object_list'][0], artwork3)
-        self.assertEquals(response.context['object_list'][1], artwork2)
-        self.assertEquals(response.context['object_list'][2], artwork1)
-        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-zip'))
-
-        response = self.assertLogin(client, list_path, user='super')
-        self.assertEquals(response.context['object_list'].count(), 3)
-        self.assertEquals(response.context['object_list'][0], artwork3)
-        self.assertEquals(response.context['object_list'][1], artwork2)
-        self.assertEquals(response.context['object_list'][2], artwork1)
-        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-zip'))
-
     def test_private_artwork_author_list(self):
         
         client = Client()

@@ -57,4 +57,20 @@ $(document).ready(function(){
         }
     };
     window['showHelp'](window.location.hash, true);
+
+    // Google search
+    $('#artwork-search').on('submit', function() {
+        var $form = $(this);
+        var site = $form.find('[name=site]').val();
+        var q = $form.find('[type=text]').val();
+        if (q) {
+            var action = $form.find('[name=action]').val();
+            $form.attr('action', action + '?#q=site:' + encodeURIComponent(site + ' ' + q));
+            return true;
+        } else {
+            // If no search query, redirect to site home
+            window.location = site;
+            return false;
+        }
+    });
 });

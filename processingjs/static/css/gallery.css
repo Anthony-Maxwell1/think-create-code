@@ -6,21 +6,23 @@ body {
 nav {
     margin-bottom: 1em !important;
 }
+nav .name a {
+    color: #fff;
+    padding: 0 0.9375rem;
+    line-height: 2.8125rem;
+    background: #333;
+}
 /* Make the title-area text bigger */
-nav .title-area li a {
-    font-size: 1.04rem;
+nav .top-bar-section li a {
+    font-size: 1rem;
 }
 /* Magnify the font-awesome nav icons */
 nav .fa {
     font-size: 150%;
+    line-height: 90%;
 }
-/* Shift nav icon to the right */
-nav #nav-logged-in {
-    padding-right: 15px !important;
-}
-/* Hide the drop-down arrow */
-nav #nav-logged-in:after {
-    border-color: transparent transparent transparent !important;
+nav .row.collapse .columns {
+    padding: 0;
 }
 /* page footer */
 footer {
@@ -70,6 +72,26 @@ form.link {
     display: inline-block;
 }
 
+ul.pagination {
+    clear: both;
+}
+
+#lti-403-page ol {
+    font-size: 2.4rem;
+    margin-left: 4.5rem;
+    color: grey;
+}
+#lti-403-page li p {
+    color: black;
+    display: inline-block;
+    vertical-align: bottom;
+}
+#lti-403-page li p,
+#lti-403-page li p a {
+    font-size: 1rem;
+    line-height: 1rem;
+}
+
 /* Make warning box text a bit easier to read */
 .warning.alert-box {
     color: #000;
@@ -104,6 +126,22 @@ form.link {
     font-weight: 200;
 }
 
+#exhibition-delete-content .object-actions {
+    display: none;
+}
+
+#artwork-add {
+    margin-bottom: 0;
+}
+
+.artwork-list {
+    display: inline-block;
+    vertical-align: top;
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+    padding-bottom: 0.5em;
+}
+
 /* Preview the artwork in a smaller div */
 .artwork.preview {
     overflow: hidden;
@@ -112,6 +150,11 @@ form.link {
     width: 200px;
     height: 200px;
     position: relative;
+}
+.artwork-title,
+.artwork-detail {
+    max-width: 200px;
+    display: inline-block;
 }
 
 /* center the canvas/iframe inside the preview div:
@@ -263,6 +306,9 @@ button .fa {
 .not-available {
     font-weight: bold;
 }
+.exhibition-image {
+    padding-right: 1em;
+}
 /* Voting icons */
 .artwork-votes {
     white-space: nowrap;
@@ -286,7 +332,7 @@ button .fa {
 .unlike:active .fa {
     color: #ababab;
 }
-.artwork-score, .artwork-votes, .artwork-comments, .inline {
+.artwork-by, .artwork-score, .artwork-votes, .artwork-comments, .inline {
     display: inline;
 }
 
@@ -300,9 +346,11 @@ button .fa {
 }
 .order_by {
     list-style-type: none;
-    display: inline;
+    display: inline-block;
     margin: 0;
     font-size: 85%;
+    padding-top: 1.5em;
+    clear:both;
 }
 .order_by li {
     display: inline;
@@ -315,6 +363,8 @@ button .fa {
 }
 .artwork-title {
     word-wrap: break-word;
+    margin-bottom: 0;
+    line-height: 1.1em;
 }
 #terms-content #close-button {
     display: none;

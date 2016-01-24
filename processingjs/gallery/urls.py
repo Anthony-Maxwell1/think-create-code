@@ -17,7 +17,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = [
-    url(r'^$', artwork.views.ListArtworkView.as_view(),
+    url(r'^$', submissions.views.ListSubmissionView.as_view(),
         name='home'),
 
     url(r'^admin/', include(admin.site.urls)),
@@ -49,9 +49,11 @@ urlpatterns = [
     # Artwork list views
     url(r'^artwork/studio/$', artwork.views.StudioArtworkView.as_view(),
         name='artwork-studio'),
-    url(r'^a/?$', artwork.views.ListArtworkView.as_view(),
-        {'shared': True},
+    url(r'^a/?$', submissions.views.ListSubmissionView.as_view(),
         name='artwork-shared'),
+    url(r'^a/score/$', submissions.views.ListSubmissionView.as_view(),
+        {'order': 'score'},
+        name='artwork-shared-score'),
     url(r'^a/list/$', artwork.views.ListArtworkView.as_view(),
         {'shared': False},
         name='artwork-list'),
@@ -59,12 +61,16 @@ urlpatterns = [
         name='artwork-author-list'),
 
     # Zipfile Artwork list views
-    url(r'^code.zip$', artwork.views.ListArtworkCodeZipFileView.as_view(),
+    url(r'^a/code.zip$', submissions.views.ListSubmissionCodeZipFileView.as_view(),
         {'shared': True},
         name='home-zip'),
-    url(r'^a/code.zip$', artwork.views.ListArtworkCodeZipFileView.as_view(),
-        {'shared': True},
+    url(r'^s(?P<pk>\d+).pde$', submissions.views.SubmissionCodeView.as_view(),
+        name='artwork-shared-code'),
+    url(r'^a/code.zip$', submissions.views.ListSubmissionView.as_view(),
         name='artwork-shared-zip'),
+    url(r'^a/score/code.zip$', submissions.views.ListSubmissionView.as_view(),
+        {'order': 'score'},
+        name='artwork-shared-score-zip'),
     url(r'^a/list/code.zip$', artwork.views.ListArtworkCodeZipFileView.as_view(),
         {'shared': False},
         name='artwork-list-zip'),
@@ -95,7 +101,7 @@ urlpatterns = [
         name='artwork-submit'),
 
     # Exhibition views
-    url(r'^e/?$', exhibitions.views.ListExhibitionView.as_view(),
+    url(r'^e/list/?$', exhibitions.views.ListExhibitionView.as_view(),
         name='exhibition-list'),
     url(r'^e/(?P<pk>\d+)/score/$', exhibitions.views.ShowExhibitionView.as_view(),
         {'order': 'score'},
@@ -133,8 +139,9 @@ urlpatterns = [
         name='database_file'),
 ]
 
-# Decide whether to use auth login or django_adelaidex.lti as the 'login' url
-if settings.ADELAIDEX_LTI.get('LOGIN_URL'):
+# Use the presence of an ENROL_URL to decide whether to use auth login or
+# django_adelaidex.lti as the 'login' page
+if settings.ADELAIDEX_LTI.get('ENROL_URL'):
     urlpatterns.append(
         url(r'^login/$', lti_views.LTIPermissionDeniedView.as_view(),
         name='login'),

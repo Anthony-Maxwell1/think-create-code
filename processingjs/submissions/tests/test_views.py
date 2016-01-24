@@ -6,6 +6,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from django_adelaidex.util.test import UserSetUp
+from django_adelaidex.lti.models import Cohort
 from submissions.models import Submission
 from exhibitions.models import Exhibition
 from artwork.models import Artwork
@@ -96,6 +97,30 @@ class SubmissionShowViewTests(UserSetUp, TestCase):
         self.assertEquals(response.context['votes'], {})
         self.assertEquals(response.context['submission'].score, 1)
     
+
+class SubmissionCodeViewTests(UserSetUp, TestCase):
+    """Submission view code tests."""
+
+    def test_code_view(self):
+        
+        client = Client()
+
+        # Submissions are shared and can be downloaded
+        artwork = Artwork.objects.create(title='Title bar', code='// code goes here', author=self.user)
+        exhibition = Exhibition.objects.create(
+            title='New Exhibition',
+            description='description goes here',
+            released_at = timezone.now(),
+            author=self.user)
+        submission = Submission.objects.create(
+            artwork=artwork,
+            exhibition=exhibition,
+            submitted_by=self.user)
+
+        code_url = reverse('artwork-shared-code', kwargs={'pk':submission.id})
+        response = client.get(code_url)
+        self.assertEquals(response.get('Content-Disposition'), 'attachment;')
+        self.assertEquals(response.context['object'].artwork, artwork)
 
 
 class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
@@ -230,6 +255,102 @@ class SubmissionListExhibitionViewTests(UserSetUp, TestCase):
         self.assertNotRegexpMatches(response.content, r'title="like"')
         self.assertRegexpMatches(response.content, r'title="unlike"')
 
+    def test_artwork_shared_list(self):
+        
+        client = Client()
+        list_path = reverse('artwork-shared')
+        response = client.get(list_path)
+
+        self.assertEquals(list(response.context['object_list']), [])
+
+        artwork1p = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        submission1 = Submission.objects.create(artwork=artwork1, exhibition=self.exhibition, submitted_by=self.user)
+        artwork2p = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        submission2 = Submission.objects.create(artwork=artwork2, exhibition=self.exhibition, submitted_by=self.user)
+        artwork3p = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+        submission3 = Submission.objects.create(artwork=artwork3, exhibition=self.exhibition, submitted_by=self.user)
+
+        # Shared artwork is visible to public
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], submission3)
+        self.assertEquals(response.context['object_list'][1], submission2)
+        self.assertEquals(response.context['object_list'][2], submission1)
+        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-zip'))
+
+        # Only shared artwork is visible to logged-in users in artwork-shared view
+        response = self.assertLogin(client, list_path)
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], submission3)
+        self.assertEquals(response.context['object_list'][1], submission2)
+        self.assertEquals(response.context['object_list'][2], submission1)
+        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-zip'))
+
+        response = self.assertLogin(client, list_path, user='staff')
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], submission3)
+        self.assertEquals(response.context['object_list'][1], submission2)
+        self.assertEquals(response.context['object_list'][2], submission1)
+        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-zip'))
+
+        response = self.assertLogin(client, list_path, user='super')
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], submission3)
+        self.assertEquals(response.context['object_list'][1], submission2)
+        self.assertEquals(response.context['object_list'][2], submission1)
+        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-zip'))
+
+    def test_artwork_shared_score_list(self):
+        
+        client = Client()
+        list_path = reverse('artwork-shared-score')
+        response = client.get(list_path)
+
+        self.assertEquals(list(response.context['object_list']), [])
+
+        artwork1p = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        artwork1 = Artwork.objects.create(title='Artwork 1', code='// code goes here', author=self.user)
+        submission1 = Submission.objects.create(artwork=artwork1, exhibition=self.exhibition, submitted_by=self.user, score=10)
+        artwork2p = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        artwork2 = Artwork.objects.create(title='Artwork 2', code='// code goes here', author=self.staff_user)
+        submission2 = Submission.objects.create(artwork=artwork2, exhibition=self.exhibition, submitted_by=self.user, score=5)
+        artwork3p = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+        artwork3 = Artwork.objects.create(title='Artwork 3', code='// code goes here', author=self.super_user)
+        submission3 = Submission.objects.create(artwork=artwork3, exhibition=self.exhibition, submitted_by=self.user, score=1)
+
+        # Sort by highest score
+        response = client.get(list_path)
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], submission1)
+        self.assertEquals(response.context['object_list'][1], submission2)
+        self.assertEquals(response.context['object_list'][2], submission3)
+        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-score-zip'))
+
+        # Only shared artwork is visible to logged-in users in artwork-shared view
+        response = self.assertLogin(client, list_path)
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], submission1)
+        self.assertEquals(response.context['object_list'][1], submission2)
+        self.assertEquals(response.context['object_list'][2], submission3)
+        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-score-zip'))
+
+        response = self.assertLogin(client, list_path, user='staff')
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], submission1)
+        self.assertEquals(response.context['object_list'][1], submission2)
+        self.assertEquals(response.context['object_list'][2], submission3)
+        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-score-zip'))
+
+        response = self.assertLogin(client, list_path, user='super')
+        self.assertEquals(response.context['object_list'].count(), 3)
+        self.assertEquals(response.context['object_list'][0], submission1)
+        self.assertEquals(response.context['object_list'][1], submission2)
+        self.assertEquals(response.context['object_list'][2], submission3)
+        self.assertEquals(response.context['zip_file_url'], reverse('artwork-shared-score-zip'))
+
 
 class SubmissionCreateTests(UserSetUp, TestCase):
 
@@ -335,6 +456,69 @@ class SubmissionCreateTests(UserSetUp, TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(len(response.context['form'].fields['exhibition'].queryset.all()), 2)
 
+    def test_cohort_choices(self):
+        client = Client()
+
+        cohort1 = Cohort.objects.create(
+            title='Cohort 1',
+            oauth_key='abc',
+            oauth_secret='abc',
+            is_default=True,
+        )
+        cohort2 = Cohort.objects.create(
+            title='Cohort 2',
+            oauth_key='def',
+            oauth_secret='def',
+        )
+        exhibition_no_cohort = Exhibition.objects.create(
+            title='Exhibition No Cohort',
+            description='description goes here',
+            author=self.user)
+        exhibition_cohort1 = Exhibition.objects.create(
+            title='Exhibition Cohort1',
+            description='description goes here',
+            cohort=cohort1,
+            author=self.user)
+        exhibition_cohort2 = Exhibition.objects.create(
+            title='Exhibition Cohort2',
+            description='description goes here',
+            cohort=cohort2,
+            author=self.user)
+
+        # User in no cohort
+        artwork = Artwork.objects.create(title='New Artwork', code='// code goes here', author=self.user)
+        create_url = reverse('artwork-submit', kwargs={'artwork': artwork.id})
+        self.assertLogin(client, create_url)
+
+        post_data = {
+            'artwork': artwork.id,
+        }
+        response = client.post(create_url, post_data)
+        self.assertEquals(response.status_code, 200)
+
+        # Exhibition choices should be "no cohort" and the default
+        exhibitions = response.context['form'].fields['exhibition'].queryset.all()
+        self.assertEquals(len(exhibitions), 2)
+        self.assertEquals(exhibitions[0], exhibition_no_cohort)
+        self.assertEquals(exhibitions[1], exhibition_cohort1)
+
+        # Move user into cohort1, no change to choices
+        self.user.cohort = cohort1
+        self.user.save()
+        response = client.post(create_url, post_data)
+        exhibitions = response.context['form'].fields['exhibition'].queryset.all()
+        self.assertEquals(len(exhibitions), 2)
+        self.assertEquals(exhibitions[0], exhibition_no_cohort)
+        self.assertEquals(exhibitions[1], exhibition_cohort1)
+
+        # Move user into cohort2, shows "no cohort" and cohort2
+        self.user.cohort = cohort2
+        self.user.save()
+        response = client.post(create_url, post_data)
+        exhibitions = response.context['form'].fields['exhibition'].queryset.all()
+        self.assertEquals(len(exhibitions), 2)
+        self.assertEquals(exhibitions[0], exhibition_no_cohort)
+        self.assertEquals(exhibitions[1], exhibition_cohort2)
 
     def test_submit_unowned_artwork(self):
         client = Client()

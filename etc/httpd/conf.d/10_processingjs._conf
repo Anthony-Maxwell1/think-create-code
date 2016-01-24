@@ -1,39 +1,27 @@
 # https://gitlab-uat.adelaide.edu.au/adelaidex/think-create-code/blob/master/processingjs/etc/httpd/conf.d/10_processingjs._conf
+#
+SetEnvIfNoCase Request_URI ^/think.create.code/processingjs DJANGO_GALLERY_ENVIRONMENT=production
+AliasMatch (?i)^/think.create.code/robots.txt$  /var/www/adx/think-create-code/processingjs/static/robots.txt
+AliasMatch (?i)^/think.create.code/favicon.ico$ /var/www/adx/think-create-code/processingjs/static/favicon.ico
+AliasMatch (?i)^/think.create.code/static(.*)   /var/www/adx/think-create-code/processingjs/static/$1
+AliasMatch (?i)^/think.create.code/js(.*)       /var/www/adx/think-create-code/processingjs/static/js/$1
+AliasMatch (?i)^/think.create.code/?$           /var/www/adx/think-create-code/processingjs/static/index.html
+WSGIScriptAlias /think.create.code/processingjs /var/www/adx/think-create-code/processingjs/gallery/wsgi.py
 
 # ref: http://thecodeship.com/deployment/deploy-django-apache-virtualenv-and-mod_wsgi/
 # 2T2015: first run of Code1010x
-SetEnvIfNoCase Request_URI ^/think.create.code/gallery DJANGO_GALLERY_ENVIRONMENT=production-2T2015
-AliasMatch (?i)^/Think.Create.Code/robots.txt$  /var/www/adx/2t2015/think-create-code/processingjs/static/robots.txt
-AliasMatch (?i)^/Think.Create.Code/favicon.ico$ /var/www/adx/2t2015/think-create-code/processingjs/static/favicon.ico
-AliasMatch (?i)^/Think.Create.Code/static(.*)   /var/www/adx/2t2015/think-create-code/processingjs/static/$1
-AliasMatch (?i)^/Think.Create.Code/js(.*)       /var/www/adx/2t2015/think-create-code/processingjs/static/js/$1
-AliasMatch (?i)^/Think.Create.Code/?$           /var/www/adx/2t2015/think-create-code/processingjs/static/index.html
-WSGIScriptAlias /think.create.code/gallery      /var/www/adx/2t2015/think-create-code/processingjs/gallery/wsgi.py
-WSGIScriptAlias /Think.Create.Code/gallery      /var/www/adx/2t2015/think-create-code/processingjs/gallery/wsgi.py
+# Show outage page
+##RedirectMatch (?i)^/think.create.code/gallery*  /think.create.code/static/outage.html
+# Maintain redirects from original URL
+WSGIScriptAlias /think.create.code/gallery      /var/www/adx/think-create-code/redirect/redirect/wsgi.py
 
 # 3T2015: second, self-paced run of Code1010x
-SetEnvIfNoCase Request_URI ^/think.create.code/3t2015 DJANGO_GALLERY_ENVIRONMENT=production-3T2015
-AliasMatch (?i)^/think.create.code/3t2015/robots.txt$  /var/www/adx/think-create-code/processingjs/static/robots.txt
-AliasMatch (?i)^/think.create.code/3t2015/favicon.ico$ /var/www/adx/think-create-code/processingjs/static/favicon.ico
-AliasMatch (?i)^/think.create.code/3t2015/static(.*)   /var/www/adx/think-create-code/processingjs/static/$1
-AliasMatch (?i)^/think.create.code/3t2015/js(.*)       /var/www/adx/think-create-code/processingjs/static/js/$1
-AliasMatch (?i)^/think.create.code/3t2015/?$           /var/www/adx/think-create-code/processingjs/static/index.html
-WSGIScriptAlias /think.create.code/3t2015/gallery      /var/www/adx/think-create-code/processingjs/gallery/wsgi.py
+# Show outage page
+##RedirectMatch (?i)^/think.create.code/3t2015/gallery*  /think.create.code/static/outage.html
+# Maintain redirects from original URL
+WSGIScriptAlias /think.create.code/3t2015/gallery  /var/www/adx/think-create-code/redirect/redirect/wsgi.py
 
-# WSGIDaemonProcess django-processingjs-2T2015 processes=2 threads=2
-<Directory /var/www/adx/2t2015/think-create-code/processingjs>
-  WSGIProcessGroup django-processingjs-2T2015
-  WSGIApplicationGroup %{GLOBAL}
-  <Files wsgi.py>
-    Order deny,allow
-    Allow from all
-  </Files>
-
-  # Limit request size to 4Mb, for file uploads
-  LimitRequestBody 4194304
-</Directory>
-
-# WSGIDaemonProcess django-processingjs processes=2 threads=2
+WSGIDaemonProcess django-processingjs processes=2 threads=2
 <Directory /var/www/adx/think-create-code/processingjs>
   WSGIProcessGroup django-processingjs
   WSGIApplicationGroup %{GLOBAL}
@@ -44,4 +32,14 @@ WSGIScriptAlias /think.create.code/3t2015/gallery      /var/www/adx/think-create
 
   # Limit request size to 4Mb, for file uploads
   LimitRequestBody 4194304
+</Directory>
+
+WSGIDaemonProcess django-redirect processes=2 threads=2
+<Directory /var/www/adx/think-create-code/redirect>
+  WSGIProcessGroup django-redirect
+  WSGIApplicationGroup %{GLOBAL}
+  <Files wsgi.py>
+    Order deny,allow
+    Allow from all
+  </Files>
 </Directory>

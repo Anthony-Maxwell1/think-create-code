@@ -1,9 +1,11 @@
 from django.test import TestCase
 from django.db import IntegrityError
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 from datetime import timedelta
 
 from django_adelaidex.util.test import UserSetUp
+from django_adelaidex.lti.models import Cohort
 from submissions.models import Submission, SubmissionForm
 from exhibitions.models import Exhibition
 from artwork.models import Artwork
@@ -24,6 +26,18 @@ class SubmissionTests(UserSetUp, TestCase):
             str(submission),
             'New Exhibition :: New Artwork'
         )
+
+    def test_can_see(self):
+        # Everyone can see submissions
+        exhibition = Exhibition(title='New Exhibition', description='description goes here', released_at=timezone.now())
+        student_artwork = Artwork(title='New Artwork', code='// code goes here', author=self.user)
+        staff_artwork = Artwork(title='New Artwork', code='// code goes here', author=self.staff_user)
+        submission = Submission(exhibition=exhibition, artwork=student_artwork)
+
+        self.assertTrue(submission.can_see())
+        self.assertTrue(submission.can_see(self.user))
+        self.assertTrue(submission.can_see(self.staff_user))
+        self.assertTrue(submission.can_see(self.super_user))
 
     def test_can_save_released_exhibition(self):
 
@@ -215,6 +229,207 @@ class SubmissionTests(UserSetUp, TestCase):
         # Ensure the disqus_identifier contains the artwork id, so that it
         # persists between submission attempts.
         self.assertIn('%s' % artwork.id, submission.disqus_identifier)
+
+    def test_can_see_queryset(self):
+
+        # Everyone can see submissions
+        exhibition1 = Exhibition.objects.create(
+            title='Exhibition One', 
+            description='description goes here',
+            author=self.user)
+        artwork1 = Artwork.objects.create(
+            title='New Artwork', 
+            code='// code goes here', 
+            author=self.user)
+        submission1 = Submission.objects.create(
+            exhibition=exhibition1, 
+            artwork=artwork1, 
+            submitted_by=self.user)
+
+        exhibition2 = Exhibition.objects.create(
+            title='Exhibition Two', 
+            description='description goes here',
+            author=self.user)
+        artwork2 = Artwork.objects.create(
+            title='New Artwork', 
+            code='// code goes here', 
+            author=self.user)
+        submission2 = Submission.objects.create(
+            exhibition=exhibition2, 
+            artwork=artwork2, 
+            submitted_by=self.user)
+
+        # By default, all submissions are included in the can_see queryset
+        submissions = Submission.can_see_queryset().all()
+        self.assertEqual(len(submissions), 2)
+        self.assertEqual(submissions[0], submission1)
+        self.assertEqual(submissions[1], submission2)
+
+        # Same for all users
+        submissions = Submission.can_see_queryset(user=self.user).all()
+        self.assertEqual(len(submissions), 2)
+        self.assertEqual(submissions[0], submission1)
+        self.assertEqual(submissions[1], submission2)
+
+        submissions = Submission.can_see_queryset(user=self.staff_user).all()
+        self.assertEqual(len(submissions), 2)
+        self.assertEqual(submissions[0], submission1)
+        self.assertEqual(submissions[1], submission2)
+
+        # Unless you filter by exhibition
+        submissions = Submission.can_see_queryset(exhibition=exhibition1).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission1)
+
+        submissions = Submission.can_see_queryset(exhibition=exhibition1.id).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission1)
+
+        submissions = Submission.can_see_queryset(exhibition=exhibition2).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission2)
+
+        submissions = Submission.can_see_queryset(exhibition=exhibition2.id).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission2)
+
+
+class SubmissionCohortTests(UserSetUp, TestCase):
+
+    def setUp(self):
+        super(SubmissionCohortTests, self).setUp()
+        self.no_cohort_user = get_user_model().objects.create(username='no_cohort')
+        self.no_cohort_user.cohort = None
+        self.no_cohort_user.save()
+
+        self.cohort1_user = get_user_model().objects.create(username='cohort1')
+        self.cohort2_user = get_user_model().objects.create(username='cohort2')
+
+        self.cohort1 = Cohort.objects.create(
+            title='Cohort 1',
+            oauth_key='abc',
+            oauth_secret='abc',
+            is_default=True,
+        )
+        self.cohort1_user.cohort = self.cohort1
+        self.cohort1_user.save()
+
+        self.cohort2 = Cohort.objects.create(
+            title='Cohort 2',
+            oauth_key='def',
+            oauth_secret='def',
+        )
+        self.cohort2_user.cohort = self.cohort2
+        self.cohort2_user.save()
+
+    def test_can_see_queryset(self):
+
+        exhibition0 = Exhibition.objects.create(
+            title='Exhibition No Cohort', 
+            description='description goes here',
+            cohort=None,
+            author=self.user)
+        artwork0 = Artwork.objects.create(
+            title='New Artwork', 
+            code='// code goes here', 
+            author=self.user)
+        submission0 = Submission.objects.create(
+            exhibition=exhibition0, 
+            artwork=artwork0, 
+            submitted_by=self.user)
+
+        exhibition1 = Exhibition.objects.create(
+            title='Exhibition One', 
+            description='description goes here',
+            cohort=self.cohort1,
+            author=self.user)
+        artwork1 = Artwork.objects.create(
+            title='New Artwork', 
+            code='// code goes here', 
+            author=self.user)
+        submission1 = Submission.objects.create(
+            exhibition=exhibition1, 
+            artwork=artwork1, 
+            submitted_by=self.user)
+
+        exhibition2 = Exhibition.objects.create(
+            title='Exhibition Two', 
+            description='description goes here',
+            cohort=self.cohort2,
+            author=self.user)
+        artwork2 = Artwork.objects.create(
+            title='New Artwork', 
+            code='// code goes here', 
+            author=self.user)
+        submission2 = Submission.objects.create(
+            exhibition=exhibition2, 
+            artwork=artwork2, 
+            submitted_by=self.user)
+
+
+        # Everyone sees submissions in no-cohort and default exhibitions
+        submissions = Submission.can_see_queryset().all()
+        self.assertEqual(len(submissions), 2)
+        self.assertEqual(submissions[0], submission0)
+        self.assertEqual(submissions[1], submission1)
+
+        # Users see no-cohort and exhibitions in their own cohort
+        submissions = Submission.can_see_queryset(user=self.no_cohort_user).all()
+        self.assertEqual(len(submissions), 2)
+        self.assertEqual(submissions[0], submission0)
+        self.assertEqual(submissions[1], submission1)
+
+        submissions = Submission.can_see_queryset(user=self.cohort1_user).all()
+        self.assertEqual(len(submissions), 2)
+        self.assertEqual(submissions[0], submission0)
+        self.assertEqual(submissions[1], submission1)
+
+        submissions = Submission.can_see_queryset(user=self.cohort2_user).all()
+        self.assertEqual(len(submissions), 2)
+        self.assertEqual(submissions[0], submission0)
+        self.assertEqual(submissions[1], submission2)
+
+        # Unless you filter by exhibition
+        submissions = Submission.can_see_queryset(exhibition=exhibition1).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission1)
+
+        submissions = Submission.can_see_queryset(exhibition=exhibition1.id).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission1)
+
+        submissions = Submission.can_see_queryset(exhibition=exhibition2).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission2)
+
+        submissions = Submission.can_see_queryset(exhibition=exhibition2.id).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission2)
+
+        # Test user+exhibition permutations
+        submissions = Submission.can_see_queryset(user=self.no_cohort_user, exhibition=exhibition1).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission1)
+
+        submissions = Submission.can_see_queryset(user=self.cohort1_user, exhibition=exhibition1).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission1)
+
+        submissions = Submission.can_see_queryset(user=self.cohort2_user, exhibition=exhibition1).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission1)
+
+        submissions = Submission.can_see_queryset(user=self.no_cohort_user, exhibition=exhibition2).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission2)
+
+        submissions = Submission.can_see_queryset(user=self.cohort1_user, exhibition=exhibition2).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission2)
+
+        submissions = Submission.can_see_queryset(user=self.cohort2_user, exhibition=exhibition2).all()
+        self.assertEqual(len(submissions), 1)
+        self.assertEqual(submissions[0], submission2)
 
 
 class SubmissionModelFormTests(UserSetUp, TestCase):

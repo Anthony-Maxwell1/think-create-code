@@ -3,29 +3,48 @@
 {% if object_list %}
 {% if object_list.count > 1 %}
 <div class="columns small-6">
+    <form class="link" method="get" action="{% url 'artwork-add' %}" id="artwork-add-form">
+        <button id="artwork-add" type="submit" class="button warning tiny"
+            title="create new artwork"><i class="fa fa-plus"> Artwork</i></button>
+    </form>
+    <br />
     <ul class="order_by">
-        {% if order == 'score' %}
+    {% if order == 'score' %}
+        {% if exhibition_id %}
         <li><a href="{% url 'exhibition-view' pk=exhibition_id %}" title="sort submissions by most recent">Most Recent</a></li>
+        {% else %}
+        <li><a href="{% url 'artwork-shared' %}" title="sort submissions by most recent">Most Recent</a></li>
+        {% endif %}
         <li>Most Votes</li>
         {% else %}
         <li>Most Recent</li>
+        {% if exhibition_id %}
         <li><a href="{% url 'exhibition-view-score' pk=exhibition_id %}" title="sort submissions by most votes">Most Votes</a></li>
+        {% else %}
+        <li><a href="{% url 'artwork-shared-score' %}" title="sort submissions by most votes">Most Votes</a></li>
         {% endif %}
+    {% endif %}
     </ul>
 </div>
 <div class="columns small-6 align-right">
+    {% if object_list.count > 1 %}
     <button id="play-all" type="button" class="button tiny" title="play all"><i class="fa fa-play"> All</i></button>
+    {% endif %}
+    {% if zip_file_url and object_list.count > 0 %}
+    <form class="link" method="get" action="{{ zip_file_url }}" id="download-all-form">
+        <button id="download-all" type="submit" class="button tiny"
+            title="download artwork code"><i class="fa fa-download"> Download</i></button>
+    </form>
+    {% endif %}
 </div>
 {% endif %}
-<div class="small-grid-2">&nbsp;</div>
-<ul class="small-block-grid-2">
+<div class="columns small-12">
 {% for submission in object_list %}
 {% with submission.artwork as artwork %}
-<li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
+{% include 'artwork/_list.html' with object=artwork submission=submission %}
 {% endwith %}
 {% endfor %}
-</ul>
-<div class="small-grid-2">&nbsp;</div>
+</div>
 
 <a id="reveal-modal-error" href="#" data-reveal-id="modal-error" ></a>
 <div id="modal-error" class="reveal-modal" data-reveal>

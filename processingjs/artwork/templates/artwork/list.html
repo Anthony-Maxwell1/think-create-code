@@ -12,13 +12,13 @@
 <div id="artwork-list-content">
 {% if author %}
 <div class="columns small-12">
-<h1>Artwork {% if shared %}shared{% endif %} by {{ author }}</h1>
+<h1>Artwork by {{ author }}</h1>
 </div>
 {% endif %}
 
 <div class="columns small-6">
     <form class="link" method="get" action="{% url 'artwork-add' %}" id="artwork-add-form">
-        <button id="artwork-add" type="submit" class="button tiny"
+        <button id="artwork-add" type="submit" class="button warning tiny"
             title="create new artwork"><i class="fa fa-plus"> Artwork</i></button>
     </form>
 </div>
@@ -35,13 +35,11 @@
 </div>
 
 <div class="columns small-12">
-<ul class="large-block-grid-4 medium-block-grid-3 small-block-grid-2">
-    {% for artwork in object_list %}
-    {% with submissions|get:artwork.id as submission %}
-    <li>{% include 'artwork/_list.html' with object=artwork submission=submission %}</li>
-    {% endwith %}
-    {% endfor %}
-</ul>
+{% for artwork in object_list %}
+{% with submissions|get:artwork.id as submission %}
+{% include 'artwork/_list.html' with object=artwork submission=submission %}
+{% endwith %}
+{% endfor %}
 </div>
 
 </div>
