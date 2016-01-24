@@ -8,7 +8,8 @@ import json
 import copy
 import datetime
 
-sys.path.append(pythonpath)
+for path in pythonpath.split(':'):
+    sys.path.append(path)
 (source_env, target_env) = get_app_env(target=True)
 os.environ['DJANGO_SETTINGS_MODULE'] = 'gallery.settings'
 os.environ['DJANGO_GALLERY_ENVIRONMENT'] = target_env

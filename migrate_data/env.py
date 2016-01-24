@@ -1,6 +1,11 @@
 import sys
 import os.path
 
+python='./.virtualenv/bin/python'
+pythonpath='./.virtualenv/lib/python2.7/site-packages/:./processingjs'
+data_dir = os.path.join('redirect', 'data')
+manage_py = os.path.join('processingjs', 'manage.py')
+
 def get_app_env(target=False):
     if len(sys.argv) < 2:
         print "Usage %s <source_env>" % sys.argv[0]
@@ -16,11 +21,11 @@ def get_app_env(target=False):
 
     return source
 
-def get_data_filename(app_env, model):
-    return os.path.join(app_env, '%s.json' % model)
+def get_data_dir(app_env):
+    return os.path.join(data_dir, app_env)
 
-python='../.virtualenv/bin/python'
-pythonpath='../.virtualenv/lib/python2.7/site-packages/'
+def get_data_filename(app_env, model):
+    return os.path.join(get_data_dir(app_env), '%s.json' % model)
 
 models=[
     "database_files.file",

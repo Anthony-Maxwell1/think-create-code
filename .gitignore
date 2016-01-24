@@ -68,3 +68,6 @@ msg
 *.ini
 #   but not the default.ini
 !default.ini
+
+# Ignore the redirect/data
+redirect/data

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>ProcessingJS :: Share</title>
+    <script src="https://lti-adx.adelaide.edu.au/course.units/edx/js/jquery.min.js"></script>
+</head>
+<body><div>Redirecting..</div>
+<script type="text/javascript">
+$(document).ready(function() {
+    var share_path = '';
+    try {
+        share_path = window.location.hash.substring(1);
+    } catch(e) {
+        // pass
+    }
+    if (!share_path) share_path = '';
+    $.ajax({
+        url: "{{ post_share_url }}",
+        method: "POST",
+        data: { path: share_path },
+        success: redirect,
+        error: function() {
+            console.error(arguments);
+        },
+    });
+});
+function redirect(data)
+{
+    // Redirect to resulting path
+    var share_url = data.share_url;
+    var link = document.createElement('a');
+    link.href = share_url;
+    window.location = link;
+}
+</script>
+</body></html>
