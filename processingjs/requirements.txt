@@ -6,7 +6,7 @@ PyVirtualDisplay==0.1.5
 coverage==4.0.1
 django-rulez==1.0.1
 django-database-files==0.1.2
-Pillow==2.6.1
+Pillow==6.2.0
 django-csp==2.0.3
 django-adelaidex-util>=0.4,<0.5
 django-adelaidex-lti>=0.3,<0.4
